@@ -1,0 +1,190 @@
+name: "tkg-on-aws-destroy-workshop-environment"
+
+on:
+  workflow_dispatch:
+    inputs:
+      vpc-cidr:
+        description: "The VPC CIDR block"
+        required: true
+        default: "10.60.0.0/18"
+      footprint:
+        description: "Footprint for TAP installation"
+        required: true
+        type: choice
+        options:
+        - "single-cluster"
+        - "multi-cluster"
+        default: "single-cluster"
+      region:
+        description: "The AWS region where all resources will be destroyed"
+        required: true
+        type: choice
+        options:
+        - us-east-1
+        - us-east-2
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - eu-north-1
+        - eu-south-1
+        - me-south-1
+        - sa-east-1
+        default: "us-west-2"
+
+jobs:
+  destroy-keypair:
+    uses: ./.github/workflows/aws-keypair.yml
+    with:
+      ssh-key-name: "tap-admin-key"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  destroy-vnet-single:
+    if: github.event.inputs.footprint == 'single-cluster'
+    uses: ./.github/workflows/aws-virtual-network.yml
+    needs: [destroy-management-cluster,destroy-harbor-cluster,destroy-tap-cluster]
+    with:
+      vpc-cidr: ${{ github.event.inputs.vpc-cidr }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  destroy-vnet-multi:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/aws-virtual-network.yml
+    needs: [destroy-management-cluster,destroy-harbor-cluster,destroy-tap-build-cluster,destroy-tap-iterate-cluster,destroy-tap-run-cluster,destroy-tap-view-cluster]
+    with:
+      vpc-cidr: ${{ github.event.inputs.vpc-cidr }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  destroy-management-cluster:
+    uses: ./.github/workflows/tkg-management-cluster-on-aws.yml
+    needs: destroy-keypair
+    with:
+      cluster-name: "overlord"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  destroy-harbor-cluster:
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    with:
+      cluster-name: "harbor"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  destroy-tap-cluster:
+    if: github.event.inputs.footprint == 'single-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [destroy-keypair,destroy-management-cluster]
+    with:
+      cluster-name: "tap"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  destroy-tap-build-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [destroy-keypair,destroy-management-cluster]
+    with:
+      cluster-name: "tap-build"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  destroy-tap-iterate-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [destroy-keypair,destroy-management-cluster]
+    with:
+      cluster-name: "tap-iterate"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  destroy-tap-view-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [destroy-keypair,destroy-management-cluster]
+    with:
+      cluster-name: "tap-view"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  destroy-tap-run-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [destroy-keypair,destroy-management-cluster]
+    with:
+      cluster-name: "tap-run"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  destroy-secrets-manager:
+    uses: ./.github/workflows/aws-secrets-manager.yml
+    with:
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}

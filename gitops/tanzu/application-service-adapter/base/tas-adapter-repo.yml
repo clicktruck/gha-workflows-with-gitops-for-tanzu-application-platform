@@ -1,0 +1,15 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageRepository
+metadata:
+  name: tas-adapter-repository
+  namespace: #@ data.values.tas_adapter.namespace
+  annotations:
+    kapp.k14s.io/change-group: tas-adapter-install/repo
+spec:
+  fetch:
+    imgpkgBundle:
+      image: #@ "{}/app-service-adapter/tas-adapter-package-repo:{}".format(data.values.tas_adapter.credentials.tanzuNet.host, data.values.tas_adapter.version)
+      secretRef:
+        name: tanzu-network-credentials

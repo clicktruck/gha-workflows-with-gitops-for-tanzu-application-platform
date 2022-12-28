@@ -1,0 +1,99 @@
+name: "aws-09-administer-main-dns-zone"
+
+on:
+  workflow_call:
+    inputs:
+      domain:
+        description: "New DNS zone name to create (e.g., example.com)"
+        required: true
+        type: string
+      region:
+        description: "The AWS region where the Route53 Hosted Zone will be available"
+        type: string
+        required: true
+      action:
+        required: true
+        type: string
+        description: "Create (new) or destroy (existing)"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+      TF_BACKEND_s3_bucket_name:
+        required: true
+      AWS_KMS_ALIAS:
+        required: true
+    outputs:
+      base_hosted_zone_id:
+        description: "The AWS Route53 Hosted Zone identifier of the base domain"
+        value: ${{ jobs.terraform.outputs.base_hosted_zone_id }}
+
+jobs:
+  terraform:
+    env:
+      #AWS connection vars for TF
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_REGION: ${{ inputs.region }}
+      TF_VAR_domain: ${{ inputs.domain }}
+
+    runs-on: ubuntu-20.04
+
+    outputs:
+      base_hosted_zone_id: ${{ steps.set_outputs.outputs.base_hosted_zone_id }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/aws/main-dns
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Generate backend configuration
+      run: |
+          cp ../backend/backend.tf .
+          echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
+          echo "key = \"main-dns/terraform.tfstate\"" >> config.aws.tfbackend
+          echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
+          echo "encrypt = true" >> config.aws.tfbackend
+          echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
+          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.aws.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: terraform destroy -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      run: |
+        base_hosted_zone_id=$(terraform output --raw hosted_zone_id)
+        echo "base_hosted_zone_id=${base_hosted_zone_id}" >> $GITHUB_OUTPUT

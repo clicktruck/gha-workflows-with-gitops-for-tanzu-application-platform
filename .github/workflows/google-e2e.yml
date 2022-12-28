@@ -1,0 +1,523 @@
+name: "google-create-workshop-environment"
+
+on:
+  workflow_dispatch:
+    inputs:
+      footprint:
+        description: "Footprint for Tanzu Application Platform deployment"
+        required: true
+        type: choice
+        options:
+        - "single-cluster"
+        - "multi-cluster"
+        default: "single-cluster"
+      vpc-network-name:
+        description: "The Google Cloud VPC network name"
+        required: true
+        default: "tap-demo-network"
+      machine-type:
+        description: "The machine type of each node in cluster pool"
+        required: true
+        type: choice
+        options:
+        - c2-standard-4
+        - e2-standard-4
+        - e2-standard-8
+        - n2-standard-4
+        - n2-standard-8
+        default: "e2-standard-4"
+      region:
+        description: "The Google Cloud region where all resources will be created"
+        required: true
+        type: choice
+        options:
+        - asia-east1
+        - asia-east2
+        - asia-northeast1
+        - asia-northeast2
+        - asia-northeast3
+        - asia-south1
+        - asia-south2
+        - asia-southeast1
+        - asia-southeast2
+        - australia-southeast1
+        - australia-southeast2
+        - europe-central2
+        - europe-north1
+        - europe-southwest1
+        - europe-west1
+        - europe-west2
+        - europe-west3
+        - europe-west4
+        - europe-west6
+        - europe-west8
+        - europe-west9
+        - northamerica-northeast1
+        - northamerica-northeast2
+        - southamerica-east1
+        - southamerica-west1
+        - us-central1
+        - us-east1
+        - us-east4
+        - us-east5
+        - us-south1
+        - us-west1
+        - us-west2
+        - us-west3
+        - us-west4
+        default: "us-west2"
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        required: true
+      domain:
+        description: "Domain under management by an existing Cloud DNS Zone"
+        required: true
+      container-image-registry-provider:
+        description: "A choice of provider for a container image registry"
+        required: true
+        type: choice
+        options:
+        - google-container-registry
+        - google-artifact-registry
+        - harbor
+        default: "harbor"
+
+jobs:
+  region-to-geo:
+    if: github.event.inputs.container-image-registry-provider == 'google-container-registry'
+    runs-on: ubuntu-20.04
+
+    outputs:
+      result: ${{ steps.convert.outputs.geo }}
+
+    steps:
+    - name: Convert region to geo
+      id: convert
+      run: |
+        region="${{ github.event.inputs.region }}"
+        geo=$(echo $region | cut -d- -f1)
+        case $geo in
+          europe)
+            geo="eu"
+            ;;
+          northamerica | southamerica)
+            geo="us"
+            ;;
+          australia)
+            geo="asia"
+            ;;
+          *)
+            geo="us"
+            ;;
+        esac
+        echo "geo=${geo}"
+  create-google-container-registry:
+    needs: region-to-geo
+    uses: ./.github/workflows/google-container-registry-2.yml
+    with:
+      region: ${{ needs.region-to-geo.outputs.result }}
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+  create-google-artifact-registry:
+    if: github.event.inputs.container-image-registry-provider == 'google-artifact-registry'
+    uses: ./.github/workflows/google-container-registry.yml
+    with:
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  create-vnet:
+    uses: ./.github/workflows/google-virtual-network.yml
+    with:
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  create-harbor-cluster:
+    if: github.event.inputs.container-image-registry-provider == 'harbor'
+    uses: ./.github/workflows/google-k8s-cluster.yml
+    needs: [create-vnet]
+    with:
+      cluster-name: "harbor"
+      is-regional-cluster: true
+      are-nodes-preemptible: false
+      region: ${{ github.event.inputs.region }}
+      zone: ""
+      initial-node-count: 2
+      machine-type: ${{ github.event.inputs.machine-type }}
+      k8s-version: "1.24"
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      master_ipv4_cidr_block_28: "10.1.0.0/28"
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  obtain-base64-encoded-kubeconfig-for-harbor-cluster:
+    uses: ./.github/workflows/google-obtain-base64-encoded-kubeconfig-for-cluster.yml
+    needs: create-harbor-cluster
+    with:
+      cluster-name: ${{ needs.create-harbor-cluster.outputs.cluster_name }}
+      region: ${{ github.event.inputs.region }}
+      is-regional-cluster: true
+      zone: ""
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  fetch-google-cloud-dns-zone-name:
+    uses: ./.github/workflows/google-get-clouddns-zone-for-domain.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+  install-tanzu-ingress-into-harbor-cluster:
+    uses: ./.github/workflows/install-tanzu-ingress.yml
+    needs: [obtain-base64-encoded-kubeconfig-for-harbor-cluster,fetch-google-cloud-dns-zone-name]
+    with:
+      target-cloud: "google"
+      domain: ${{ github.event.inputs.domain }}
+      google-cloud-dns-zone-name: ${{ needs.fetch-google-cloud-dns-zone-name.outputs.zone_name }}
+      email-address: ${{ github.event.inputs.email-address }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-for-harbor-cluster.outputs.b64kubeconfig }}
+  install-harbor:
+    uses: ./.github/workflows/google-harbor.yml
+    needs: [obtain-base64-encoded-kubeconfig-for-harbor-cluster,install-tanzu-ingress-into-harbor-cluster]
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-for-harbor-cluster.outputs.b64kubeconfig }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  create-new-project-in-harbor:
+    needs: install-harbor
+    uses: ./.github/workflows/create-harbor-project.yml
+    with:
+      api-endpoint: harbor.${{ github.event.inputs.domain }}
+      project: "tanzu"
+    secrets:
+      HARBOR_USERNAME: "admin"
+      HARBOR_PASSWORD: ${{ needs.install-harbor.outputs.harbor_admin_password }}
+  create-tap-cluster:
+    if: github.event.inputs.footprint == 'single-cluster'
+    uses: ./.github/workflows/google-k8s-cluster.yml
+    needs: [create-vnet]
+    with:
+      cluster-name: "tap"
+      is-regional-cluster: true
+      are-nodes-preemptible: false
+      region: ${{ github.event.inputs.region }}
+      zone: ""
+      initial-node-count: 4
+      machine-type: ${{ github.event.inputs.machine-type }}
+      k8s-version: "1.24"
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      master_ipv4_cidr_block_28: "10.2.0.0/28"
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  create-tap-build-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-k8s-cluster.yml
+    needs: [create-vnet]
+    with:
+      cluster-name: "tap-build"
+      is-regional-cluster: true
+      are-nodes-preemptible: false
+      region: ${{ github.event.inputs.region }}
+      zone: ""
+      initial-node-count: 2
+      machine-type: ${{ github.event.inputs.machine-type }}
+      k8s-version: "1.24"
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      master_ipv4_cidr_block_28: "10.2.0.0/28"
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  create-tap-iterate-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-k8s-cluster.yml
+    needs: [create-vnet]
+    with:
+      cluster-name: "tap-iterate"
+      is-regional-cluster: true
+      are-nodes-preemptible: false
+      region: ${{ github.event.inputs.region }}
+      zone: ""
+      initial-node-count: 2
+      machine-type: ${{ github.event.inputs.machine-type }}
+      k8s-version: "1.24"
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      master_ipv4_cidr_block_28: "10.3.0.0/28"
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  create-tap-view-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-k8s-cluster.yml
+    needs: [create-vnet]
+    with:
+      cluster-name: "tap-view"
+      is-regional-cluster: true
+      are-nodes-preemptible: false
+      region: ${{ github.event.inputs.region }}
+      zone: ""
+      initial-node-count: 2
+      machine-type: ${{ github.event.inputs.machine-type }}
+      k8s-version: "1.24"
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      master_ipv4_cidr_block_28: "10.4.0.0/28"
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  create-tap-run-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-k8s-cluster.yml
+    needs: [create-vnet]
+    with:
+      cluster-name: "tap-run"
+      is-regional-cluster: true
+      are-nodes-preemptible: false
+      region: ${{ github.event.inputs.region }}
+      zone: ""
+      initial-node-count: 2
+      machine-type: ${{ github.event.inputs.machine-type }}
+      k8s-version: "1.24"
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      master_ipv4_cidr_block_28: "10.5.0.0/28"
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  obtain-base64-encoded-kubeconfig-for-tap-cluster:
+    if: github.event.inputs.footprint == 'single-cluster'
+    uses: ./.github/workflows/google-obtain-base64-encoded-kubeconfig-for-cluster.yml
+    needs: create-tap-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-cluster.outputs.cluster_name }}
+      region: ${{ github.event.inputs.region }}
+      is-regional-cluster: true
+      zone: ""
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  obtain-base64-encoded-kubeconfig-for-tap-build-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-obtain-base64-encoded-kubeconfig-for-cluster.yml
+    needs: create-tap-build-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-build-cluster.outputs.cluster_name }}
+      region: ${{ github.event.inputs.region }}
+      is-regional-cluster: true
+      zone: ""
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-obtain-base64-encoded-kubeconfig-for-cluster.yml
+    needs: create-tap-iterate-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-iterate-cluster.outputs.cluster_name }}
+      region: ${{ github.event.inputs.region }}
+      is-regional-cluster: true
+      zone: ""
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  obtain-base64-encoded-kubeconfig-for-tap-view-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-obtain-base64-encoded-kubeconfig-for-cluster.yml
+    needs: create-tap-view-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-view-cluster.outputs.cluster_name }}
+      region: ${{ github.event.inputs.region }}
+      is-regional-cluster: true
+      zone: ""
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  obtain-base64-encoded-kubeconfig-for-tap-run-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-obtain-base64-encoded-kubeconfig-for-cluster.yml
+    needs: create-tap-run-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-run-cluster.outputs.cluster_name }}
+      region: ${{ github.event.inputs.region }}
+      is-regional-cluster: true
+      zone: ""
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  create-secrets-manager:
+    uses: ./.github/workflows/google-secrets-manager.yml
+    with:
+      secret-manager-instance-name: "tap-secret-store"
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  update-secrets-manager-secrets-for-single-cluster-footprint-and-google-container-registry:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'google-container-registry'
+    uses: ./.github/workflows/google-secrets-manager-secrets.yml
+    needs: [create-google-container-registry,create-secrets-manager,obtain-base64-encoded-kubeconfig-for-tap-cluster]
+    with:
+      secret-manager-instance-name: "tap-secret-store"
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      secrets-key-value-map: '{ "google-container-registry-admin-username" : "${{ needs.create-google-container-registry.outputs.admin_username }}", "google-container-registry-admin-password" : "${{ needs.create-google-container-registry.outputs.admin_password }}", "google-container-registry-endpoint" : "${{ needs.create-google-container-registry.outputs.endpoint }}", "b64-tap-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-cluster.outputs.b64kubeconfig }}" }'
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  update-secrets-manager-secrets-for-single-cluster-footprint-and-google-artifact-registry:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'google-artifact-registry'
+    uses: ./.github/workflows/google-secrets-manager-secrets.yml
+    needs: [create-google-artifact-registry,create-secrets-manager,obtain-base64-encoded-kubeconfig-for-tap-cluster]
+    with:
+      secret-manager-instance-name: "tap-secret-store"
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      secrets-key-value-map: '{ "google-artifact-registry-admin-username" : "${{ needs.create-google-artifact-registry.outputs.admin_username }}", "google-artifact-registry-admin-password" : "${{ needs.create-google-artifact-registry.outputs.admin_password }}", "google-artifact-registry-endpoint" : "${{ needs.create-google-artifact-registry.outputs.endpoint }}", "b64-tap-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-cluster.outputs.b64kubeconfig }}" }'
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  update-secrets-manager-secrets-for-single-cluster-footprint-and-harbor:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'harbor'
+    uses: ./.github/workflows/google-secrets-manager-secrets.yml
+    needs: [create-secrets-manager,obtain-base64-encoded-kubeconfig-for-harbor-cluster,install-harbor,obtain-base64-encoded-kubeconfig-for-tap-cluster]
+    with:
+      secret-manager-instance-name: "tap-secret-store"
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      secrets-key-value-map: '{ "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "b64-tap-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-cluster.outputs.b64kubeconfig }}" }'
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  update-secrets-manager-secrets-for-multi-cluster-footprint-and-google-container-registry:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'google-container-registry'
+    uses: ./.github/workflows/google-secrets-manager-secrets.yml
+    needs: [create-google-container-registry,create-secrets-manager,obtain-base64-encoded-kubeconfig-for-tap-build-cluster,obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster,obtain-base64-encoded-kubeconfig-for-tap-view-cluster,obtain-base64-encoded-kubeconfig-for-tap-run-cluster]
+    with:
+      secret-manager-instance-name: "tap-secret-store"
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      secrets-key-value-map: '{ "google-container-registry-admin-username" : "${{ needs.create-google-container-registry.outputs.admin_username }}", "google-container-registry-admin-password" : "${{ needs.create-google-container-registry.outputs.admin_password }}", "google-container-registry-endpoint" : "${{ needs.create-google-container-registry.outputs.endpoint }}", "b64-tap-build-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-build-cluster.outputs.b64kubeconfig }}", "b64-tap-iterate-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster.outputs.b64kubeconfig }}", "b64-tap-view-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-view-cluster.outputs.b64kubeconfig }}", "b64-tap-run-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-run-cluster.outputs.b64kubeconfig }}" }'
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  update-secrets-manager-secrets-for-multi-cluster-footprint-and-google-artifact-registry:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'google-artifact-registry'
+    uses: ./.github/workflows/google-secrets-manager-secrets.yml
+    needs: [create-google-artifact-registry,create-secrets-manager,obtain-base64-encoded-kubeconfig-for-tap-build-cluster,obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster,obtain-base64-encoded-kubeconfig-for-tap-view-cluster,obtain-base64-encoded-kubeconfig-for-tap-run-cluster]
+    with:
+      secret-manager-instance-name: "tap-secret-store"
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      secrets-key-value-map: '{ "google-artifact-registry-admin-username" : "${{ needs.create-google-artifact-registry.outputs.admin_username }}", "google-artifact-registry-admin-password" : "${{ needs.create-google-artifact-registry.outputs.admin_password }}", "google-artifact-registry-endpoint" : "${{ needs.create-google-artifact-registry.outputs.endpoint }}", "b64-tap-build-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-build-cluster.outputs.b64kubeconfig }}", "b64-tap-iterate-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster.outputs.b64kubeconfig }}", "b64-tap-view-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-view-cluster.outputs.b64kubeconfig }}", "b64-tap-run-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-run-cluster.outputs.b64kubeconfig }}" }'
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  update-secrets-manager-secrets-for-multi-cluster-footprint-and-harbor:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'harbor'
+    uses: ./.github/workflows/google-secrets-manager-secrets.yml
+    needs: [create-secrets-manager,obtain-base64-encoded-kubeconfig-for-harbor-cluster,install-harbor,obtain-base64-encoded-kubeconfig-for-tap-build-cluster,obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster,obtain-base64-encoded-kubeconfig-for-tap-view-cluster,obtain-base64-encoded-kubeconfig-for-tap-run-cluster]
+    with:
+      secret-manager-instance-name: "tap-secret-store"
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      secrets-key-value-map: '{ "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "b64-tap-build-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-build-cluster.outputs.b64kubeconfig }}", "b64-tap-iterate-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster.outputs.b64kubeconfig }}", "b64-tap-view-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-view-cluster.outputs.b64kubeconfig }}", "b64-tap-run-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-run-cluster.outputs.b64kubeconfig }}" }'
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}

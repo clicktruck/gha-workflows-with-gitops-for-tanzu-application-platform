@@ -1,0 +1,20 @@
+name: Clean Workflow Logs
+
+on:
+  workflow_dispatch:
+    inputs:
+      days_old:
+        description: "Delete runs that are this number of days old or older."
+        default: "7"
+        required: false
+
+jobs:
+  clean-logs:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: igorjs/gh-actions-clean-workflow@v3
+        with:
+          token: ${{ secrets.PA_TOKEN }}
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          days_old: ${{ github.event.inputs.days_old }}

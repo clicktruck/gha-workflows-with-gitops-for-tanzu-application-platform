@@ -1,0 +1,7 @@
+alias = "alias/tap"
+admin_username = "bootcamp-admin"
+description = "KMS key for System Manager"
+tags = {
+  Name  = "tap"
+  Owner = "bootcamp-admin"
+}

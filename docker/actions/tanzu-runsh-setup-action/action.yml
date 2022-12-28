@@ -1,0 +1,32 @@
+name: "Tanzu Run Shell Script Setup Action"
+description: "Execute a shell script where kubectl and/or tanzu CLI commands may be invoked one or more times"
+inputs:
+  enable-tanzu-cli:
+    description: "Whether or not to install the tanzu CLI and configure plugins"
+    required: false
+    default: "false"
+  script-contents:
+    description: "The base64 encoded contents of a shell script"
+    required: true
+  script-arguments:
+    description: "A space separated set of arguments that the script will consume"
+    required: true
+  kubeconfig-contents:
+    description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+    required: false
+  csp-api-token:
+    description: "VMware Cloud Service Platform API Token, used for authenticating to the VMware Marketplace"
+    required: true
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - "${{ inputs.script-contents }}"
+    - "${{ inputs.script-arguments }}"
+    - "${{ inputs.kubeconfig-contents }}"
+  env:
+    TANZU_CLI_VERSION: 1.6.0
+    TANZU_CLI_CORE_VERSION: 0.25.0
+    CSP_API_TOKEN: ${{ inputs.csp-api-token }}
+    TANZU_CLI_ENABLED: ${{ inputs.enable-tanzu-cli }}

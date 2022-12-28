@@ -1,0 +1,8 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: #@ data.values.tas_adapter.namespace
+  annotations:
+    kapp.k14s.io/change-rule: "delete after deleting tas-adapter-install/tas-adapter"

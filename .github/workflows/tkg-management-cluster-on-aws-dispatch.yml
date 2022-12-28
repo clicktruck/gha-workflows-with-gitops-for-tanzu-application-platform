@@ -1,0 +1,109 @@
+name: "tanzu-kubernetes-grid-management-cluster-on-aws-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster-name:
+        description: "Name of the cluster (must comply with DNS hostname requirements as outlined in RFC 952 and amended in RFC 1123, and must be 42 characters or less)"
+        required: true
+      vpc-id:
+        description: "The identifier of a VPC in an AWS region"
+        required: true
+      control-plane-node-machine-type:
+        description: "The Amazon EC2 instance type of the control plane nodes"
+        required: true
+        type: choice
+        options:
+        - c4.large
+        - c5.large
+        - c5a.large
+        - c6a.large
+        - m4.large
+        - m5.large
+        - m5a.large
+        - m6a.large
+        - t3.large
+        - t3a.large
+        default: "t3a.large"
+      worker-node-machine-type:
+        description: "The Amazon EC2 instance type of the worker nodes"
+        required: true
+        type: choice
+        options:
+        - c4.xlarge
+        - c5.xlarge
+        - c5a.xlarge
+        - c6a.xlarge
+        - m4.xlarge
+        - m5.xlarge
+        - m5a.xlarge
+        - m6a.xlarge
+        - t3.xlarge
+        - t3a.xlarge
+        default: "m5a.xlarge"
+      region:
+        description: "The AWS region where the Tanzu Kubernetes Grid cluster will be available"
+        required: true
+        type: choice
+        options:
+        - us-east-1
+        - us-east-2
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - eu-north-1
+        - eu-south-1
+        - me-south-1
+        - sa-east-1
+        default: "us-west-2"
+      ssh-keypair-name:
+        description: "An existing Amazon EC2 SSH keypair name"
+        required: true
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+
+jobs:
+  create-tkg-management-cluster:
+    if: github.event.inputs.action == 'create'
+    uses: ./.github/workflows/tkg-management-cluster-on-aws.yml
+    with:
+      cluster-name: ${{ github.event.inputs.cluster-name }}
+      vpc-id: ${{ github.event.inputs.vpc-id }}
+      control-plane-node-machine-type: ${{ github.event.inputs.control-plane-node-machine-type }}
+      worker-node-machine-type: ${{ github.event.inputs.worker-node-machine-type }}
+      region: ${{ github.event.inputs.region }}
+      ssh-keypair-name: ${{ github.event.inputs.ssh-keypair-name }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+
+  destroy-tkg-management-cluster:
+    if: github.event.inputs.action == 'destroy'
+    uses: ./.github/workflows/tkg-management-cluster-on-aws.yml
+    with:
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}

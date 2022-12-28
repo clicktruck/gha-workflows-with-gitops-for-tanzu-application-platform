@@ -1,0 +1,63 @@
+name: "aws-09-dispatch-main-dns-zone"
+
+on:
+  workflow_dispatch:
+    inputs:
+      aws-access-key-id:
+        description: "AWS access key identifier for an account with write permissions to a Route53 hosted zone"
+        required: true
+      aws-secret-access-key:
+        description: "AWS secret access key for an account with write permissions to a Route53 hosted zone"
+        required: true
+      aws-session-token:
+        description: "An expiring token used by AWS to validate the temporary security credentials issued."
+        required: false
+      domain:
+        description: "New DNS zone name to create (e.g., example.com)"
+        required: true
+      region:
+        description: "The AWS region where the Route53 Hosted Zone will be available"
+        required: true
+        type: choice
+        options:
+        - us-east-1
+        - us-east-2
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - eu-north-1
+        - eu-south-1
+        - me-south-1
+        - sa-east-1
+        default: "us-west-2"
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+
+jobs:
+  manage-main-dns-zone:
+    uses: ./.github/workflows/aws-main-dns.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      region: ${{ github.event.inputs.region }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ github.event.inputs.aws-access-key-id }}
+      AWS_SECRET_ACCESS_KEY: ${{ github.event.inputs.aws-secret-access-key }}
+      AWS_SESSION_TOKEN: ${{ github.event.inputs.aws-session-token }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}

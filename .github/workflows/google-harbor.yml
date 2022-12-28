@@ -1,0 +1,153 @@
+name: "google-harbor"
+
+on:
+  workflow_call:
+    inputs:
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        type: string
+        required: true
+      domain:
+        description: "A domain that the installation of Harbor will be addressable from"
+        type: string
+        required: true
+      action:
+        required: true
+        description: "Create (new) or destroy (existing)"
+        type: string
+    secrets:
+      GOOGLE_PROJECT_ID:
+        required: true
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: true
+      TF_BACKEND_GCS_BUCKET_NAME:
+        required: true
+      GOOGLE_KMS_KEYRING:
+        required: true
+      KUBECONFIG_CONTENTS:
+        required: true
+    outputs:
+      harbor_domain:
+        description: "The domain from which the Harbor instance is addressable"
+        value: ${{ jobs.terraform.outputs.harbor_domain }}
+      harbor_admin_username:
+        description: "The Harbor administrator account's username"
+        value: ${{ jobs.terraform.outputs.harbor_admin_username }}
+      harbor_admin_password:
+        description: "The Harbor administrator account's password"
+        value: ${{ jobs.terraform.outputs.harbor_admin_password }}
+
+jobs:
+  terraform:
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: "/tmp/gcloud/sa.json"
+      TF_VAR_project: ${{ secrets.GOOGLE_PROJECT_ID }}
+      TF_VAR_acme_email: ${{ inputs.email-address }}
+      TF_VAR_domain: ${{ inputs.domain }}
+      TF_VAR_kubeconfig_path: "/tmp/.kube/config"
+      KUBECONFIG: "/tmp/.kube/config"
+
+    runs-on: ubuntu-20.04
+
+    outputs:
+      harbor_domain: ${{ steps.set_outputs.outputs.harbor_domain }}
+      harbor_admin_username: ${{ steps.set_outputs.outputs.harbor_admin_username }}
+      harbor_admin_password: ${{ steps.set_outputs.outputs.harbor_admin_password }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/k8s/harbor
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    - name: Copy Google provider configuration into place
+      run: |
+        cp ../../k8s/providers/google.tf .
+        ls -la
+
+    - name: Generate backend configuration
+      run: |
+        cp ../../google/backend/backend.tf .
+        echo "bucket = \"${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}\"" > config.gcs.tfbackend
+        echo "prefix = \"harbor\"" >> config.gcs.tfbackend
+
+    - name: Decrypt service account keyfile contents and write to /tmp/gcloud/sa.json
+      env:
+        GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      run: |
+        mkdir -p /tmp/gcloud
+        echo "$GOOGLE_SERVICE_ACCOUNT_KEY" | base64 -d > /tmp/gcloud/sa.json
+        chmod 600 /tmp/gcloud/sa.json
+
+    - name: Install Carvel tools
+      run: |
+        KAPP_VERSION=0.54.0
+        wget -O kapp https://github.com/vmware-tanzu/carvel-kapp/releases/download/v${KAPP_VERSION}/kapp-linux-amd64
+        chmod +x kapp
+        sudo mv kapp /usr/bin
+
+    - name: Install gcloud and gke-gcloud-auth-plugin
+      run: |
+        sudo apt remove google-cloud-sdk -y
+        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+        sudo apt update -y && sudo apt install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y
+        mkdir -p /opt/hostedtoolcache/gcloud/409.0.0/x64/bin
+        ln -s /usr/bin/gcloud /opt/hostedtoolcache/gcloud/409.0.0/x64/bin/gcloud
+
+    - name: Generate .kube/config
+      env:
+        KUBECONFIG_CONTENTS: ${{ secrets.KUBECONFIG_CONTENTS }}
+      run: |
+        mkdir -p /tmp/.kube
+        echo "$KUBECONFIG_CONTENTS" | base64 -d > /tmp/.kube/config
+        chmod 600 /tmp/.kube/config
+
+    - name: Authorize Google Cloud service account
+      run: |
+        gcloud auth activate-service-account terraform@${{ secrets.GOOGLE_PROJECT_ID }}.iam.gserviceaccount.com --key-file=/tmp/gcloud/sa.json
+
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.gcs.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: terraform destroy -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        harbor_domain=$(terraform output --raw harbor_domain)
+        echo "harbor_domain=${harbor_domain}" >> $GITHUB_OUTPUT
+        harbor_admin_username=$(terraform output --raw harbor_admin_username)
+        echo "harbor_admin_username=${harbor_admin_username}" >> $GITHUB_OUTPUT
+        harbor_admin_password=$(terraform output --raw harbor_admin_password)
+        echo "harbor_admin_password=${harbor_admin_password}" >> $GITHUB_OUTPUT

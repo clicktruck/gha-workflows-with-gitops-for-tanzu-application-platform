@@ -1,0 +1,49 @@
+#@data/values
+
+#@overlay/match-child-defaults missing_ok=True
+---
+tap:
+  devNamespace: dev-tap
+
+  domains:
+    learningCenter: learningcenter.tap.tanzu.corp
+
+  #! Add more clusters you want to observe here
+  #! Follow the pattern to add placeholder key-value pairs
+  observed:
+    clusters:
+      kv1:
+        name: ""
+        url: ""
+        token: ""
+        skipTLS: false
+        skipMetrics: true
+        ca: ""
+      kv2:
+        name: ""
+        url: ""
+        token: ""
+        skipTLS: false
+        skipMetrics: true
+        ca: ""
+      kv3:
+        name: ""
+        url: ""
+        token: ""
+        skipTLS: false
+        skipMetrics: true
+        ca: ""
+      kv4:
+        name: ""
+        url: ""
+        token: ""
+        skipTLS: false
+        skipMetrics: true
+        ca: ""
+      kv5:
+        name: ""
+        url: ""
+        token: ""
+        skipTLS: false
+        skipMetrics: true
+        ca: ""

@@ -1,0 +1,28 @@
+name: "aws-get-route53-hosted-zone-id-for-domain-under-management-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "A domain under management by a Route53 hosted zone"
+        required: true
+      region:
+        description: "The AWS region where the Route53 Hosted Zone is available"
+        required: true
+      aws-access-key-id:
+        description: "AWS access key identifier for an account with write permissions to a Route53 hosted zone"
+        required: true
+      aws-secret-access-key:
+        description: "AWS secret access key for an account with write permissions to a Route53 hosted zone"
+        required: true
+
+jobs:
+
+  run-script:
+    uses: ./.github/workflows/aws-get-route53-hosted-zone-id-for-domain.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      region: ${{ github.event.inputs.region }}
+    secrets:
+      ROUTE53_ZONE_AWS_ACCESS_KEY_ID: ${{ github.event.inputs.aws-access-key-id }}
+      ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY: ${{ github.event.inputs.aws-secret-access-key }}

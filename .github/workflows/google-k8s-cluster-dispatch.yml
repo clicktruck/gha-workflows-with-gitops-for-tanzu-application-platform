@@ -1,0 +1,235 @@
+name: "google-dispatch-kubernetes-engine"
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster-name:
+        description: "Name of the GKE cluster"
+        required: true
+        default: "tap"
+      are-nodes-preemptible:
+        description: "Are nodes in cluster preemptible? See https://cloud.google.com/kubernetes-engine/docs/how-to/preemptible-vms#overview."
+        required: true
+        type: choice
+        options:
+        - "true"
+        - "false"
+        default: "false"
+      is-regional-cluster:
+        description: "Will the nodes in cluster be spread across availability zones in region?"
+        required: true
+        type: choice
+        options:
+        - "true"
+        - "false"
+        default: "false"
+      region:
+        description: "The Google Cloud region where the GKE cluster will be available"
+        required: true
+        type: choice
+        options:
+        - asia-east1
+        - asia-east2
+        - asia-northeast1
+        - asia-northeast2
+        - asia-northeast3
+        - asia-south1
+        - asia-south2
+        - asia-southeast1
+        - asia-southeast2
+        - australia-southeast1
+        - australia-southeast2
+        - europe-central2
+        - europe-north1
+        - europe-southwest1
+        - europe-west1
+        - europe-west2
+        - europe-west3
+        - europe-west4
+        - europe-west6
+        - europe-west8
+        - europe-west9
+        - northamerica-northeast1
+        - northamerica-northeast2
+        - southamerica-east1
+        - southamerica-west1
+        - us-central1
+        - us-east1
+        - us-east4
+        - us-east5
+        - us-south1
+        - us-west1
+        - us-west2
+        - us-west3
+        - us-west4
+        default: "us-west2"
+      zone:
+        description: "The availability zone in which to launch the cluster.  Should be a valid zone in region.  (Only relevant if is-regional-cluster is set to false)."
+        required: true
+        type: choice
+        options:
+        - asia-east1-a
+        - asia-east1-b
+        - asia-east1-c
+        - asia-east2-a
+        - asia-east2-b
+        - asia-east2-c
+        - asia-northeast1-a
+        - asia-northeast1-b
+        - asia-northeast1-c
+        - asia-northeast2-a
+        - asia-northeast2-b
+        - asia-northeast2-c
+        - asia-northeast3-a
+        - asia-northeast3-b
+        - asia-northeast3-c
+        - asia-south1-a
+        - asia-south1-b
+        - asia-south1-c
+        - asia-south2-a
+        - asia-south2-b
+        - asia-south2-c
+        - asia-southeast1-a
+        - asia-southeast1-b
+        - asia-southeast1-c
+        - asia-southeast2-a
+        - asia-southeast2-b
+        - asia-southeast2-c
+        - australia-southeast1-a
+        - australia-southeast1-b
+        - australia-southeast1-c
+        - australia-southeast2-a
+        - australia-southeast2-b
+        - australia-southeast2-c
+        - europe-central2-a
+        - europe-central2-b
+        - europe-central2-c
+        - europe-north1-a
+        - europe-north1-b
+        - europe-north1-c
+        - europe-southwest1-a
+        - europe-southwest1-b
+        - europe-southwest1-c
+        - europe-west1-b
+        - europe-west1-c
+        - europe-west1-d
+        - europe-west2-a
+        - europe-west2-b
+        - europe-west2-c
+        - europe-west3-a
+        - europe-west3-b
+        - europe-west3-c
+        - europe-west4-a
+        - europe-west4-b
+        - europe-west4-c
+        - europe-west6-a
+        - europe-west6-b
+        - europe-west6-c
+        - europe-west8-a
+        - europe-west8-b
+        - europe-west8-c
+        - europe-west9-a
+        - europe-west9-b
+        - europe-west9-c
+        - northamerica-northeast1-a
+        - northamerica-northeast1-b
+        - northamerica-northeast1-c
+        - northamerica-northeast2-a
+        - northamerica-northeast2-b
+        - northamerica-northeast2-c
+        - southamerica-east1-a
+        - southamerica-east1-b
+        - southamerica-east1-c
+        - southamerica-west1-a
+        - southamerica-west1-b
+        - southamerica-west1-c
+        - us-central1-a
+        - us-central1-b
+        - us-central1-c
+        - us-central1-f
+        - us-east1-b
+        - us-east1-c
+        - us-east1-d
+        - us-east4-a
+        - us-east4-b
+        - us-east4-c
+        - us-east5-a
+        - us-east5-b
+        - us-east5-c
+        - us-south1-a
+        - us-south1-b
+        - us-south1-c
+        - us-west1-a
+        - us-west1-b
+        - us-west1-c
+        - us-west2-a
+        - us-west2-b
+        - us-west2-c
+        - us-west3-a
+        - us-west3-b
+        - us-west3-c
+        - us-west4-a
+        - us-west4-b
+        - us-west4-c
+        default: "us-west2-a"
+      initial-node-count:
+        description: "Initial number of worker nodes"
+        required: true
+        default: "3"
+      machine-type:
+        description: "The machine type of each node in pool"
+        required: true
+        type: choice
+        options:
+        - c2-standard-4
+        - e2-standard-4
+        - e2-standard-8
+        - n2-standard-4
+        - n2-standard-8
+        default: "e2-standard-4"
+      k8s-version:
+        description: "A supported and available Kubernetes (major.minor.patch) version"
+        required: true
+        type: choice
+        options:
+        - "1.22"
+        - "1.23"
+        - "1.24"
+        default: "1.24"
+      vpc-network-name:
+        description: "Name of an existing Google Cloud VPC network"
+        required: true
+        default: "tap-demo-network"
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+
+jobs:
+  manage-gke:
+    uses: ./.github/workflows/google-k8s-cluster.yml
+    with:
+      cluster-name: ${{ github.event.inputs.cluster-name }}
+      is-regional-cluster: ${{ fromJSON(github.event.inputs.is-regional-cluster) }}
+      are-nodes-preemptible: ${{ fromJSON(github.event.inputs.are-nodes-preemptible) }}
+      region: ${{ github.event.inputs.region }}
+      zone: ${{ github.event.inputs.zone }}
+      initial-node-count: ${{ github.event.inputs.initial-node-count }}
+      machine-type: ${{ github.event.inputs.machine-type }}
+      k8s-version: ${{ github.event.inputs.k8s-version }}
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}

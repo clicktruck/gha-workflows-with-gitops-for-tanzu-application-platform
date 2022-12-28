@@ -1,0 +1,73 @@
+name: "uninstall-tanzu-application-platform-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment-name:
+        description: "The name of the deployment that will be uninstalled"
+        required: true
+        type: choice
+        options:
+          - "tap-full"
+          - "tap-build"
+          - "tap-iterate"
+          - "tap-run"
+          - "tap-view"
+        default: "tap-full"
+      cluster-provider:
+        description: "The Kubernetes service provider"
+        required: true
+        type: choice
+        options:
+          - eks
+          - aks
+          - gke
+          - tkg»aws
+          - tkg»azure
+          - other
+      dev-namespaces:
+        description: "Pre-existing namespaces that will be removed (ie., workloads and deliverables deleted first)"
+        required: false
+        default: "default"
+      kubeconfig-contents:
+        description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+        required: true
+
+jobs:
+  uninstall-tap:
+    if: contains(fromJson('["eks","gke","tkg»aws"]'), github.event.inputs.cluster-provider) != true
+    uses: ./.github/workflows/uninstall-tanzu-application-platform.yml
+    with:
+      cluster-provider: ${{ github.event.inputs.cluster-provider }}
+      deployment-name: ${{ github.event.inputs.deployment-name }}
+      dev-namespaces: ${{ github.event.inputs.dev-namespaces }}
+    secrets:
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+
+  uninstall-tap-on-eks:
+    if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
+    uses: ./.github/workflows/uninstall-tanzu-application-platform.yml
+    with:
+      cluster-provider: ${{ github.event.inputs.cluster-provider }}
+      deployment-name: ${{ github.event.inputs.deployment-name }}
+      dev-namespaces: ${{ github.event.inputs.dev-namespaces }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+
+  uninstall-tap-on-google:
+    if: github.event.inputs.cluster-provider == 'gke'
+    uses: ./.github/workflows/uninstall-tanzu-application-platform.yml
+    with:
+      cluster-provider: ${{ github.event.inputs.cluster-provider }}
+      deployment-name: ${{ github.event.inputs.deployment-name }}
+      dev-namespaces: ${{ github.event.inputs.dev-namespaces }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}

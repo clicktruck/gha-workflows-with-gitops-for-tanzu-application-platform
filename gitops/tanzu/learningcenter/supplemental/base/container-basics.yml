@@ -1,0 +1,24 @@
+apiVersion: learningcenter.tanzu.vmware.com/v1beta1
+kind: Workshop
+metadata:
+  name: lab-container-basics
+  namespace: learningcenter-supplemental
+spec:
+  vendor: learningcenter.tanzu.vmware.com
+  title: Container Basics
+  description: An interactive workshop on running applications in containers.
+  url: https://github.com/eduk8s-labs/lab-container-basics
+  content:
+    files: github.com/eduk8s-labs/lab-container-basics
+  duration: 60m
+  session:
+    namespaces:
+      budget: medium
+    applications:
+      terminal:
+        enabled: true
+        layout: split
+      registry:
+        enabled: true
+      docker:
+        enabled: true

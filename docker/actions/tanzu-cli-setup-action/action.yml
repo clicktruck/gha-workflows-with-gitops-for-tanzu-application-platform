@@ -1,0 +1,29 @@
+name: "Tanzu CLI Setup Action"
+description: "Execute a command with the kubectl or tanzu CLI"
+inputs:
+  enable-tanzu-cli:
+    description: "Whether or not to install the tanzu CLI and configure plugins"
+    required: false
+    default: "false"
+  command:
+    description: "The kubectl or tanzu CLI command to execute"
+    required: true
+    default: "tanzu version"
+  kubeconfig-contents:
+    description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+    required: false
+  csp-api-token:
+    description: "VMware Cloud Service Platform API Token, used for authenticating to the VMware Marketplace"
+    required: true
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - "${{ inputs.command }}"
+    - "${{ inputs.kubeconfig-contents }}"
+  env:
+    TANZU_CLI_VERSION: 1.6.0
+    TANZU_CLI_CORE_VERSION: 0.25.0
+    CSP_API_TOKEN: ${{ inputs.csp-api-token }}
+    TANZU_CLI_ENABLED: ${{ inputs.enable-tanzu-cli }}

@@ -1,0 +1,68 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
+
+---
+#@ def config():
+profile: run
+
+excluded_packages:
+  - cert-manager.tanzu.vmware.com
+  - contour.tanzu.vmware.com
+  - policy.apps.tanzu.vmware.com
+
+#! installed_for_vmware_internal_use: "true"
+ceip_policy_disclosed: true
+
+supply_chain: basic
+ootb_supply_chain_basic:
+  registry:
+    server: #@ data.values.tap.credentials.registry.host
+    repository: #@ data.values.tap.registry.repositories.ootbSupplyChain
+  gitops:
+    ssh_secret: git-ssh
+
+contour:
+  envoy:
+    service:
+      type: LoadBalancer
+
+cnrs:
+  default_tls_secret: #@ "{}/{}".format(data.values.tap.ingress.contour_tls_namespace, data.values.tap.ingress.contour_tls_secret)
+  domain_name: #@ data.values.tap.domains.knative
+  domain_template: "{{.Name}}-{{.Namespace}}.{{.Domain}}"
+  ingress:
+    internal:
+      namespace: tanzu-system-ingress
+    external:
+      namespace: tanzu-system-ingress
+
+appliveview_connector:
+  backend:
+    sslDisabled: false
+    ingressEnabled: true
+    host: #@ "appliveview.{}".format(data.values.tap.domains.main)
+
+package_overlays:
+- name: cnrs
+  secrets:
+  - name: cnrs-network-config-overlay
+  - name: cnrs-certmanager-config-overlay
+- name: ootb-templates
+  secrets:
+  - name: honor-deliverable-subpath-overlay
+
+
+image_policy_webhook:
+  allow_unmatched_images: true
+
+#@ end
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tap-values
+  namespace: #@ data.values.tap.namespace
+type: Opaque
+stringData:
+  values.yml: #@ yaml.encode(config())
+

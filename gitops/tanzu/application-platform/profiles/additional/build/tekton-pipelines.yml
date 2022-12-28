@@ -1,0 +1,229 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: maven-java-tekton-pipeline
+  labels:
+    apps.tanzu.vmware.com/pipeline: test
+    apps.tanzu.vmware.com/language: java
+    apps.tanzu.vmware.com/build-engine: maven
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  params:
+    - name: source-url
+    - name: source-revision
+  tasks:
+    - name: test
+      params:
+        - name: source-url
+          value: $(params.source-url)
+        - name: source-revision
+          value: $(params.source-revision)
+      taskSpec:
+        params:
+          - name: source-url
+          - name: source-revision
+        steps:
+          - name: test
+            image: maven:3.8-eclipse-temurin-17
+            script: |-
+              cd `mktemp -d`
+              wget -qO- $(params.source-url) | tar xvz
+              ./mvnw test
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gradle-java-tekton-pipeline
+  labels:
+    apps.tanzu.vmware.com/pipeline: test
+    apps.tanzu.vmware.com/language: java
+    apps.tanzu.vmware.com/build-engine: gradle
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  params:
+    - name: source-url
+    - name: source-revision
+  tasks:
+    - name: test
+      params:
+        - name: source-url
+          value: $(params.source-url)
+        - name: source-revision
+          value: $(params.source-revision)
+      taskSpec:
+        params:
+          - name: source-url
+          - name: source-revision
+        steps:
+          - name: test
+            image: gradle:jdk17-jammy
+            script: |-
+              cd `mktemp -d`
+              wget -qO- $(params.source-url) | tar xvz
+              gradle test
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: dotnet-core-7.0-tekton-pipeline
+  labels:
+    apps.tanzu.vmware.com/pipeline: test
+    apps.tanzu.vmware.com/language: dotnet-core
+    apps.tanzu.vmware.com/build-engine: dotnet-7.0
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  params:
+  - name: source-url
+    type: string
+  - name: source-revision
+    type: string
+  tasks:
+  - name: test
+    params:
+    - name: source-url
+      value: $(params.source-url)
+    - name: source-revision
+      value: $(params.source-revision)
+    taskSpec:
+      params:
+      - name: source-url
+        type: string
+      - name: source-revision
+        type: string
+      steps:
+      - image: mcr.microsoft.com/dotnet/core/sdk:7.0
+        name: test
+        script: |-
+          cd `mktemp -d`
+          wget -qO- $(params.source-url) | tar xvz -m
+          if [ -d "test" ]; then
+            dotnet restore ./test
+            dotnet build ./test
+            dotnet test ./test --logger "console;verbosity=detailed"
+          else
+            echo "No test directory was found."
+          fi
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: dotnet-core-6.0-tekton-pipeline
+  labels:
+    apps.tanzu.vmware.com/pipeline: test
+    apps.tanzu.vmware.com/language: dotnet-core
+    apps.tanzu.vmware.com/build-engine: dotnet-6.0
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  params:
+  - name: source-url
+    type: string
+  - name: source-revision
+    type: string
+  tasks:
+  - name: test
+    params:
+    - name: source-url
+      value: $(params.source-url)
+    - name: source-revision
+      value: $(params.source-revision)
+    taskSpec:
+      params:
+      - name: source-url
+        type: string
+      - name: source-revision
+        type: string
+      steps:
+      - image: mcr.microsoft.com/dotnet/core/sdk:6.0-jammy
+        name: test
+        script: |-
+          cd `mktemp -d`
+          wget -qO- $(params.source-url) | tar xvz -m
+          if [ -d "test" ]; then
+            dotnet restore ./test
+            dotnet build ./test
+            dotnet test ./test --logger "console;verbosity=detailed"
+          else
+            echo "No test directory was found."
+          fi
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: dotnet-core-3.1-tekton-pipeline
+  labels:
+    apps.tanzu.vmware.com/pipeline: test
+    apps.tanzu.vmware.com/language: dotnet-core
+    apps.tanzu.vmware.com/build-engine: dotnet-3.1
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  params:
+  - name: source-url
+    type: string
+  - name: source-revision
+    type: string
+  tasks:
+  - name: test
+    params:
+    - name: source-url
+      value: $(params.source-url)
+    - name: source-revision
+      value: $(params.source-revision)
+    taskSpec:
+      params:
+      - name: source-url
+        type: string
+      - name: source-revision
+        type: string
+      steps:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1.426-focal
+        name: test
+        script: |-
+          cd `mktemp -d`
+          wget -qO- $(params.source-url) | tar xvz -m
+          if [ -d "test" ]; then
+            dotnet restore ./test
+            dotnet build ./test
+            dotnet test ./test --logger "console;verbosity=detailed"
+          else
+            echo "No test directory was found."
+          fi
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: golang-tekton-pipeline
+  labels:
+    apps.tanzu.vmware.com/pipeline: test
+    apps.tanzu.vmware.com/language: golang
+    apps.tanzu.vmware.com/build-engine: go
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  params:
+  - name: source-url
+    type: string
+  - name: source-revision
+    type: string
+  tasks:
+  - name: test
+    params:
+    - name: source-url
+      value: $(params.source-url)
+    - name: source-revision
+      value: $(params.source-revision)
+    taskSpec:
+      params:
+      - name: source-url
+        type: string
+      - name: source-revision
+        type: string
+      steps:
+      - image: golang:1.19.3-bullseye
+        name: test
+        script: |-
+          cd `mktemp -d`
+          wget -qO- $(params.source-url) | tar xvz -m
+          go test
+
+#! Add support for testing: [ Python, NodeJS (yarn, npm) ]

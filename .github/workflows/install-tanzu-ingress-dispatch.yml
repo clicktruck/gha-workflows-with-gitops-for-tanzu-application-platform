@@ -1,0 +1,111 @@
+name: "install-tanzu-ingress-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "A domain that the installation of ingress will be addressable from"
+        required: true
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        required: true
+      aws-access-key-id:
+        description: "AWS access key identifier for an account with write permissions to a Route53 hosted zone"
+        required: false
+      aws-secret-access-key:
+        description: "AWS secret access key for an account with write permissions to a Route53 hosted zone"
+        required: false
+      aws-region:
+        description: "An existing AWS region consumed by ClusterIssuer DNS solver configuration"
+        required: false
+      azure-resource-group:
+        description: "An existing Azure resource group name consumed by ClusterIssuer DNS solver configuration"
+        required: false
+      cluster-provider:
+        description: "The Kubernetes service provider"
+        type: choice
+        required: true
+        options:
+          - eks
+          - aks
+          - gke
+          - tkg»aws
+          - tkg»azure
+          - other
+      kubeconfig-contents:
+        description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+        required: true
+
+jobs:
+  install-ingress-on-azure:
+    if: contains(fromJson('["aks","tkg»azure"]'), github.event.inputs.cluster-provider)
+    uses: ./.github/workflows/install-tanzu-ingress.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      azure-resource-group: ${{ github.event.inputs.azure-resource-group }}
+      target-cloud: "azure"
+    secrets:
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+
+  fetch-route53-hosted-zone-id:
+    if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
+    uses: ./.github/workflows/aws-get-route53-hosted-zone-id-for-domain.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      region: ${{ github.event.inputs.aws-region }}
+    secrets:
+      ROUTE53_ZONE_AWS_ACCESS_KEY_ID: ${{ github.event.inputs.aws-access-key-id }}
+      ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY: ${{ github.event.inputs.aws-secret-access-key }}
+
+  install-ingress-on-aws:
+    needs: fetch-route53-hosted-zone-id
+    uses: ./.github/workflows/install-tanzu-ingress.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      aws-region: ${{ github.event.inputs.aws-region }}
+      target-cloud: "aws"
+      aws-route53-hosted-zone-id: ${{ needs.fetch-route53-hosted-zone-id.hosted_zone_id }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      ROUTE53_ZONE_AWS_ACCESS_KEY_ID: ${{ github.event.inputs.aws-access-key-id }}
+      ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY: ${{ github.event.inputs.aws-secret-access-key }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+
+  fetch-google-cloud-dns-zone-name:
+    if: github.event.inputs.cluster-provider == 'gke'
+    uses: ./.github/workflows/google-get-clouddns-zone-for-domain.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+
+  install-ingress-on-google:
+    needs: fetch-google-cloud-dns-zone-name
+    uses: ./.github/workflows/install-tanzu-ingress.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      google-cloud-dns-zone-name: ${{ needs.fetch-google-cloud-dns-zone-name.zone_name }}
+      email-address: ${{ github.event.inputs.email-address }}
+      target-cloud: "google"
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}

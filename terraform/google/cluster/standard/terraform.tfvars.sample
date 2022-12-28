@@ -1,0 +1,15 @@
+project = "REPLACE_ME"
+region = "us-west2"
+zone = "us-west2-b"
+cluster_name = "tap-run"
+cluster_version_prefix = "1.24"
+vpc_network_name = "tap-demo-net"
+vpc_subnetwork_name = "prv-10-0-100-0"
+master_ipv4_cidr_block_28 = "10.1.0.32/28"
+enable_private_endpoint = true
+master_authorized_networks_cidr_list = ["10.0.90.0/24"]
+is_regional_cluster = false
+node_preemptible = true
+node_machine_type_regional = "e2-standard-4"
+node_machine_type_zonal = "e2-standard-4"
+node_initial_node_count = 1

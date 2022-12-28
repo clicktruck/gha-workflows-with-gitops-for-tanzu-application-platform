@@ -1,0 +1,15 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageRepository
+metadata:
+  name: #@ "{}-repository".format(data.values.scg.namespace)
+  namespace: #@ data.values.scg.namespace
+  annotations:
+    kapp.k14s.io/change-group: scg-install/repo
+spec:
+  fetch:
+    imgpkgBundle:
+      image: #@ "{}/spring-cloud-gateway-for-kubernetes/scg-package-repository:{}".format(data.values.tanzuNet.host, data.values.scg.version)
+      secretRef:
+        name: tanzu-network-credentials

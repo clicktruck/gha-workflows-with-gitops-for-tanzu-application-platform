@@ -1,0 +1,7 @@
+ssh_key_name = "tapftw"
+subnet_id = ""
+provisioner_security_group_id = ""
+eks_cluster_security_group_id = ""
+vm_size = "m5a.large"
+toolset_ami_owner = "524983533958"
+toolset_ami_name = "springone-2021-k8s-toolset-image"

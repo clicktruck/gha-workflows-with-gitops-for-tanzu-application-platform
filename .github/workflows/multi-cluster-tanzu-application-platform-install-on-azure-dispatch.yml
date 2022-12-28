@@ -1,0 +1,208 @@
+name: "multi-cluster-tanzu-application-platform-install-on-azure-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      secrets-manager-instance-name:
+        description: "The name of a Azure Key Vault instance"
+        required: true
+      domain:
+        description: "A domain that the installation of TAP will be addressable from"
+        required: true
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        required: true
+      dev-namespace:
+        description: "A pre-existing namespace that will accommodate Workloads"
+        required: true
+        default: "default"
+      backstage-catalog:
+        description: "A Git repository and path to a Backstage catalog file"
+        required: true
+
+jobs:
+  obtain-secrets-from-secrets-manager:
+    runs-on: ubuntu-20.04
+
+    outputs:
+      harbor-admin-username: ${{ steps.vars.outputs.harbor-admin-username }}
+      harbor-admin-password: ${{ steps.vars.outputs.harbor-admin-password }}
+      harbor-domain: ${{ steps.vars.outputs.harbor-domain }}
+      b64-harbor-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-harbor-cluster-kubeconfig-contents }}
+      b64-tap-build-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-build-cluster-kubeconfig-contents }}
+      b64-tap-iterate-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-iterate-cluster-kubeconfig-contents }}
+      b64-tap-view-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-view-cluster-kubeconfig-contents }}
+      b64-tap-run-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-run-cluster-kubeconfig-contents }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: "Fetch secrets from secret manager instance"
+      id: vars
+      uses: ./docker/actions/azure/tanzu-cli-setup-action
+      with:
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+        azure-ad-client-id: ${{ secrets.AZURE_AD_CLIENT_ID }}
+        azure-ad-client-secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+        azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        azure-ad-tenant-id: ${{ secrets.AZURE_AD_TENANT_ID }}
+        command: |
+          HARBOR_ADMIN_USERNAME=$(az keyvault secret show --name harbor-admin-username --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "harbor-admin-username=$HARBOR_ADMIN_USERNAME" >> $GITHUB_OUTPUT \
+          && HARBOR_ADMIN_PASSWORD=$(az keyvault secret show --name harbor-admin-password --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "harbor-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT \
+          && HARBOR_DOMAIN=$(az keyvault secret show --name harbor-domain --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "harbor-domain=$HARBOR_DOMAIN" >> $GITHUB_OUTPUT \
+          && HARBOR_KCONFIG=$(az keyvault secret show --name b64-harbor-cluster-kubeconfig --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "b64-harbor-cluster-kubeconfig-contents=$HARBOR_KCONFIG" >> $GITHUB_OUTPUT \
+          && TAP_BUILD_KCONFIG=$(az keyvault secret show --name b64-tap-build-cluster-kubeconfig --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "b64-tap-build-cluster-kubeconfig-contents=$TAP_BUILD_KCONFIG" >> $GITHUB_OUTPUT \
+          && TAP_ITERATE_KCONFIG=$(az keyvault secret show --name b64-tap-iterate-cluster-kubeconfig --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "b64-tap-iterate-cluster-kubeconfig-contents=$TAP_ITERATE_KCONFIG" >> $GITHUB_OUTPUT \
+          && TAP_VIEW_KCONFIG=$(az keyvault secret show --name b64-tap-view-cluster-kubeconfig --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "b64-tap-view-cluster-kubeconfig-contents=$TAP_VIEW_KCONFIG" >> $GITHUB_OUTPUT \
+          && TAP_RUN_KCONFIG=$(az keyvault secret show --name b64-tap-run-cluster-kubeconfig --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "b64-tap-run-cluster-kubeconfig-contents=$TAP_RUN_KCONFIG" >> $GITHUB_OUTPUT
+
+  install-tap-build-on-azure:
+    needs: [obtain-secrets-from-secrets-manager,prepare-metadata-store-secrets]
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-prefix: "tanzu"
+      email-address: ${{ github.event.inputs.email-address }}
+      cluster-provider: "azure"
+      deployment-name: "tap"
+      active-profile: "build"
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-build-cluster-kubeconfig-contents }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  install-tap-iterate-on-azure:
+    needs: obtain-secrets-from-secrets-manager
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-prefix: "tanzu"
+      email-address: ${{ github.event.inputs.email-address }}
+      cluster-provider: "azure"
+      deployment-name: "tap"
+      active-profile: "iterate"
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-iterate-cluster-kubeconfig-contents }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  install-tap-view-on-azure:
+    needs: obtain-secrets-from-secrets-manager
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-prefix: "tanzu"
+      email-address: ${{ github.event.inputs.email-address }}
+      cluster-provider: "azure"
+      deployment-name: "tap"
+      active-profile: "view"
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  prepare-metadata-store-secrets:
+    needs: [obtain-secrets-from-secrets-manager,install-tap-view-on-azure]
+    uses: ./.github/workflows/prepare-metadata-store-secrets.yml
+    with:
+      cluster-provider: ${{ github.event.inputs.cluster-provider }}
+    secrets:
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      TAP_BUILD_KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-build-cluster-kubeconfig-contents }}
+      TAP_VIEW_KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
+
+  install-tap-run-on-azure:
+    needs: obtain-secrets-from-secrets-manager
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-prefix: "tanzu"
+      email-address: ${{ github.event.inputs.email-address }}
+      cluster-provider: "azure"
+      deployment-name: "tap"
+      active-profile: "run"
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-run-cluster-kubeconfig-contents }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}

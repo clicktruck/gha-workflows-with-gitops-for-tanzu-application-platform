@@ -1,0 +1,40 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: #@ data.values.tap.ingress.contour_tls_secret
+  namespace: #@ data.values.tap.ingress.contour_tls_namespace
+spec:
+  secretName: #@ data.values.tap.ingress.contour_tls_secret
+  commonName: #@ "*.{}".format(data.values.tap.domains.main)
+  dnsNames:
+    - #@ "*.{}".format(data.values.tap.domains.main)
+  #@ if data.values.tap.cluster.issuerRef.group == "cert-manager.io":
+  duration: 2160h0m0s
+  renewBefore: 360h0m0s
+  #@ end
+  #@ if data.values.tap.cluster.issuerRef.group == "certmanager.step.sm":
+  duration: 24h
+  renewBefore: 4h
+  #@ end
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  subject:
+    organizations:
+      - vmware
+  issuerRef:
+    group: #@ data.values.tap.cluster.issuerRef.group
+    kind: #@ data.values.tap.cluster.issuerRef.kind
+    name: #@ data.values.tap.cluster.issuerRef.name
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: #@ data.values.tap.ingress.contour_tls_secret
+  namespace: #@ data.values.tap.ingress.contour_tls_namespace
+spec:
+  toNamespaces:
+    - '*'

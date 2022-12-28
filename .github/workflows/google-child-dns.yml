@@ -1,0 +1,104 @@
+name: "google-administer-child-dns-zone"
+
+on:
+  workflow_call:
+    inputs:
+      root-domain-zone-name:
+        description: "Name of zone hosting the root domain under management by Cloud DNS"
+        required: true
+        type: string
+      subdomain:
+        description: "The prefix to use as the subdomain for the child zone"
+        required: true
+        type: string
+      action:
+        required: true
+        type: string
+        description: "Create (new) or destroy (existing)"
+    secrets:
+      GOOGLE_PROJECT_ID:
+        required: true
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: true
+      TF_BACKEND_GCS_BUCKET_NAME:
+        required: true
+      GOOGLE_KMS_KEYRING:
+        required: true
+    outputs:
+      zone_name:
+        value: ${{ jobs.terraform.outputs.zone_name }}
+      zone_subdomain:
+        value: ${{ jobs.terraform.outputs.zone_subdomain }}
+
+jobs:
+  terraform:
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: "/tmp/gcloud/sa.json"
+      TF_VAR_project: ${{ secrets.GOOGLE_PROJECT_ID }}
+      TF_VAR_root_domain_zone_name: ${{ inputs.root-domain-zone-name }}
+      TF_VAR_subdomain: "${{ inputs.subdomain }}"
+
+    runs-on: ubuntu-20.04
+
+    outputs:
+      zone_name: ${{ steps.set_outputs.outputs.zone_name }}
+      zone_subdomain: ${{ steps.set_outputs.outputs.zone_subdomain }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/google/child-dns
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Generate backend configuration
+      run: |
+        cp ../backend/backend.tf .
+        echo "bucket = \"${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}\"" > config.gcs.tfbackend
+        echo "prefix = \"child-dns\"" >> config.gcs.tfbackend
+
+    - name: Decrypt service account keyfile contents and write to /tmp/gcloud/sa.json
+      env:
+        GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      run: |
+        mkdir -p /tmp/gcloud
+        echo "$GOOGLE_SERVICE_ACCOUNT_KEY" | base64 -d > /tmp/gcloud/sa.json
+        chmod 600 /tmp/gcloud/sa.json
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.gcs.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: terraform destroy -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        zone_name=$(terraform output zone_name)
+        echo "zone_name=${zone_name}" >> $GITHUB_OUTPUT
+        zone_subdomain=$(terraform output zone_subdomain)
+        echo "zone_subdomain=${zone_subdomain}" >> $GITHUB_OUTPUT

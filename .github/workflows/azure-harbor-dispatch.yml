@@ -1,0 +1,42 @@
+name: "azure-harbor-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      resourceGroupName:
+        description: "The name of an existing resource group"
+        required: true
+      domain:
+        description: "A domain that the installation of Harbor will be addressable from"
+        required: true
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        required: true
+      kubeconfig-contents:
+        description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+        required: true
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+
+jobs:
+  harbor-on-azure:
+    uses: ./.github/workflows/azure-harbor.yml
+    with:
+      resourceGroupName: ${{ github.event.inputs.resourceGroupName }}
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      KUBECONFIG_CONTENTS: ${{ needs.create-harbor-cluster.outputs.base64_kubeconfig }}
+      TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
+      TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
+      TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}

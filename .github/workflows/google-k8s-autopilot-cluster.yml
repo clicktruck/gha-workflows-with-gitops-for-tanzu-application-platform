@@ -1,0 +1,200 @@
+name: "google-administer-autopilot-kubernetes-engine"
+
+on:
+  workflow_call:
+    inputs:
+      cluster-name:
+        description: "Name of the GKE cluster"
+        required: true
+        type: string
+      region:
+        description: "The Google Cloud region where the GKE cluster will be available"
+        required: true
+        type: string
+      k8s-version:
+        description: "A supported and available Kubernetes (major.minor.patch) version"
+        required: true
+        type: string
+      vpc-network-name:
+        description: "Name of an existing Google Cloud VPC network"
+        required: true
+        type: string
+      master_ipv4_cidr_block_28:
+        description: "The IP range in CIDR notation to use for the hosted master network. This range will be used for assigning private IP addresses to the cluster master(s) and the ILB VIP. This range must not overlap with any other ranges in use within the cluster's network, and it must be a /28 subnet. This field only applies to private clusters, when enable_private_nodes is true."
+        required: false
+        type: string
+        default: "10.1.0.0/28"
+      action:
+        required: true
+        type: string
+    secrets:
+      GOOGLE_PROJECT_ID:
+        required: true
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: true
+      TF_BACKEND_GCS_BUCKET_NAME:
+        required: true
+      GOOGLE_KMS_KEYRING:
+        required: true
+      TANZU_NETWORK_API_TOKEN:
+        required: true
+      TANZU_NETWORK_USERNAME:
+        required: true
+      TANZU_NETWORK_PASSWORD:
+        required: true
+      CSP_API_TOKEN:
+        required: true
+      GIT_SSH_PRIVATE_KEY:
+        required: true
+      GIT_SSH_KNOWN_HOSTS:
+        required: true
+    outputs:
+      cluster_name:
+        description: "The name of the GKE cluster"
+        value: ${{ jobs.terraform.outputs.cluster_name }}
+
+jobs:
+  terraform:
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: "/tmp/gcloud/sa.json"
+      TF_VAR_project: ${{ secrets.GOOGLE_PROJECT_ID }}
+      TF_VAR_cluster_name: ${{ inputs.cluster-name }}
+      TF_VAR_cluster_version_prefix: "${{ inputs.k8s-version }}"
+      TF_VAR_vpc_network_name: "${{ inputs.vpc-network-name }}"
+      TF_VAR_region: ${{ inputs.region }}
+
+      # Setup for public endpoint
+      TF_VAR_enable_private_endpoint: false
+      TF_VAR_master_ipv4_cidr_block_28: ${{ inputs.master_ipv4_cidr_block_28 }}
+      TF_VAR_vpc_subnetwork_name: "pub-10-0-91-0"
+
+    runs-on: ubuntu-20.04
+
+    outputs:
+      cluster_name: ${{ steps.set_outputs.outputs.cluster_name }}
+
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/google/cluster/autopilot
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    - name: Generate backend configuration
+      run: |
+        cp ../../backend/backend.tf .
+        echo "bucket = \"${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}\"" > config.gcs.tfbackend
+        echo "prefix = \"${{ inputs.cluster-name }}-cluster\"" >> config.gcs.tfbackend
+
+    - name: Decrypt service account keyfile contents and write to /tmp/gcloud/sa.json
+      env:
+        GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      run: |
+        mkdir -p /tmp/gcloud
+        echo "$GOOGLE_SERVICE_ACCOUNT_KEY" | base64 -d > /tmp/gcloud/sa.json
+        chmod 600 /tmp/gcloud/sa.json
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.gcs.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: terraform destroy -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        cluster_name=$(terraform output --raw cluster_name)
+        echo "cluster_name=${cluster_name}" >> $GITHUB_OUTPUT
+
+  obtain-base64-encoded-kubeconfig-from-cluster:
+    if: inputs.action == 'create'
+    needs: terraform
+    uses: ./.github/workflows/google-obtain-base64-encoded-kubeconfig-for-cluster.yml
+    with:
+      cluster-name: ${{ needs.terraform.outputs.cluster_name }}
+      is-regional-cluster: true
+      region: ${{ inputs.region }}
+      zone: ${{ inputs.zone }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+
+  install-tanzu-cluster-essentials:
+    if: inputs.action == 'create'
+    needs: obtain-base64-encoded-kubeconfig-from-cluster
+    uses: ./.github/workflows/install-tanzu-cluster-essentials.yml
+    with:
+      cluster-provider: "gke"
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}
+
+  install-tanzu-standard-repo:
+    if: inputs.action == 'create'
+    needs: [obtain-base64-encoded-kubeconfig-from-cluster,install-tanzu-cluster-essentials]
+    uses: ./.github/workflows/install-tanzu-standard-repo.yml
+    with:
+      cluster-provider: "gke"
+      tkg-version: "v1.6.0"
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}
+
+  install-tanzu-data-services-repo:
+    if: inputs.action == 'create'
+    needs: [obtain-base64-encoded-kubeconfig-from-cluster,install-tanzu-cluster-essentials]
+    uses: ./.github/workflows/install-tanzu-data-services-repo.yml
+    with:
+      cluster-provider: "gke"
+      tds-version: "1.5.0"
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}

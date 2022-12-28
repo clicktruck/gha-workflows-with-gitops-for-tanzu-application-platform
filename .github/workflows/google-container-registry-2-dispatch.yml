@@ -1,0 +1,31 @@
+name: "google-dispatch-container-registry"
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "The Google Cloud region where the Container Registry will be available"
+        required: true
+        type: choice
+        options:
+        - asia
+        - eu
+        - us
+        default: "us"
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+jobs:
+  manage-gcr:
+    uses: ./.github/workflows/google-container-registry-2.yml
+    with:
+      region: ${{ github.event.inputs.region }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}

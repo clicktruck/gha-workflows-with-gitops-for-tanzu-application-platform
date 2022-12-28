@@ -1,0 +1,259 @@
+name: "tanzu-kubernetes-grid-workload-cluster-on-aws-admin"
+
+on:
+  workflow_call:
+    inputs:
+      cluster-name:
+        description: "Name of the cluster (must comply with DNS hostname requirements as outlined in RFC 952 and amended in RFC 1123, and must be 42 characters or less)"
+        type: string
+        required: true
+      vpc-id:
+        description: "The identifier of a VPC in an AWS region"
+        type: string
+        required: true
+      control-plane-node-machine-type:
+        description: "The Amazon EC2 instance type of the control plane nodes"
+        type: string
+        required: false
+      worker-node-machine-type:
+        description: "The Amazon EC2 instance type of the worker nodes"
+        type: string
+        required: false
+      region:
+        description: "The AWS region where the Tanzu Kubernetes Grid cluster will be available"
+        type: string
+        required: true
+      ssh-keypair-name:
+        description: "An existing Amazon EC2 SSH keypair name"
+        type: string
+        required: false
+      action:
+        description: "Create (new) or destroy (existing)"
+        type: string
+        required: true
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+      PA_TOKEN:
+        required: false
+      CSP_API_TOKEN:
+        required: true
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS:
+        description: "The base64 encoded contents of a .kube-tkg/config file from a TKG management cluster that already has the current Kubernetes cluster context set.  (Typically receives input from Github secret)."
+        required: false
+      NEW_TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS:
+        description: "The base64 encoded contents of a .kube-tkg/config file from a TKG management cluster that already has the current Kubernetes cluster context set.  (Typically receives input from upstream Github workflow output)."
+        required: false
+
+    outputs:
+      kubeconfig_contents:
+        description: "The base64-encoded contents of the workload cluster's .kube/config"
+        value: ${{ jobs.deploy.outputs.kubeconfig_contents }}
+
+jobs:
+
+  encode-tkg-workload-deploy-script:
+    if: inputs.action == 'create'
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+          result="$(cat "scripts/deploy-tkg-workload-cluster.sh" | base64 -w 0)"
+          echo "result=${result}" >> $GITHUB_OUTPUT
+
+  encode-tkg-workload-teardown-script:
+    if: inputs.action == 'destroy'
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+          result="$(cat "scripts/teardown-tkg-workload-cluster.sh" | base64 -w 0)"
+          echo "result=${result}" >> $GITHUB_OUTPUT
+
+  deploy:
+    if: inputs.action == 'create'
+    needs: encode-tkg-workload-deploy-script
+    runs-on: ubuntu-20.04
+
+    env:
+      AWS_PAGER: ""
+      GITOPS_DIR: gitops/tanzu/kubernetes-grid/aws/workload
+
+    defaults:
+      run:
+        shell: bash
+
+    outputs:
+      kubeconfig_contents: ${{ steps.workload_cluster.outputs.kubeconfig_contents }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+        mask-aws-account-id: false
+
+    - name: "Prepare VPC CIDR block configuration"
+      id: vpc_cidr_config
+      run: |
+        vpc_cidr=$(aws ec2 describe-vpcs --region {region} --vpc-ids {vpc-id} --query 'Vpcs[*].CidrBlock' | sed -n '2p' | tr -d '"' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        echo "vpc_cidr=${vpc_cidr}" >> $GITHUB_OUTPUT
+
+    - name: "Prepare availability zone configuration"
+      id: az_config
+      run: |
+        az1=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].AvailabilityZone' | sed -n '2p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        az2=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].AvailabilityZone' | sed -n '3p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        az3=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].AvailabilityZone' | sed -n '4p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        echo "az1=${az1}" >> $GITHUB_OUTPUT
+        echo "az2=${az2}" >> $GITHUB_OUTPUT
+        echo "az3=${az3}" >> $GITHUB_OUTPUT
+
+    - name: "Prepare subnets configuration"
+      id: subnets_config
+      run: |
+        private_subnet_1=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' | sed -n '2p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        private_subnet_2=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' | sed -n '3p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        private_subnet_3=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' | sed -n '4p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        public_subnet_1=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`true`].SubnetId' | sed -n '2p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        public_subnet_2=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`true`].SubnetId' | sed -n '3p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        public_subnet_3=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`true`].SubnetId' | sed -n '4p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        private_cidr_1=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].CidrBlock' | sed -n '2p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        private_cidr_2=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].CidrBlock' | sed -n '3p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        private_cidr_3=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].CidrBlock' | sed -n '4p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        public_cidr_1=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`true`].CidrBlock' | sed -n '2p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        public_cidr_2=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`true`].CidrBlock' | sed -n '3p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        public_cidr_3=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ inputs.vpc-id }} --query 'Subnets[?MapPublicIpOnLaunch==`true`].CidrBlock' | sed -n '4p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        echo "private_subnet_1=${private_subnet_1}" >> $GITHUB_OUTPUT
+        echo "private_subnet_2=${private_subnet_2}" >> $GITHUB_OUTPUT
+        echo "private_subnet_3=${private_subnet_3}" >> $GITHUB_OUTPUT
+        echo "public_subnet_1=${public_subnet_1}" >> $GITHUB_OUTPUT
+        echo "public_subnet_2=${public_subnet_2}" >> $GITHUB_OUTPUT
+        echo "public_subnet_3=${public_subnet_3}" >> $GITHUB_OUTPUT
+        echo "private_cidr_1=${private_cidr_1}" >> $GITHUB_OUTPUT
+        echo "private_cidr_2=${private_cidr_2}" >> $GITHUB_OUTPUT
+        echo "private_cidr_3=${private_cidr_3}" >> $GITHUB_OUTPUT
+        echo "public_cidr_1=${public_cidr_1}" >> $GITHUB_OUTPUT
+        echo "public_cidr_2=${public_cidr_2}" >> $GITHUB_OUTPUT
+        echo "public_cidr_3=${public_cidr_3}" >> $GITHUB_OUTPUT
+
+    - name: "Render cluster configuration"
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.install/cluster.tpl
+        vars: |
+          cluster_name: ${{ inputs.cluster-name }}
+          control_plane_node_machine_type: ${{ inputs.control-plane-node-machine-type }}
+          worker_node_machine_type: ${{ inputs.worker-node-machine-type }}
+          aws_region: ${{ inputs.region }}
+          aws_vpc_id: ${{ inputs.vpc-id }}
+          aws_vpc_cidr: ${{ steps.vpc_cidr_config.outputs.vpc_cidr }}
+          aws_private_subnet_id: ${{ steps.subnets_config.outputs.private_subnet_1 }}
+          aws_private_subnet_id_1: ${{ steps.subnets_config.outputs.private_subnet_2 }}
+          aws_private_subnet_id_2: ${{ steps.subnets_config.outputs.private_subnet_3 }}
+          aws_public_subnet_id: ${{ steps.subnets_config.outputs.public_subnet_1 }}
+          aws_public_subnet_id_1: ${{ steps.subnets_config.outputs.public_subnet_2 }}
+          aws_public_subnet_id_2: ${{ steps.subnets_config.outputs.public_subnet_3 }}
+          aws_private_node_cidr: ${{ steps.subnets_config.outputs.private_cidr_1 }}
+          aws_private_node_cidr_1: ${{ steps.subnets_config.outputs.private_cidr_2 }}
+          aws_private_node_cidr_2: ${{ steps.subnets_config.outputs.private_cidr_3 }}
+          aws_public_node_cidr: ${{ steps.subnets_config.outputs.public_cidr_1 }}
+          aws_public_node_cidr_1: ${{ steps.subnets_config.outputs.public_cidr_2 }}
+          aws_public_node_cidr_2: ${{ steps.subnets_config.outputs.public_cidr_3 }}
+          aws_node_az1: ${{ steps.az_config.outputs.az1 }}
+          aws_node_az2: ${{ steps.az_config.outputs.az2 }}
+          aws_node_az3: ${{ steps.az_config.outputs.az3 }}
+          aws_ssh_keypair_name: ${{ inputs.ssh-keypair-name }}
+        result_path: ${{ env.GITOPS_DIR }}/.install/cluster.yml
+
+    - name: "Copy overlays into place"
+      uses: canastro/copy-file-action@master
+      with:
+        source: "gitops/tanzu/kubernetes-grid/overlays/TKG/kapp-managed-clusters/*.yml"
+        target: "${{ env.GITOPS_DIR }}/.install"
+
+    - name: "Configure AWS Credentials"
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+
+    - name: "Tag subnets"
+      run: |
+        aws ec2 create-tags \
+          --resources ${{steps.subnets_config.outputs.public_subnet_1 }} ${{ steps.subnets_config.outputs.public_subnet_2 }} ${{ steps.subnets_config.outputs.public_subnet_3 }} \
+          --tags Key=kubernetes.io/cluster/${{ inputs.cluster-name }},Value=shared
+
+    - name: "Deploy workload cluster"
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        enable-tanzu-cli: "true"
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+        script-contents: ${{ needs.encode-tkg-workload-deploy-script.outputs.result }}
+        script-arguments: '${{ env.GITOPS_DIR }} ${{ secrets.NEW_TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }} ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}'
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Obtain Base64-encoded ~/.kube/config contents for workload cluster"
+      uses: ./docker/actions/tanzu-obtain-workload-cluster-kubeconfig
+      id: workload_cluster
+      with:
+        workload-cluster-name: ${{ inputs.cluster-name }}
+        new-management-cluster-kubeconfig-contents: "${{ secrets.NEW_TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}"
+        existing-management-cluster-kubeconfig-contents: "${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+  teardown:
+    if: inputs.action == 'destroy'
+    needs: encode-tkg-workload-teardown-script
+    runs-on: ubuntu-20.04
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: "Teardown workload cluster"
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        enable-tanzu-cli: "true"
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+        script-contents: ${{ needs.encode-tkg-workload-teardown-script.outputs.result }}
+        script-arguments: '${{ inputs.cluster-name}} ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }} true'
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}

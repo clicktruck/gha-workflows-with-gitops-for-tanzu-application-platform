@@ -1,0 +1,49 @@
+name: "google-dispatch-key-management-service"
+
+on:
+  workflow_dispatch:
+    inputs:
+      google-project-id:
+        description: "Google project that is hosting the Cloud KMS keyring"
+        required: true
+      google-service-account-key:
+        description: "Base64-encoded service account keyfile contents of an account with create/encrypt/decrypt permissions to a Cloud KMS keyring"
+        required: true
+      region:
+        description: "The Google Cloud region where the Key Management Service instance will be available"
+        required: true
+        type: choice
+        options:
+        - asia-east1
+        - asia-northeast3
+        - asia-south1
+        - australia-southeast2
+        - europe-north1
+        - europe-west1
+        - europe-southwest1
+        - us-central1
+        - us-east1
+        - us-west1
+        - us-west2
+        default: "us-west2"
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+
+jobs:
+  manage-kms:
+    if: ${{ github.event.inputs.action }} == 'create'
+    uses: ./.github/workflows/google-kms.yml
+    with:
+      region: ${{ github.event.inputs.region }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ github.event.inputs.google-project-id }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ github.event.inputs.google-service-account-key }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+

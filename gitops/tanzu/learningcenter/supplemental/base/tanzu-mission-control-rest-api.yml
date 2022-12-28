@@ -1,0 +1,25 @@
+apiVersion: learningcenter.tanzu.vmware.com/v1beta1
+kind: Workshop
+metadata:
+  name: lab-tmc-rest-api
+  namespace: learningcenter-supplemental
+spec:
+  vendor: learningcenter.tanzu.vmware.com
+  title: Tanzu Mission Control REST-API
+  description: A workshop exploring the TMC REST-API
+  url: https://github.com/eduk8s-labs/lab-tmc-rest-api
+  content:
+    files: github.com/eduk8s-labs/lab-tmc-rest-api
+  duration: 1h
+  session:
+    namespaces:
+      budget: small
+    applications:
+      terminal:
+        enabled: true
+        layout: split
+      console:
+        enabled: true
+        vendor: octant
+      editor:
+        enabled: true

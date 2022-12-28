@@ -1,0 +1,2 @@
+secrets_manager_name = ""
+kv_secrets_map       = "{}"

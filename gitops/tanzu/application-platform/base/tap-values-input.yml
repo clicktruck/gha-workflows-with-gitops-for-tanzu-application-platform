@@ -1,0 +1,38 @@
+#@data/values
+
+#@overlay/match-child-defaults missing_ok=True
+---
+buildService:
+  version: "1.9.0"
+tap:
+  version: "1.4.0-rc.13"
+  namespace: tap-install
+  catalogs: []
+
+  registry:
+    repositories:
+      buildService: repo/build-service
+      ootbSupplyChain: repo/supply-chain
+
+  domains:
+    main: tap.tanzu.corp
+    tapGui: tap-gui.tap.tanzu.corp
+
+  #! Change to "jammy-only" if you want to install Tanzu Application Platform with Ubuntu 22.04 (Jammy) as the only available stack
+  stack_configuration: "default"
+
+  supply_chain:
+    cluster_builder: full
+    #! choices below are: [ go-git, libgit2 ]
+    git_implementation: go-git
+    gitops:
+      enabled: "false"
+      provider: github.com
+      repository:
+        owner: change_me
+        name: tap-gitops-depot
+        branch: main
+      #! choices below are: [ "", git-http, git-ssh ]
+      #! if you set git-http or git-ssh then all Git repos will be authenticated using credentials
+      #! in k8s secrets of the same name in a developer namespace
+      ssh_secret: ""

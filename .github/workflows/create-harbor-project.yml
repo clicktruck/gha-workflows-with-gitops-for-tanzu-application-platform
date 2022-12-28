@@ -1,0 +1,47 @@
+name: "create-harbor-project"
+
+on:
+  workflow_call:
+    inputs:
+      api-endpoint:
+        description: "The API endpoint of the Harbor container image registry instance (typically just the domain name)"
+        type: string
+        required: true
+      project:
+        description: "A new project name within the Harbor container image registry instance"
+        type: string
+        required: true
+    secrets:
+      HARBOR_USERNAME:
+        required: true
+      HARBOR_PASSWORD:
+        required: true
+
+jobs:
+  create-new-project:
+    runs-on: ubuntu-20.04
+    env:
+      HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+      HARBOR_API_ENDPOINT: ${{ inputs.api-endpoint }}
+      NEW_HARBOR_PROJECT: ${{ inputs.project }}
+      HARBOR_CLI_RELEASE: "v0.5"
+      HARBOR_CLI_JAR_VERSION: "harbor-cli-0.0.1-SNAPSHOT.jar"
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+
+    - name: Create new Harbor project
+      run: |
+        wget https://github.com/hinyinlam-pivotal/cli-for-harbor/releases/download/${HARBOR_CLI_RELEASE}/${HARBOR_CLI_JAR_VERSION}
+        DECODED_HARBOR_PASSWORD=$(echo "$HARBOR_PASSWORD" | base64 -d)
+        java -jar ${HARBOR_CLI_JAR_VERSION} login --username $HARBOR_USERNAME --password "$DECODED_HARBOR_PASSWORD" --api $HARBOR_API_ENDPOINT
+        set -x
+        echo "{ \"projectName\": \"$NEW_HARBOR_PROJECT\", \"public\": false }" > new-project.json
+        java -jar ${HARBOR_CLI_JAR_VERSION} project create --project new-project.json

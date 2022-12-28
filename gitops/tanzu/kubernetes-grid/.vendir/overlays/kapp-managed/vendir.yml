@@ -1,0 +1,12 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+- path: ../../../overlays
+  contents:
+  - path: .
+    git:
+      url: https://github.com/warroyo/future-blog
+      ref: origin/main
+    newRootPath: .
+    includePaths:
+      - TKG/kapp-managed-clusters/*.yml

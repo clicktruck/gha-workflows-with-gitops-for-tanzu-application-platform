@@ -1,0 +1,31 @@
+name: "launch-kind-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      action-impl:
+        description: "KinD Github Action implementation"
+        type: choice
+        options:
+        - "engineerd/setup-kind@v0.5.0"
+        - "pacphi/setup-kind@v0.6.0-pre"
+        default: "pacphi/setup-kind@v0.6.0-pre"
+        required: true
+      kind-version:
+        description: "Version of Kind to use (default v0.17.0)"
+        default: "v0.17.0"
+        type: string
+        required: true
+      cluster-name:
+        description: "Cluster name (default kind)"
+        default: "kind"
+        type: string
+        required: true
+
+jobs:
+  launch:
+    uses: ./.github/workflows/launch-kind.yml
+    with:
+      action-impl: ${{ github.event.inputs.action-impl }}
+      kind-version: ${{ github.event.inputs.kind-version }}
+      cluster-name: ${{ github.event.inputs.cluster-name }}

@@ -1,0 +1,53 @@
+name: "Tanzu CLI Setup Action"
+description: "Execute a command with the az, kubectl or tanzu CLI"
+inputs:
+  enable-tanzu-cli:
+    description: "Whether or not to install the tanzu CLI and configure plugins"
+    required: false
+    default: "false"
+  command:
+    description: "The kubectl or tanzu CLI command to execute"
+    required: true
+    default: "tanzu version"
+  query-for-output:
+    description: "What may be applied to fetch result of command execution.  (Must be an quoted string-value)."
+    required: false
+  kubeconfig-contents:
+    description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+    required: false
+  csp-api-token:
+    description: "VMware Cloud Service Platform API Token, used for authenticating to the VMware Marketplace"
+    required: true
+  azure-ad-client-id:
+    description: "An Azure Active Directory application identifier"
+    required: true
+  azure-ad-client-secret:
+    description: "A secret associated with an Azure Active Directory application identifier"
+    required: true
+  azure-subscription-id:
+    description: "A GUID that uniquely identifies your subscription to use Azure services"
+    required: true
+  azure-tenant-id:
+    description: "A GUID for your Azure tenant"
+    required: true
+  azure-region:
+    description: "An Azure region"
+    required: false
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - "${{ inputs.command }}"
+    - "${{ inputs.kubeconfig-contents }}"
+    - "${{ inputs.query-for-output }}"
+  env:
+    TANZU_CLI_VERSION: 1.6.0
+    TANZU_CLI_CORE_VERSION: 0.25.0
+    CSP_API_TOKEN: ${{ inputs.csp-api-token }}
+    AZURE_SUBSCRIPTION_ID: ${{ inputs.azure-subscription-id }}
+    AZURE_AD_TENANT_ID: ${{ inputs.azure-tenant-id }}
+    AZURE_AD_CLIENT_ID: ${{ inputs.azure-ad-client-id }}
+    AZURE_AD_CLIENT_SECRET: ${{ inputs.azure-ad-client-secret }}
+    AZURE_REGION: ${{ inputs.azure-region }}
+    TANZU_CLI_ENABLED: ${{ inputs.enable-tanzu-cli }}

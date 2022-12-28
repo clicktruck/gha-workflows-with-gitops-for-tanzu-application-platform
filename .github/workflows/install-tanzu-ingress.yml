@@ -1,0 +1,209 @@
+name: "install-tanzu-ingress"
+
+on:
+  workflow_call:
+    inputs:
+      domain:
+        description: "A domain that the installation of ingress will be addressable from"
+        type: string
+        required: true
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        type: string
+        required: true
+      aws-region:
+        description: "An existing AWS region consumed by ClusterIssuer DNS solver configuration"
+        type: string
+        required: false
+      aws-route53-hosted-zone-id:
+        description: "An existing Route53 hosted zone identifier associated with domain"
+        type: string
+        required: false
+      azure-resource-group:
+        description: "An existing Azure resource group name consumed by ClusterIssuer DNS solver configuration"
+        type: string
+        required: false
+      google-cloud-dns-zone-name:
+        description: "An existing Google Cloud DNS zone name associated with domain"
+        type: string
+        required: false
+      target-cloud:
+        description: "Target cloud provider"
+        type: string
+        required: true
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      AWS_SESSION_TOKEN:
+        required: false
+      ROUTE53_ZONE_AWS_ACCESS_KEY_ID:
+        required: false
+      ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY:
+        required: false
+      AZURE_AD_CLIENT_ID:
+        required: false
+      AZURE_AD_CLIENT_SECRET:
+        required: false
+      AZURE_SUBSCRIPTION_ID:
+        required: false
+      AZURE_AD_TENANT_ID:
+        required: false
+      GOOGLE_PROJECT_ID:
+        required: false
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: false
+      KUBECONFIG_CONTENTS:
+        required: true
+      GIT_SSH_PRIVATE_KEY:
+        required: true
+      GIT_SSH_KNOWN_HOSTS:
+        required: true
+      CSP_API_TOKEN:
+        required: true
+
+jobs:
+  encode-tanzu-ingress-install-script:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+          result="$(cat "scripts/install-package.sh" | base64 -w 0)"
+          echo "result=${result}" >> $GITHUB_OUTPUT
+
+  install:
+    needs: encode-tanzu-ingress-install-script
+    runs-on: ubuntu-20.04
+
+    env:
+      GITOPS_DIR: gitops/tanzu/ingress/${{ inputs.target-cloud }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    ## FIXME:
+    ## We'll likely source manufactured sensitive data like domain, private registry credentials from a secrets management store like AWS Secrets Manager or Azure KeyVault
+
+    - name: Render ingress-install-config on AWS
+      if: inputs.target-cloud == 'aws'
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/ingress-install-config.tpl
+        vars: |
+          domain: ${{ inputs.domain }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-config.yml
+
+    - name: Render ingress-install-secrets on AWS
+      if:  inputs.target-cloud == 'aws'
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.tpl
+        vars: |
+          aws_access_key_id: ${{ secrets.ROUTE53_ZONE_AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ inputs.aws-region }}
+          aws_route53_hosted_zone_id: ${{ inputs.aws-route53-hosted-zone-id }}
+          email_address: ${{ inputs.email-address }}
+          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.yml
+
+    - name: Render ingress-install-config on Azure
+      if: inputs.target-cloud == 'azure'
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/ingress-install-config.tpl
+        vars: |
+          domain: ${{ inputs.domain }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-config.yml
+
+    - name: Render ingress-install-secrets on Azure
+      if:  inputs.target-cloud == 'azure'
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.tpl
+        vars: |
+          azure_ad_tenant_id: ${{ secrets.AZURE_AD_TENANT_ID }}
+          azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azure_resource_group_name: ${{ inputs.azure-resource-group }}
+          azure_ad_client_id: ${{ secrets.AZURE_AD_CLIENT_ID }}
+          azure_ad_client_secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+          email_address: ${{ inputs.email-address }}
+          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.yml
+
+    - name: Render ingress-install-config on Google
+      if: inputs.target-cloud == 'google'
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/ingress-install-config.tpl
+        vars: |
+          domain: ${{ inputs.domain }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-config.yml
+
+    - name: Render ingress-install-secrets on Google
+      if:  inputs.target-cloud == 'google'
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.tpl
+        vars: |
+          google_project_id: ${{ secrets.GOOGLE_PROJECT_ID }}
+          google_service_account_key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          google_cloud_dns_zone_name: ${{ inputs.google-cloud-dns-zone-name }}
+          email_address: ${{ inputs.email-address }}
+          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.yml
+
+    - name: "Install Tanzu Ingress on Azure"
+      if: inputs.target-cloud == 'azure'
+      uses: ./docker/actions/azure/tanzu-runsh-setup-action
+      with:
+        script-contents: ${{ needs.encode-tanzu-ingress-install-script.outputs.result }}
+        script-arguments: "${{ env.GITOPS_DIR }} tanzu-ingress"
+        kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+        azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        azure_ad_tenant_id: ${{ secrets.AZURE_AD_TENANT_ID }}
+        azure_ad_client_id: ${{ secrets.AZURE_AD_CLIENT_ID }}
+        azure_ad_client_secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+
+    - name: "Install Tanzu Ingress on AWS"
+      if: inputs.target-cloud == 'aws'
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        script-contents: ${{ needs.encode-tanzu-ingress-install-script.outputs.result }}
+        script-arguments: "${{ env.GITOPS_DIR }} tanzu-ingress"
+        kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Install Tanzu Ingress on Google"
+      if: inputs.target-cloud == 'google'
+      uses: ./docker/actions/google/tanzu-runsh-setup-action
+      with:
+        google-project-id: ${{ secrets.GOOGLE_PROJECT_ID }}
+        google-service-account-key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        script-contents: ${{ needs.encode-tanzu-ingress-install-script.outputs.result }}
+        script-arguments: "${{ env.GITOPS_DIR }} tanzu-ingress"
+        kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}

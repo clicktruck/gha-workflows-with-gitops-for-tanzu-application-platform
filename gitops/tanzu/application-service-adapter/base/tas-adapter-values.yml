@@ -1,0 +1,59 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
+---
+#! See https://docs.vmware.com/en/Application-Service-Adapter-for-VMware-Tanzu-Application-Platform/0.9/tas-adapter/GUID-install.html#configure-the-installation-settings
+
+#@ def config():
+ceip_policy_disclosed: true
+
+#@ if data.values.tas_adapter.credentials.cf.admin.username != "":
+admin:
+  #! List of existing users to grant admin privileges
+  users:
+    - #@ data.values.tas_adapter.credentials.cf.admin.username
+#@ end
+
+api_ingress:
+#! FQDN used to access the CF API
+  fqdn: #@ "cf.{}".format(data.values.tas_adapter.domains.main)
+  tls:
+#! Name of the secret containing the TLS certificate for the CF API (PEM format)
+    secret_name: #@ data.values.tas_adapter.ingress.contour_tls_secret
+#! Namespace containing the CF API TLS secret
+    namespace: #@ data.values.tas_adapter.ingress.contour_tls_namespace
+
+app_ingress:
+#! Default application domain
+  default_domain: #@ data.values.tas_adapter.domains.main
+  tls:
+#! Name of the secret containing the TLS certificate for the default application domain (PEM format)
+    secret_name: #@ data.values.tas_adapter.ingress.contour_tls_secret
+#! Namespace containing the CF API TLS secret
+    namespace: #@ data.values.tas_adapter.ingress.contour_tls_namespace
+
+app_registry:
+  credentials:
+    namespace: #@ data.values.tas_adapter.namespace
+    secret_name: container-registry-credentials
+  hostname: #@ data.values.tap.registry.host
+  path:
+#! Container registry repository where staged, runnable app images (Droplets) will be stored
+    droplets: #@ data.values.tas_adapter.registry.repositories.droplets
+#! Container registry repository where uploaded app source code (Packages) will be stored
+    packages: #@ data.values.tas_adapter.registry.repositories.packages
+#! Name of the kpack cluster builder to use for staging
+kpack_clusterbuilder_name: full
+
+#! Enable the experimental Cartographer integration
+experimental_use_cartographer: true
+
+#@ end
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tas-adapter-values
+  namespace: #@ data.values.tas_adapter.namespace
+type: Opaque
+stringData:
+  values.yml: #@ yaml.encode(config())

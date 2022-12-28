@@ -1,0 +1,118 @@
+name: "install-tanzu-standard-repo"
+
+on:
+  workflow_call:
+    inputs:
+      tkg-version:
+        description: "Tanzu Global Package Repository version"
+        type: string
+        required: true
+      cluster-provider:
+        description: "The Kubernetes service provider"
+        type: string
+        required: true
+    secrets:
+      GOOGLE_PROJECT_ID:
+        required: false
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: false
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      AWS_SESSION_TOKEN:
+        required: false
+      TANZU_NETWORK_API_TOKEN:
+        required: true
+      TANZU_NETWORK_USERNAME:
+        required: true
+      TANZU_NETWORK_PASSWORD:
+        required: true
+      GIT_SSH_PRIVATE_KEY:
+        required: true
+      GIT_SSH_KNOWN_HOSTS:
+        required: true
+      CSP_API_TOKEN:
+        required: true
+      KUBECONFIG_CONTENTS:
+        required: true
+
+jobs:
+  encode-tanzu-standard-repo-install-script:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+          result="$(cat "scripts/install-package.sh" | base64 -w 0)"
+          echo "result=${result}" >> $GITHUB_OUTPUT
+
+  install:
+    needs: encode-tanzu-standard-repo-install-script
+    runs-on: ubuntu-20.04
+
+    env:
+      GITOPS_DIR: gitops/tanzu/standard
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Render standard-install-config
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/standard-install-config.tpl
+        vars: |
+          tkg_version: ${{ inputs.tkg-version }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/standard-install-config.yml
+
+    - name: Render standard-install-secrets
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/standard-install-secrets.tpl
+        vars: |
+          tanzu_network_username: ${{ secrets.TANZU_NETWORK_USERNAME }}
+          tanzu_network_password: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/standard-install-secrets.yml
+
+    - name: "Install Tanzu Standard Repo"
+      if: contains(fromJson('["aks","other"]'), inputs.cluster-provider)
+      uses: ./docker/actions/tanzu-runsh-setup-action
+      with:
+        script-contents: ${{ needs.encode-tanzu-standard-repo-install-script.outputs.result }}
+        script-arguments: "${{ env.GITOPS_DIR }} tanzu-standard-repo"
+        kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Install Tanzu Standard Repo on EKS"
+      if: inputs.cluster-provider == 'eks'
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
+        script-contents: ${{ needs.encode-tanzu-standard-repo-install-script.outputs.result }}
+        script-arguments: "${{ env.GITOPS_DIR }} tanzu-standard-repo"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Install Tanzu Standard Repo on GKE"
+      if: inputs.cluster-provider == 'gke'
+      uses: ./docker/actions/google/tanzu-runsh-setup-action
+      with:
+        google-project-id: ${{ secrets.GOOGLE_PROJECT_ID }}
+        google-service-account-key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
+        script-contents: ${{ needs.encode-tanzu-standard-repo-install-script.outputs.result }}
+        script-arguments: "${{ env.GITOPS_DIR }} tanzu-standard-repo"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}

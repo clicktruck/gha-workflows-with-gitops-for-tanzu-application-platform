@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tap-install-gitops
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: metadata-store-token
+  namespace: tap-install-gitops
+stringData:
+  metadata-store-tap-gui-auth-token.yml: |
+    tap:
+      gui:
+        proxy:
+          metadata_store:
+            token: replace_me

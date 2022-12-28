@@ -1,0 +1,4 @@
+project = "REPLACE_ME"
+repository_names = ["tanzu-build-service", "tanzu-supply-chain"]
+location = "us-west2"
+keyring = "REPLACE_ME"

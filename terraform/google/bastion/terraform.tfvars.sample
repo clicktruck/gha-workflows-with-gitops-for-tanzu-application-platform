@@ -1,0 +1,11 @@
+project = "REPLACE_ME"
+vm_name = "REPLACE_ME"
+region = "us-west2"
+zone = "us-west2-b"
+vm_network = "REPLACE_ME"
+vm_subnetwork = "REPLACE_ME"
+os_image = "ubuntu-os-cloud/ubuntu-2004-lts"
+machine_type = "e2-standard-4"
+scheduling_preemptible = true
+scheduling_automaticrestart = false
+has_public_ip = true

@@ -1,0 +1,33 @@
+name: "google-dispatch-main-dns-zone"
+
+on:
+  workflow_dispatch:
+    inputs:
+      google-project-id:
+        description: "Google project that is hosting the Cloud DNS zone"
+        required: true
+      google-service-account-key:
+        description: "Base64-encoded service account keyfile contents of an account with write permissions to a Cloud DNS zone"
+        required: true
+      domain:
+        description: "New DNS zone name to create (e.g., example.com)"
+        required: true
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+
+jobs:
+  manage-main-dns-zone:
+    uses: ./.github/workflows/google-main-dns.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ github.event.inputs.google-project-id }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ github.event.inputs.google-service-account-key }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}

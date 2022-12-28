@@ -1,0 +1,16 @@
+apiVersion: kappctrl.k14s.io/v1alpha1
+kind: App
+metadata:
+  name: learningcenter-supplemental
+  namespace: learningcenter-supplemental
+spec:
+  serviceAccountName: lcs-sa
+  fetch:
+    - git:
+        url: git@github.com:pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+        ref: origin/main
+        subPath: gitops/tanzu/learningcenter/supplemental/base
+        secretRef:
+          name: git-ssh-for-carvel
+  deploy:
+    - kapp: {}

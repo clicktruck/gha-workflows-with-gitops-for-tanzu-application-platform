@@ -1,0 +1,80 @@
+name: "aws-07-dispatch-linux-vm-based-on-toolset-image"
+
+on:
+  workflow_dispatch:
+    inputs:
+      sshKeyName:
+        description: "The name of an SSH keypair"
+        required: true
+      subnetId:
+        description: "Subnet ID of a pre-existing public subnet within a VPC"
+        required: true
+      provisionerSecurityGroupId:
+        description: "The security group id of a public subnet that will host bastion"
+        required: true
+      eksClusterSecurityGroupId:
+        description: "The security group id of a private subnet that will host cluster"
+        required: true
+      toolsetAmiOwner:
+        description: "The owner of the toolset AMI"
+        required: true
+      toolsetAmiName:
+        description: "The name of the AMI (without the timestamp or version suffix)"
+        required: true
+        default: "tap-workshop-k8s-toolset-image"
+      vmSize:
+        description: "The EC2 instance type and size for the bastion"
+        required: true
+        default: "m5a.large"
+      region:
+        description: "The AWS region where the bastion EC2 instance will be available"
+        required: true
+        type: choice
+        options:
+        - us-east-1
+        - us-east-2
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - eu-north-1
+        - eu-south-1
+        - me-south-1
+        - sa-east-1
+        default: "us-west-2"
+      action:
+        description: "Create (new) or destroy (existing)"
+        required: true
+        type: choice
+        options:
+        - create
+        - destroy
+
+jobs:
+  manage-bastion:
+    uses: ./.github/workflows/aws-bastion.yml
+    with:
+      sshKeyName: ${{ github.event.inputs.sshKeyName }}
+      subnetId: ${{ github.event.inputs.subnetId }}
+      provisionerSecurityGroupId: ${{ github.event.inputs.provisionerSecurityGroupId }}
+      eksClusterSecurityGroupId: ${{ github.event.inputs.eksClusterSecurityGroupId }}
+      toolsetAmiOwner: ${{ github.event.inputs.toolsetAmiOwner }}
+      toolsetAmiName: ${{ github.event.inputs.toolsetAmiName }}
+      vmSize: ${{ github.event.inputs.vmSize }}
+      region: ${{ github.event.inputs.region }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}

@@ -1,0 +1,41 @@
+name: "google-dispatch-artifact-registry"
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "The Google Cloud region where the Artifact Registry will be available"
+        required: true
+        type: choice
+        options:
+        - asia-east1
+        - asia-northeast2
+        - asia-northeast3
+        - asia-south1
+        - australia-southeast2
+        - europe-north1
+        - europe-southwest1
+        - europe-west1
+        - us-central1
+        - us-east1
+        - us-west1
+        - us-west2
+        default: "us-west2"
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+jobs:
+  manage-gar:
+    uses: ./.github/workflows/google-container-registry.yml
+    with:
+      region: ${{ github.event.inputs.region }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}

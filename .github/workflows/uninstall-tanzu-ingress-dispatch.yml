@@ -1,0 +1,57 @@
+name: "uninstall-tanzu-ingress-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster-provider:
+        description: "The Kubernetes service provider"
+        type: choice
+        required: true
+        options:
+          - eks
+          - aks
+          - gke
+          - tkg»aws
+          - tkg»azure
+          - other
+      kubeconfig-contents:
+        description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+        required: true
+
+jobs:
+  uninstall-ingress-on-azure:
+    if: contains(fromJson('["aks","tkg»azure"]'), github.event.inputs.cluster-provider)
+    uses: ./.github/workflows/uninstall-tanzu-ingress.yml
+    with:
+      target-cloud: "azure"
+    secrets:
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+
+  uninstall-ingress-on-aws:
+    if: contains(fromJson('["aws","tkg»aws"]'), github.event.inputs.cluster-provider)
+    uses: ./.github/workflows/uninstall-tanzu-ingress.yml
+    with:
+      target-cloud: "aws"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      ROUTE53_ZONE_AWS_ACCESS_KEY_ID: ${{ github.event.inputs.aws-access-key-id }}
+      ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY: ${{ github.event.inputs.aws-secret-access-key }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+
+  uninstall-ingress-on-google:
+    if: github.event.inputs.cluster-provider == 'gke'
+    uses: ./.github/workflows/uninstall-tanzu-ingress.yml
+    with:
+      target-cloud: "google"
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}

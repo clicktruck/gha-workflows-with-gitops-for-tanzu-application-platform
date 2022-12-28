@@ -1,0 +1,25 @@
+#@ load("@ytt:yaml", "yaml")
+#@ load("@ytt:data", "data")
+
+#@ def learningcenterdependency():
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
+metadata:
+  name: #@ data.values.tap.ingress.contour_tls_secret
+  namespace: learningcenter
+spec:
+  fromNamespace: #@ data.values.tap.ingress.contour_tls_namespace
+#@ end
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: learningcenter-config-overlay
+  namespace: #@ data.values.tap.namespace
+  annotations:
+    kapp.k14s.io/change-group: tap/package-overlays
+stringData:
+  learningcenter-config-overlay.yaml: #@ yaml.encode(learningcenterdependency())
+

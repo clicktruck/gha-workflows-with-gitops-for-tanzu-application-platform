@@ -1,0 +1,61 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: scanning.apps.tanzu.vmware.com/v1beta1
+kind: ScanPolicy
+metadata:
+  name: scan-policy
+  namespace: #@ data.values.tap.devNamespace
+  labels:
+    app.kubernetes.io/part-of: enable-in-gui
+spec:
+  regoFile: |
+    package main
+
+    # Accepted Values: "Critical", "High", "Medium", "Low", "Negligible", "UnknownSeverity"
+    notAllowedSeverities := ["Critical", "High", "UnknownSeverity"]
+
+    # List of known vulnerabilities to ignore when deciding whether to fail compliance. Example:
+    # ignoreCves := [
+    #   {
+    #     "id": "CVE-2018-14643",
+    #     "detail": "Determined affected code is not in the execution path.",
+    #     "expiration": "2022-Dec-31"
+    #   }
+    # ]
+    ignoreCves := []
+
+    containsSeverity(array, elem) = true {
+      array[_] = elem
+    } else = false { true }
+
+    isSafe(match) {
+      severities := { e | e := match.ratings.rating.severity } | { e | e := match.ratings.rating[_].severity }
+      some i
+      fails := containsSeverity(notAllowedSeverities, severities[i])
+      not fails
+    }
+
+    containsCve(array, elem) = true {
+      array[_].id = elem
+      curr_time := time.now_ns()
+      date_format := "2006-Jan-02"
+      expire_time := time.parse_ns(date_format, array[_].expiration)
+      curr_time < expire_time
+    } else = false { true }
+
+    isSafe(match) {
+      ignore := containsCve(ignoreCves, match.id)
+      ignore
+    }
+
+    deny[msg] {
+      comps := { e | e := input.bom.components.component } | { e | e := input.bom.components.component[_] }
+      some i
+      comp := comps[i]
+      vulns := { e | e := comp.vulnerabilities.vulnerability } | { e | e := comp.vulnerabilities.vulnerability[_] }
+      some j
+      vuln := vulns[j]
+      ratings := { e | e := vuln.ratings.rating.severity } | { e | e := vuln.ratings.rating[_].severity }
+      not isSafe(vuln)
+      msg = sprintf("CVE %s %s %s", [comp.name, vuln.id, ratings])
+    }

@@ -1,0 +1,3 @@
+project = "REPLACE_ME"
+vpc_network_name = "tap-demo-net"
+vpc_subnetwork_region = "us-west2"

@@ -1,0 +1,109 @@
+name: "aws-06-dispatch-elastic-kubernetes-service"
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster-name:
+        description: "Name of the EKS cluster"
+        required: true
+      vpc-id:
+        description: "An identifier of an existing AWS VPC"
+        required: true
+      node-pool-instance-type:
+        description: "The instance type of each node in cluster pool"
+        required: true
+        type: choice
+        options:
+        - c4.xlarge
+        - c5.xlarge
+        - c5a.xlarge
+        - c6a.xlarge
+        - m4.xlarge
+        - m5.xlarge
+        - m5a.xlarge
+        - m6a.xlarge
+        - t3.xlarge
+        - t3a.xlarge
+        default: "m5a.xlarge"
+      k8s-version:
+        description: "A supported and available Kubernetes (major.minor) version"
+        required: true
+        type: choice
+        options:
+        - "1.22"
+        - "1.23"
+        - "1.24"
+        default: "1.24"
+      ssh-key-name:
+        description: "An existing SSH keypair name"
+        required: true
+      provisioner-security-group-id:
+        description: "The security group id of a public subnet that will host bastion"
+        required: true
+      private-subnet-ids:
+        description: "Comma-separated list of private subnet identifiers"
+        required: true
+      public-subnet-ids:
+        description: "Comma-separated list of public subnet identifiers"
+        required: true
+      region:
+        description: "The AWS region where the EKS cluster will be created"
+        required: true
+        type: choice
+        options:
+        - us-east-1
+        - us-east-2
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - eu-north-1
+        - eu-south-1
+        - me-south-1
+        - sa-east-1
+        default: "us-west-2"
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+
+jobs:
+  manage-eks:
+    uses: ./.github/workflows/aws-k8s-cluster.yml
+    with:
+      cluster-name: ${{ github.event.inputs.cluster-name }}
+      vpc-id: ${{ github.event.inputs.vpc-id }}
+      desired-nodes: "3"
+      node-pool-instance-type: ${{ github.event.inputs.node-pool-instance-type }}
+      k8s-version: ${{ github.event.inputs.k8s-version }}
+      ssh-key-name: ${{ github.event.inputs.ssh-key-name }}
+      provisioner-security-group-id: ${{ github.event.inputs.provisioner-security-group-id }}
+      vpc-endpoint-security-group-id: ${{ github.event.inputs.vpc-endpoint-security-group-id }}
+      private-subnet-ids: ${{ github.event.inputs.private-subnet-ids }}
+      public-subnet-ids: ${{ github.event.inputs.public-subnet-ids }}
+      region: ${{ github.event.inputs.region }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}

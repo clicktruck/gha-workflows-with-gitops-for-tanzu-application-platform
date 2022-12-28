@@ -1,0 +1,3 @@
+project = "REPLACE_ME"
+secret_manager_instance_name = "tap-secret-store"
+secrets_key_value_map = "{\"foo\": \"bar\"}"

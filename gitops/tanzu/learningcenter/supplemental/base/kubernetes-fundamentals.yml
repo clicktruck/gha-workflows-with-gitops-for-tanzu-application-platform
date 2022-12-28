@@ -1,0 +1,24 @@
+apiVersion: learningcenter.tanzu.vmware.com/v1beta1
+kind: Workshop
+metadata:
+  name: lab-k8s-fundamentals
+  namespace: learningcenter-supplemental
+spec:
+  vendor: learningcenter.tanzu.vmware.com
+  title: Kubernetes Fundamentals
+  description: Workshop on getting started with Kubernetes
+  url: https://github.com/eduk8s-labs/lab-k8s-fundamentals
+  content:
+    image: quay.io/eduk8s-labs/lab-k8s-fundamentals:master
+  duration: 1h
+  session:
+    namespaces:
+      budget: medium
+    applications:
+      terminal:
+        enabled: true
+        layout: split
+      console:
+        enabled: true
+      editor:
+        enabled: true

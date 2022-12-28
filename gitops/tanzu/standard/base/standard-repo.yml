@@ -1,0 +1,15 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageRepository
+metadata:
+  name: tanzu-standard-repository
+  namespace: tanzu-package-repo-global
+  annotations:
+    kapp.k14s.io/change-group: tanzu-standard/repo
+spec:
+  fetch:
+    imgpkgBundle:
+      image: #@ "{}/tkg/packages/standard/repo:{}".format(data.values.tkg.credentials.tanzuNet.host, data.values.tkg.version)
+      #! secretRef:
+        #! name: tanzu-standard-registry

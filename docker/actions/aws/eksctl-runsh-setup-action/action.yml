@@ -1,0 +1,29 @@
+name: "eksctl Run Shell Script Setup Action"
+description: "Execute a shell script where eksctl CLI commands may be invoked one or more times"
+inputs:
+  script-contents:
+    description: "The base64 encoded contents of a shell script"
+    required: true
+  script-arguments:
+    description: "A space separated set of arguments that the script will consume"
+    required: true
+  aws-access-key-id:
+    description: "An access key identifier for an AWS user account or role"
+    required: true
+  aws-secret-access-key:
+    description: "A secret access key tied to an AWS user account or role"
+    required: true
+  aws-session-token:
+    description: "A temporary token issued by the AWS Secure Token Service"
+    required: false
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - "${{ inputs.script-contents }}"
+    - "${{ inputs.script-arguments }}"
+  env:
+    AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+    AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+    AWS_SESSION_TOKEN: ${{ inputs.aws-session-token }}

@@ -1,0 +1,38 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: v1
+data:
+  credentials.json: #@ data.values.google.credentials.service_account_key
+kind: Secret
+metadata:
+  name: prod-clouddns-credentials-secret
+  namespace: cert-manager
+  annotations:
+    kapp.k14s.io/change-group: "cert-manager-clouddns-credentials"
+    kapp.k14s.io/change-rule.create-order: "upsert after upserting cert-manager"
+    kapp.k14s.io/change-rule.delete-order: "delete before deleting cert-manager"
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-contour-cluster-issuer
+  annotations:
+    kapp.k14s.io/change-rule.create-order: "upsert after upserting cert-manager-clouddns-credentials"
+    kapp.k14s.io/change-rule.delete-order: "delete before deleting cert-manager-clouddns-credentials"
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: #@ data.values.acme.email
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - dns01:
+        cloudDNS:
+          project: #@ data.values.google.credentials.project_id
+          #! hostedZoneName: #@ data.values.google.dns.zone_name
+          serviceAccountSecretRef:
+            name: prod-clouddns-credentials-secret
+            key: credentials.json
+      selector:
+        dnsZones:
+          - #@ data.values.ingress.domain

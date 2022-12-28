@@ -1,0 +1,381 @@
+name: "aws-destroy-workshop-environment"
+
+on:
+  workflow_dispatch:
+    inputs:
+      vpc-cidr:
+        description: "The VPC CIDR block"
+        required: true
+        default: "10.60.0.0/18"
+      footprint:
+        description: "Footprint for TAP installation"
+        required: true
+        type: choice
+        options:
+        - "single-cluster"
+        - "multi-cluster"
+        default: "single-cluster"
+      instance-type:
+        description: "The instance type of each node in cluster pool"
+        required: true
+        type: choice
+        options:
+        - c4.xlarge
+        - c5.xlarge
+        - c5a.xlarge
+        - c6a.xlarge
+        - m4.xlarge
+        - m5.xlarge
+        - m5a.xlarge
+        - m6a.xlarge
+        - t3.xlarge
+        - t3a.xlarge
+        default: "m5a.xlarge"
+      region:
+        description: "The AWS region where all resources will be destroyed"
+        required: true
+        type: choice
+        options:
+        - us-east-1
+        - us-east-2
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - eu-north-1
+        - eu-south-1
+        - me-south-1
+        - sa-east-1
+        default: "us-west-2"
+      container-image-registry-provider:
+        description: "A choice of provider for a container image registry"
+        required: true
+        type: choice
+        options:
+        - ecr
+        - harbor
+        default: "harbor"
+
+jobs:
+  obtain-vnet-info:
+    runs-on: ubuntu-20.04
+
+    env:
+      AWS_PAGER: ""
+
+    defaults:
+      run:
+        shell: bash
+
+    outputs:
+      vpc_id: ${{ steps.obtain_vpc_id.outputs.vpc_id }}
+      provisioner_security_group_id: ${{ steps.obtain_provisioner_sgid.outputs.provisioner_sgid }}
+      private_subnet_ids: ${{ steps.obtain_snids.outputs.private_snids }}
+      public_subnet_ids: ${{ steps.obtain_snids.outputs.public_snids }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+        mask-aws-account-id: false
+
+    - name: Obtain vpc id
+      id: obtain_vpc_id
+      run: |
+        vpc_id=$(aws ec2 describe-vpcs --region ${{ github.event.inputs.region }} --query 'Vpcs[?CidrBlock==`${{ github.event.inputs.vpc-cidr }}`].VpcId' | sed -n '2p' | tr -d '"' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        echo "vpc_id=${vpc_id}" >> $GITHUB_OUTPUT
+
+    - name: Obtain provisioner security group id
+      id: obtain_provisioner_sgid
+      run: |
+        provisioner_sgid=$(aws ec2 describe-security-groups --region ${{ github.event.inputs.region }} --filters Name=vpc-id,Values=${{ steps.obtain_vpc_id.outputs.vpc_id }} --query 'SecurityGroups[?starts_with(GroupName,`provisioner-sg`) == `true`].GroupId' | sed -n '2p' | tr -d '"' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        echo "provisioner_sgid=${provisioner_sgid}" >> $GITHUB_OUTPUT
+
+    - name: Obtain subnet ids
+      id: obtain_snids
+      run: |
+        private_snid_1=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ steps.obtain_vpc_id.outputs.vpc_id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' | sed -n '2p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        private_snid_2=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ steps.obtain_vpc_id.outputs.vpc_id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' | sed -n '3p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        private_snid_3=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ steps.obtain_vpc_id.outputs.vpc_id }} --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' | sed -n '4p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        public_snid_1=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ steps.obtain_vpc_id.outputs.vpc_id }} --query 'Subnets[?MapPublicIpOnLaunch==`true`].SubnetId' | sed -n '2p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        public_snid_2=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ steps.obtain_vpc_id.outputs.vpc_id }} --query 'Subnets[?MapPublicIpOnLaunch==`true`].SubnetId' | sed -n '3p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        public_snid_3=$(aws ec2 describe-subnets --region ${{ inputs.region }} --filter Name=vpc-id,Values=${{ steps.obtain_vpc_id.outputs.vpc_id }} --query 'Subnets[?MapPublicIpOnLaunch==`true`].SubnetId' | sed -n '4p' | tr -d '"' | tr -d ',' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        echo "private_snids=${private_snid_1},${private_snid_3},${private_snid_3}" >> $GITHUB_OUTPUT
+        echo "public_snids=${public_snid_1},${public_snid_2},${public_snid_3}" >> $GITHUB_OUTPUT
+
+  destroy-keypair:
+    uses: ./.github/workflows/aws-keypair.yml
+    with:
+      ssh-key-name: "tap-workshop-admin-key"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  destroy-ecr:
+    if: github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-container-registry.yml
+    with:
+      registryName: "tanzu"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  destroy-vnet-single-cluster-with-ecr:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-virtual-network.yml
+    needs: [destroy-tap-cluster]
+    with:
+      vpc-cidr: ${{ github.event.inputs.vpc-cidr }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  destroy-vnet-single-cluster-with-harbor:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'harbor'
+    uses: ./.github/workflows/aws-virtual-network.yml
+    needs: [destroy-harbor-cluster,destroy-tap-cluster]
+    with:
+      vpc-cidr: ${{ github.event.inputs.vpc-cidr }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  destroy-vnet-multi-cluster-with-ecr:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-virtual-network.yml
+    needs: [destroy-tap-build-cluster,destroy-tap-iterate-cluster,destroy-tap-view-cluster,destroy-tap-run-cluster]
+    with:
+      vpc-cidr: ${{ github.event.inputs.vpc-cidr }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  destroy-vnet-multi-cluster-with-harbor:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'harbor'
+    uses: ./.github/workflows/aws-virtual-network.yml
+    needs: [destroy-harbor-cluster,destroy-tap-build-cluster,destroy-tap-iterate-cluster,destroy-tap-view-cluster,destroy-tap-run-cluster]
+    with:
+      vpc-cidr: ${{ github.event.inputs.vpc-cidr }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  destroy-harbor-cluster:
+    if: github.event.inputs.container-image-registry-provider == 'harbor'
+    uses: ./.github/workflows/aws-k8s-cluster.yml
+    needs: obtain-vnet-info
+    with:
+      vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
+      cluster-name: "harbor"
+      desired-nodes: 3
+      node-pool-instance-type: ${{ github.event.inputs.instance-type }}
+      k8s-version: "1.24"
+      ssh-key-name: ${{ needs.create-keypair.outputs.ssh_key_name }}
+      provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
+      private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.obtain-vnet-info.outputs.public_subnet_ids }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-tap-cluster:
+    if: github.event.inputs.footprint == 'single-cluster'
+    uses: ./.github/workflows/aws-k8s-cluster.yml
+    needs: obtain-vnet-info
+    with:
+      vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
+      cluster-name: "tap"
+      desired-nodes: 4
+      node-pool-instance-type: ${{ github.event.inputs.instance-type }}
+      k8s-version: "1.24"
+      ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
+      provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
+      private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.obtain-vnet-info.outputs.public_subnet_ids }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-tap-build-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/aws-k8s-cluster.yml
+    needs: obtain-vnet-info
+    with:
+      vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
+      cluster-name: "tap-build"
+      desired-nodes: 3
+      node-pool-instance-type: ${{ github.event.inputs.instance-type }}
+      k8s-version: "1.24"
+      ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
+      provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
+      private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.obtain-vnet-info.outputs.public_subnet_ids }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-tap-iterate-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/aws-k8s-cluster.yml
+    needs: obtain-vnet-info
+    with:
+      vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
+      cluster-name: "tap-iterate"
+      desired-nodes: 3
+      node-pool-instance-type: ${{ github.event.inputs.instance-type }}
+      k8s-version: "1.24"
+      ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
+      provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
+      private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.obtain-vnet-info.outputs.public_subnet_ids }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-tap-view-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/aws-k8s-cluster.yml
+    needs: obtain-vnet-info
+    with:
+      vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
+      cluster-name: "tap-view"
+      desired-nodes: 3
+      node-pool-instance-type: ${{ github.event.inputs.instance-type }}
+      k8s-version: "1.24"
+      ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
+      provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
+      private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.obtain-vnet-info.outputs.public_subnet_ids }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-tap-run-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/aws-k8s-cluster.yml
+    needs: obtain-vnet-info
+    with:
+      vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
+      cluster-name: "tap-run"
+      desired-nodes: 3
+      node-pool-instance-type: ${{ github.event.inputs.instance-type }}
+      k8s-version: "1.24"
+      ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
+      provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
+      private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.obtain-vnet-info.outputs.public_subnet_ids }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-secrets-manager:
+    uses: ./.github/workflows/aws-secrets-manager.yml
+    with:
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}

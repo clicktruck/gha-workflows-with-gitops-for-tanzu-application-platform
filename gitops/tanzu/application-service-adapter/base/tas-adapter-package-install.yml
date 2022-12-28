@@ -1,0 +1,22 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  name: tas-adapter
+  namespace: #@ data.values.tas_adapter.namespace
+  annotations:
+    kapp.k14s.io/change-group: tas-adapter-install/tas-adapter
+    kapp.k14s.io/change-rule.0: "upsert after upserting tas-adapter-install/rbac"
+    kapp.k14s.io/change-rule.1: "upsert after upserting tas-adapter-install/repo"
+    packaging.carvel.dev/downgradable: ""
+spec:
+  packageRef:
+    refName: application-service-adapter.tanzu.vmware.com
+    versionSelection:
+      constraints: #@ str(data.values.tas_adapter.version)
+      prereleases: {}
+  serviceAccountName: tas-adapter-default-sa
+  values:
+  - secretRef:
+      name: tas-adapter-values

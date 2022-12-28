@@ -1,0 +1,123 @@
+name: "google-administer-key-management-service"
+
+on:
+  workflow_call:
+    inputs:
+      region:
+        description: "The Google Cloud region where the Key Management Service instance will be available"
+        type: string
+        required: true
+      action:
+        required: true
+        type: string
+        description: "Create (new) or destroy (existing)"
+    secrets:
+      GOOGLE_PROJECT_ID:
+        required: true
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: true
+      PA_TOKEN:
+        required: true
+      GOOGLE_KMS_KEYRING:
+        required: false
+
+jobs:
+  terraform:
+    if: inputs.action == 'create'
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: "/tmp/gcloud/sa.json"
+      TF_VAR_project: ${{ secrets.GOOGLE_PROJECT_ID }}
+      TF_VAR_location: ${{ inputs.region }}
+    runs-on: ubuntu-20.04
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/google/kms
+
+    outputs:
+      keyring_name: ${{ steps.set_outputs.outputs.keyring_name }}
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      if: inputs.action == 'create'
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      if: inputs.action == 'create'
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    - name: Decrypt service account keyfile contents and write to /tmp/gcloud/sa.json
+      env:
+        GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      run: |
+        mkdir -p /tmp/gcloud
+        echo "$GOOGLE_SERVICE_ACCOUNT_KEY" | base64 -d > /tmp/gcloud/sa.json
+        chmod 600 /tmp/gcloud/sa.json
+
+    # Initialize a new or existing Terraform working directory by creating initial files, downloading modules, etc.
+    - name: Terraform Init
+      if: inputs.action == 'create'
+      run: terraform init -upgrade
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      if: inputs.action == 'create'
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        keyring_name=$(terraform output --raw keyring_name)
+        echo "keyring_name=${keyring_name}" >> $GITHUB_OUTPUT
+
+  add-github-secret:
+    if: inputs.action == 'create'
+    needs: terraform
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Add KMS keyring as secret
+      env:
+        GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
+      run: |
+        gh secret set GOOGLE_KMS_KEYRING --body ${{ needs.terraform.outputs.keyring_name }}
+
+  gcloud-cli:
+    if: inputs.action == 'destroy'
+    runs-on: ubuntu-20.04
+
+    steps:
+
+    - uses: actions-hub/gcloud@master
+      name: "Describe KMS keyring key"
+      if: inputs.action == 'destroy'
+      env:
+        PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+        APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      with:
+        cli: gcloud
+        args: kms keys describe terraform --keyring $GOOGLE_KMS_KEYRING --location ${{ inputs.region }}
+
+    - name: "How to destroy all KMS keyring key material?"
+      if: inputs.action == 'destroy'
+      run: |
+        echo "Unfortunately the gcloud CLI does not offer a convenient way to destroy all versions of a key at once.  You will need to visit the Google Cloud Console.  Authenticate as a user with authority to manage keys.  Select Security > Key Management.  Select your keyring and key.  Then under the Actions menu, select Destroy all key version material."

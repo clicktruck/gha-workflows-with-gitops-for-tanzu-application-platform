@@ -1,0 +1,4 @@
+project = "REPLACE_ME"
+location = "us"
+keyring = "REPLACE_ME"
+secret_manager_instance_name = "tap-secret-store"

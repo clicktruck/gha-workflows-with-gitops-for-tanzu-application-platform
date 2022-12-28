@@ -1,0 +1,15 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageRepository
+metadata:
+  name: tanzu-data-services-repository
+  namespace: tanzu-package-repo-data-services
+  annotations:
+    kapp.k14s.io/change-group: tanzu-data-services/repo
+spec:
+  fetch:
+    imgpkgBundle:
+      image: #@ "{}/packages-for-vmware-tanzu-data-services/tds-packages:{}".format(data.values.tds.credentials.tanzuNet.host, data.values.tds.version)
+      secretRef:
+        name: tanzu-data-services-registry

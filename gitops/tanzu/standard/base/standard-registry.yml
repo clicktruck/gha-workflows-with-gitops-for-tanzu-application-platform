@@ -1,0 +1,32 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:base64", "base64")
+#@ load("@ytt:json", "json")
+---
+#@ def tkg_config():
+#@  return {
+#@    "auths": {
+#@      data.values.tkg.credentials.tanzuNet.host: {
+#@        "username": data.values.tkg.credentials.tanzuNet.username,
+#@        "password": data.values.tkg.credentials.tanzuNet.password
+#@      }
+#@    }
+#@  }
+#@ end
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tanzu-standard-registry
+  namespace: tanzu-package-repo-global
+type: kubernetes.io/dockerconfigjson
+stringData:
+  .dockerconfigjson: #@ json.encode(tkg_config())
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: tanzu-standard-registry
+  namespace: tanzu-package-repo-global
+spec:
+  toNamespaces:
+  - '*'

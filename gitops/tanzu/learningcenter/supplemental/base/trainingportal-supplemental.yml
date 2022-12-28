@@ -1,0 +1,35 @@
+apiVersion: learningcenter.tanzu.vmware.com/v1beta1
+kind: TrainingPortal
+metadata:
+  name: learningcenter-supplemental
+  namespace: learningcenter-supplemental
+spec:
+  portal:
+    ingress:
+      hostname: learningcenter-supplemental
+    registration:
+      type: anonymous
+    reserved: 0
+    sessions:
+      maximum: 10
+    updates:
+      workshop: true
+  workshops:
+  - expires: 120m
+    name: lab-container-basics
+    orphaned: 10m
+  - expires: 120m
+    name: lab-k8s-fundamentals
+    orphaned: 10m
+  - expires: 120m
+    name: lab-tmc-rest-api
+    orphaned: 10m
+  - expires: 120m
+    name: cnr-fundamentals
+    orphaned: 10m
+  - expires: 120m
+    name: cnr-eventing-advanced
+    orphaned: 10m
+  - expires: 120m
+    name: cnr-serving-advanced
+    orphaned: 10m

@@ -1,0 +1,104 @@
+name: "launch-kind"
+
+on:
+  workflow_call:
+    inputs:
+      action-impl:
+        type: string
+        description: "Options are: engineerd/setup-kind@v0.5.0 or pacphi/setup-kind@v0.6.0-pre"
+        default: "pacphi/setup-kind@v0.6.0-pre"
+        required: true
+      kind-version:
+        description: "Version of Kind to use (default v0.17.0)"
+        default: "v0.17.0"
+        type: string
+        required: true
+      cluster-name:
+        description: "Cluster name (default kind)"
+        default: "kind"
+        type: string
+        required: true
+
+jobs:
+
+  invoke-setup-kind-prerelease:
+    if: inputs.action-impl == 'pacphi/setup-kind@v0.6.0-pre'
+    runs-on: ubuntu-20.04
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: docker/actions/setup-kind
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Fetch action
+      uses: vmware-tanzu/carvel-setup-action@v1
+      with:
+        only: vendir
+
+    - run: |
+        vendir sync --chdir ${GITHUB_WORKSPACE}/docker/.vendir/setup-kind
+
+    - name: Create action
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        cache: npm
+        cache-dependency-path: "**/package-lock.json"
+
+    - run: |
+        npm install
+        npm run build
+
+    - name: Deploy cluster
+      uses: ./docker/actions/setup-kind
+      with:
+        name: ${{ inputs.cluster-name }}
+        version: ${{ inputs.kind-version }}
+        wait: "60s"
+        kubeconfig: "~/.kube/config"
+        verbosity: "3"
+      env:
+        KIND_EXPERIMENTAL_DOCKER_NETWORK: "bridge"
+
+    - run: |
+        mkdir -p $HOME/.kube
+        kind get kubeconfig --name ${{ inputs.cluster-name }} > $HOME/.kube/config
+        kind get kubeconfig --internal --name ${{ inputs.cluster-name }} > $HOME/.kube/config.internal
+        export KUBECONFIG=$HOME/.kube/config.internal
+        IP_ADDRESS=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${{ inputs.cluster-name }}-control-plane)
+        kubectl config set clusters.kind-${{ inputs.cluster-name }}.server https://$IP_ADDRESS:6443
+        export KUBECONFIG=$HOME/.kube/config
+        kubectl get nodes -o wide
+        kubectl get pods -A
+
+  invoke-setup-kind-release:
+    if: inputs.action-impl == 'engineerd/setup-kind@v0.5.0'
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Deploy cluster
+      uses: engineerd/setup-kind@v0.5.0
+      with:
+        name: ${{ inputs.cluster-name }}
+        version: ${{ inputs.kind-version }}
+        wait: "60s"
+      env:
+        KIND_EXPERIMENTAL_DOCKER_NETWORK: "bridge"
+
+    - run: |
+        mkdir -p $HOME/.kube
+        kind get kubeconfig --name ${{ inputs.cluster-name }} > $HOME/.kube/config
+        kind get kubeconfig --internal --name ${{ inputs.cluster-name }} > $HOME/.kube/config.internal
+        export KUBECONFIG=$HOME/.kube/config.internal
+        IP_ADDRESS=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${{ inputs.cluster-name }}-control-plane)
+        kubectl config set clusters.kind-${{ inputs.cluster-name }}.server https://$IP_ADDRESS:6443
+        export KUBECONFIG=$HOME/.kube/config
+        kubectl get nodes -o wide
+        kubectl get pods -A

@@ -1,0 +1,109 @@
+name: "aws-03-administer-ec2-keypair"
+
+on:
+  workflow_call:
+    inputs:
+      ssh-key-name:
+        description: "SSH key name"
+        required: true
+        type: string
+      region:
+        description: "The AWS region where the SSH Keypair will be available"
+        type: string
+        required: true
+      action:
+        required: true
+        type: string
+        description: "Create (new) or destroy (existing)"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+      TF_BACKEND_s3_bucket_name:
+        required: true
+      AWS_KMS_ALIAS:
+        required: true
+    outputs:
+      ssh_key_name:
+        description: "Name of SSH key used for bastion host and cluster worker nodes"
+        value: ${{ jobs.terraform.outputs.ssh_key_name }}
+      b64_ssh_private_key:
+        description: "Base64 encoded content of the generated private key"
+        value: ${{ jobs.terraform.outputs.b64_ssh_private_key }}
+
+jobs:
+  terraform:
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ inputs.region }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_VAR_ssh_key_name: ${{ inputs.ssh-key-name }}
+    runs-on: ubuntu-20.04
+
+    outputs:
+      ssh_key_name: ${{ steps.set_outputs.outputs.ssh_key_name }}
+      b64_ssh_private_key: ${{ steps.set_outputs.outputs.b64_ssh_private_key }}
+      ssh_private_key: ${{ steps.set_outputs.outputs.ssh_private_key }}
+      ssh_public_key: ${{ steps.set_outputs.outputs.ssh_public_key }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/aws/keypair
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    - name: Generate backend configuration
+      run: |
+          cp ../backend/backend.tf .
+          echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
+          echo "key = \"keypair/terraform.tfstate\"" >> config.aws.tfbackend
+          echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
+          echo "encrypt = true" >> config.aws.tfbackend
+          echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
+          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.aws.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: terraform destroy -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        ssh_key_name=$(terraform output --raw ssh_key_name)
+        echo "ssh_key_name=${ssh_key_name}" >> $GITHUB_OUTPUT
+        b64_ssh_private_key=$(terraform output --raw ssh_private_key | base64 -w 0)
+        echo "b64_ssh_private_key=${b64_ssh_private_key}" >> $GITHUB_OUTPUT

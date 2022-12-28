@@ -1,0 +1,80 @@
+#@ load("@ytt:data", "data")
+---
+#@ if data.values.tap.devNamespace != "default" and data.values.tap.devNamespace != "":
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: #@ data.values.tap.devNamespace
+#@ end
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
+metadata:
+  name: container-registry-credentials
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  fromNamespace: #@ data.values.tap.namespace
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
+metadata:
+  name: tanzu-network-credentials
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  fromNamespace: #@ data.values.tap.namespace
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
+metadata:
+  name: git-ssh
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  fromNamespace: #@ data.values.tap.namespace
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
+metadata:
+  name: git-http
+  namespace: #@ data.values.tap.devNamespace
+spec:
+  fromNamespace: #@ data.values.tap.namespace
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default
+  namespace: #@ data.values.tap.devNamespace
+secrets:
+  - name: container-registry-credentials
+  - name: git-ssh
+  - name: git-http
+imagePullSecrets:
+  - name: container-registry-credentials
+  - name: tanzu-network-credentials
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: #@ "{}-{}".format(data.values.tap.devNamespace, "permit-deliverable")
+  namespace: #@ data.values.tap.devNamespace
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: deliverable
+subjects:
+  - kind: ServiceAccount
+    name: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: #@ "{}-{}".format(data.values.tap.devNamespace, "permit-workload")
+  namespace: #@ data.values.tap.devNamespace
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: workload
+subjects:
+  - kind: ServiceAccount
+    name: default
+

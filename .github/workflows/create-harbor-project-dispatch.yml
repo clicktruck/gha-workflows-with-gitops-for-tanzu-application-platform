@@ -1,0 +1,29 @@
+name: "create-harbor-project-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        description: "The Harbor container image registry instance administrator account username"
+        required: true
+        default: "admin"
+      password:
+        description: "The Base64-encoded Harbor container image registry instance administrator account password"
+        required: true
+      api-endpoint:
+        description: "The API endpoint of the Harbor container image registry instance (typically just the domain name)"
+        required: true
+      project:
+        description: "A new project name within the Harbor container image registry instance"
+        required: true
+        default: "tanzu"
+
+jobs:
+  invoke:
+    uses: ./.github/workflows/create-harbor-project.yml
+    with:
+      api-endpoint: ${{ github.event.inputs.api-endpoint }}
+      project: ${{ github.event.inputs.project }}
+    secrets:
+      HARBOR_USERNAME: ${{ github.event.inputs.domain }}
+      HARBOR_PASSWORD: ${{ github.event.inputs.password }}

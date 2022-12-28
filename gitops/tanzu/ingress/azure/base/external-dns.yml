@@ -1,0 +1,74 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:json", "json")
+#@ load("@ytt:yaml", "yaml")
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  name: external-dns
+  namespace: tanzu-user-managed-packages
+  annotations:
+    kapp.k14s.io/change-group: "external-dns"
+    kapp.k14s.io/change-rule.create-order: "upsert after upserting external-dns-packageinstall-setup"
+    kapp.k14s.io/change-rule.delete-order: "delete before deleting external-dns-packageinstall-setup"
+spec:
+  packageRef:
+    refName: external-dns.tanzu.vmware.com
+    versionSelection:
+      constraints: 0.11.0+vmware.1-tkg.2
+  serviceAccountName: ingress-sa
+  values:
+  - secretRef:
+      name: external-dns-tanzu-user-managed-packages-values
+---
+#@ def extdns_config():
+#! Namespace in which to deploy ExternalDNS.
+namespace: tanzu-system-service-discovery
+
+#! Deployment-related configuration.
+deployment:
+  args:
+    - --source=service
+    - --source=ingress
+    - --source=contour-httpproxy
+    - #@ "--domain-filter=" + str(data.values.ingress.domain)
+    - --policy=upsert-only
+    - --registry=txt
+    - --txt-prefix=txt
+    - --provider=azure
+    - #@ "--azure-resource-group=" + str(data.values.azure.resource_group)
+  env: []
+  securityContext: {}
+  volumeMounts:
+    - name: azure-config-file
+      mountPath: /etc/kubernetes
+      readOnly: true
+  volumes:
+    - name: azure-config-file
+      secret:
+        secretName: azure-config-file
+#@ end
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: external-dns-tanzu-user-managed-packages-values
+  namespace: tanzu-user-managed-packages
+  annotations:
+    kapp.k14s.io/change-group: "external-dns-packageinstall-setup"
+    kapp.k14s.io/change-rule.create-order: "upsert after upserting external-dns-azuredns-credentials"
+    kapp.k14s.io/change-rule.delete-order: "delete before deleting external-dns-azuredns-credentials"
+stringData:
+  external-dns-data-values.yaml: #@ yaml.encode(extdns_config())
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-config-file
+  namespace: tanzu-system-service-discovery
+  annotations:
+    kapp.k14s.io/change-group: "external-dns-azuredns-credentials"
+    kapp.k14s.io/change-rule.create-order: "upsert after upserting external-dns-ns"
+    kapp.k14s.io/change-rule.delete-order: "delete before deleting external-dns-ns"
+stringData:
+  azure.json: #@ json.encode({ "tenantId": data.values.azure.credentials.tenantId, "subscriptionId": data.values.azure.credentials.subscriptionId, "resourceGroup": data.values.azure.resourceGroup, "aadClientId": data.values.azure.credentials.clientId, "aadClientSecret": data.values.azure.credentials.clientSecret })

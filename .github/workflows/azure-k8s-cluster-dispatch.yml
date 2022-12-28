@@ -1,0 +1,69 @@
+name: "azure-07-dispatch-kubernetes-service"
+
+on:
+  workflow_dispatch:
+    inputs:
+      clusterName:
+        description: "The name given to the AKS cluster (it will be suffixed by a random id)."
+        required: true
+      k8sVersion:
+        description: "A currently supported Kubernetes version in AKS"
+        required: true
+        type: choice
+        options:
+        - "1.24.6"
+        - "1.23.12"
+        - "1.22.15"
+        default: "1.24.6"
+      resourceGroupName:
+        description: "The resource group to provision the cluster in"
+        required: true
+      aksNodes:
+        description: "Minimum number of nodes"
+        required: true
+        default: "3"
+      aksNodeType:
+        description: "VM type to use for the nodes"
+        required: true
+      aksNodeDiskSize:
+        description: "Disk size for the node in GB"
+        required: true
+        default: "80"
+      suffix:
+        description: "A Virtual Network suffix.  Used for looking up the subnet where cluster nodes will be running."
+        required: true
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+
+jobs:
+  manage-aks:
+    uses: ./.github/workflows/azure-k8s-cluster.yml
+    with:
+      clusterName: ${{ github.event.inputs.clusterName }}
+      k8sVersion: ${{ github.event.inputs.k8sVersion }}
+      aksNodes: ${{ github.event.inputs.aksNodes }}
+      aksNodeType: ${{ github.event.inputs.aksNodeType }}
+      aksNodeDiskSize: ${{ github.event.inputs.aksNodeDiskSize }}
+      suffix: ${{ github.event.inputs.suffix }}
+      resourceGroupName: ${{ github.event.inputs.resourceGroupName }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      AZURE_REGION: ${{ secrets.AZURE_REGION }}
+      TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
+      TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
+      TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}

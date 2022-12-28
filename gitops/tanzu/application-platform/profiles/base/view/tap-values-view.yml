@@ -1,0 +1,191 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
+
+---
+#@ def config():
+profile: view
+
+excluded_packages:
+  - cert-manager.tanzu.vmware.com
+  - contour.tanzu.vmware.com
+  - policy.apps.tanzu.vmware.com
+
+#! installed_for_vmware_internal_use: "true"
+ceip_policy_disclosed: true
+
+shared:
+  ingress_domain: #@ data.values.tap.domains.main
+  ingress_issuer: #@ data.values.tap.cluster.issuerRef.name
+
+accelerator:
+  domain:  #@ data.values.tap.domains.main
+  ingress:
+    enable_tls: true
+    include: true
+  server:
+    service_type: ClusterIP
+  tls:
+    namespace: #@ data.values.tap.ingress.contour_tls_namespace
+    secret_name: #@ data.values.tap.ingress.contour_tls_secret
+
+appliveview:
+  tls:
+    namespace: #@ data.values.tap.ingress.contour_tls_namespace
+    secretName: #@ data.values.tap.ingress.contour_tls_secret
+
+learningcenter:
+  ingressClass: "contour"
+  ingressDomain: #@ data.values.tap.domains.learningCenter
+  ingressSecret:
+    secretName: #@ data.values.tap.ingress.contour_tls_secret
+
+tap_gui:
+  service_type: ClusterIP
+  ingressEnabled: "true"
+  ingressDomain: #@ data.values.tap.domains.main
+  tls:
+    namespace: #@ data.values.tap.ingress.contour_tls_namespace
+    secretName: #@ data.values.tap.ingress.contour_tls_secret
+  app_config:
+    app:
+      baseUrl: #@ "https://{}".format(data.values.tap.domains.tapGui)
+    integrations:
+      #@ if data.values.tap.credentials.git.host == "github.com" and data.values.tap.credentials.git.token != "":
+      github:
+      - host: github.com
+        token: #@ data.values.tap.credentials.git.token
+      #@ end
+    catalog:
+      locations:
+      #@ for catalog in data.values.tap.catalogs:
+      - type: url
+        target: #@ catalog
+      #@ end
+    backend:
+      baseUrl: #@ "https://{}".format(data.values.tap.domains.tapGui)
+      cors:
+        origin: #@ "https://{}".format(data.values.tap.domains.tapGui)
+      #@ if "backstage" in data.values.tap.credentials and "database" in data.values.tap.credentials.backstage:
+      backend:
+        database:
+          client: #@ data.values.tap.credentials.backstage.database.client
+          connection:
+            host: #@ data.values.tap.credentials.backstage.database.host
+            port: #@ data.values.tap.credentials.backstage.database.port
+            user: #@ data.values.tap.credentials.backstage.database.username
+            password: #@ data.values.tap.credentials.backstage.database.password
+            ssl: {rejectUnauthorized: true}
+      #@ end
+    #! Add proxy for accessing metadata store from the UI for CVE results
+    proxy:
+      /metadata-store:
+        target: #@ "{}.{}/api/v1".format("https://metadata-store", data.values.tap.domains.main)
+        changeOrigin: true
+        secure: false
+        headers:
+          Authorization: #@ "Bearer {}".format(data.values.tap.gui.proxy.metadata_store.token)
+          X-Custom-Source: project-star
+    #@ if data.values.tap.credentials.oidc.provider == "github" and data.values.tap.credentials.oidc.client_id != "" and data.values.tap.credentials.oidc.client_secret != "":
+    auth:
+      environment: tap
+      providers:
+        github:
+          tap:
+            clientId: #@ data.values.tap.credentials.oidc.client_id
+            clientSecret: #@ data.values.tap.credentials.oidc.client_secret
+      loginPage:
+        github:
+          title: Github Login
+          message: Login with your GitHub account
+    #@ end
+    kubernetes:
+      serviceLocatorMethod:
+        type: 'multiTenant'
+      clusterLocatorMethods:
+        - type: 'config'
+          clusters:
+            #! Add more clusters you want to observe here.
+            #! Secrets injected in gitops/tanzu/application-platform/.init/observed-tap-install-secrets.tpl
+            #@ if data.values.tap.observed.clusters.kv1.name != "" and data.values.tap.observed.clusters.kv1.url != "" and data.values.tap.observed.clusters.kv1.token != "":
+            - name: #@ data.values.tap.observed.clusters.kv1.name
+              url: #@ data.values.tap.observed.clusters.kv1.url
+              authProvider: serviceAccount
+              serviceAccountToken: #@ data.values.tap.observed.clusters.kv1.token
+              skipTLSVerify: #@ data.values.tap.observed.clusters.kv1.skipTLS
+              skipMetricsLookup: #@ data.values.tap.observed.clusters.kv1.skipMetrics
+              #@ if data.values.tap.observed.clusters.kv1.skipTLS != True:
+              caData:  #@ data.values.tap.observed.clusters.kv1.ca
+              #@ end
+            #@ end
+            #@ if data.values.tap.observed.clusters.kv2.name != "" and data.values.tap.observed.clusters.kv2.url != "" and data.values.tap.observed.clusters.kv2.token != "":
+            - name: #@ data.values.tap.observed.clusters.kv2.name
+              url: #@ data.values.tap.observed.clusters.kv2.url
+              authProvider: serviceAccount
+              serviceAccountToken: #@ data.values.tap.observed.clusters.kv2.token
+              skipTLSVerify: #@ data.values.tap.observed.clusters.kv2.skipTLS
+              skipMetricsLookup: #@ data.values.tap.observed.clusters.kv2.skipMetrics
+              #@ if data.values.tap.observed.clusters.kv2.skipTLS != True:
+              caData:  #@ data.values.tap.observed.clusters.kv2.ca
+              #@ end
+            #@ end
+            #@ if data.values.tap.observed.clusters.kv3.name != "" and data.values.tap.observed.clusters.kv3.url != "" and data.values.tap.observed.clusters.kv3.token != "":
+            - name: #@ data.values.tap.observed.clusters.kv3.name
+              url: #@ data.values.tap.observed.clusters.kv3.url
+              authProvider: serviceAccount
+              serviceAccountToken: #@ data.values.tap.observed.clusters.kv3.token
+              skipTLSVerify: #@ data.values.tap.observed.clusters.kv3.skipTLS
+              skipMetricsLookup: #@ data.values.tap.observed.clusters.kv3.skipMetrics
+              #@ if data.values.tap.observed.clusters.kv3.skipTLS != True:
+              caData:  #@ data.values.tap.observed.clusters.kv3.ca
+              #@ end
+            #@ end
+            #@ if data.values.tap.observed.clusters.kv4.name != "" and data.values.tap.observed.clusters.kv4.url != "" and data.values.tap.observed.clusters.kv4.token != "":
+            - name: #@ data.values.tap.observed.clusters.kv4.name
+              url: #@ data.values.tap.observed.clusters.kv4.url
+              authProvider: serviceAccount
+              serviceAccountToken: #@ data.values.tap.observed.clusters.kv4.token
+              skipTLSVerify: #@ data.values.tap.observed.clusters.kv4.skipTLS
+              skipMetricsLookup: #@ data.values.tap.observed.clusters.kv4.skipMetrics
+              #@ if data.values.tap.observed.clusters.kv4.skipTLS != True:
+              caData:  #@ data.values.tap.observed.clusters.kv4.ca
+              #@ end
+            #@ end
+            #@ if data.values.tap.observed.clusters.kv5.name != "" and data.values.tap.observed.clusters.kv5.url != "" and data.values.tap.observed.clusters.kv5.token != "":
+            - name: #@ data.values.tap.observed.clusters.kv5.name
+              url: #@ data.values.tap.observed.clusters.kv5.url
+              authProvider: serviceAccount
+              serviceAccountToken: #@ data.values.tap.observed.clusters.kv5.token
+              skipTLSVerify: #@ data.values.tap.observed.clusters.kv5.skipTLS
+              skipMetricsLookup: #@ data.values.tap.observed.clusters.kv5.skipMetrics
+              #@ if data.values.tap.observed.clusters.kv5.skipTLS != True:
+              caData:  #@ data.values.tap.observed.clusters.kv5.ca
+              #@ end
+            #@ end
+
+scanning:
+  metadataStore:
+    url: ""
+
+contour:
+  envoy:
+    service:
+      type: LoadBalancer
+
+image_policy_webhook:
+  allow_unmatched_images: true
+
+package_overlays:
+- name:  learningcenter
+  secrets:
+  - name: learningcenter-config-overlay
+
+#@ end
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tap-values
+  namespace: #@ data.values.tap.namespace
+type: Opaque
+stringData:
+  values.yml: #@ yaml.encode(config())

@@ -1,0 +1,64 @@
+name: "aws-tanzu-cloudformation-stack"
+
+on:
+  workflow_call:
+    inputs:
+      region:
+        description: "An AWS region"
+        type: string
+        required: true
+      action:
+        required: true
+        type: string
+        description: "Create (new) or destroy (existing)"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+      CSP_API_TOKEN:
+        required: true
+
+jobs:
+  create-cloudformation-stack:
+    if: inputs.action == 'create'
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: "Execute"
+      uses: ./docker/actions/aws/tanzu-cli-setup-action
+      with:
+        enable-tanzu-cli: "true"
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+        command: 'tanzu management-cluster permissions aws set'
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+  destroy-cloudformation-stack:
+    if: inputs.action == 'destroy'
+    runs-on: ubuntu-20.04
+    env:
+      AWS_PAGER: ""
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+
+    - name: "Execute"
+      run: |
+        aws cloudformation delete-stack --stack-name tkg-cloud-vmware-com

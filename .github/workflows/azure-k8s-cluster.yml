@@ -1,0 +1,194 @@
+name: "azure-07-administer-kubernetes-service"
+
+on:
+  workflow_call:
+    inputs:
+      clusterName:
+        description: "The name given to the AKS cluster (it will be suffixed by a random id)."
+        required: true
+        type: string
+      k8sVersion:
+        description: "A currently supported Kubernetes version in AKS"
+        required: true
+        type: string
+      resourceGroupName:
+        description: "The resource group to provision the cluster in"
+        required: true
+        type: string
+      aksNodes:
+        description: "Minimum number of nodes"
+        required: true
+        default: "3"
+        type: string
+      aksNodeType:
+        description: "VM type to use for the nodes"
+        required: true
+        type: string
+      aksNodeDiskSize:
+        description: "Disk size for the node in GB"
+        required: true
+        default: "80"
+        type: string
+      suffix:
+        description: "A Virtual Network suffix.  Used for looking up the subnet where cluster nodes will be running."
+        required: true
+        type: string
+      action:
+        required: true
+        type: string
+    secrets:
+      AZURE_AD_CLIENT_ID:
+        required: true
+      AZURE_AD_CLIENT_SECRET:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+      AZURE_AD_TENANT_ID:
+        required: true
+      AZURE_REGION:
+        required: true
+      TF_BACKEND_resource_group_name:
+        required: true
+      TF_BACKEND_storage_account_name:
+        required: true
+      TF_BACKEND_storage_container_name:
+        required: true
+      TANZU_NETWORK_API_TOKEN:
+        required: true
+      TANZU_NETWORK_USERNAME:
+        required: true
+      TANZU_NETWORK_PASSWORD:
+        required: true
+      CSP_API_TOKEN:
+        required: true
+      GIT_SSH_PRIVATE_KEY:
+        required: true
+      GIT_SSH_KNOWN_HOSTS:
+        required: true
+    outputs:
+      aks_cluster_name:
+        description: "the name of the azure kubernetes service cluster"
+        value: ${{ jobs.terraform.outputs.aks_cluster_name }}
+      base64_kubeconfig:
+        description: "the contents of the AKS cluster kubeconfig file"
+        value: ${{ jobs.terraform.outputs.base64_kubeconfig }}
+
+jobs:
+  terraform:
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      TF_VAR_cluster_name: ${{ inputs.clusterName }}
+      TF_VAR_resource_group_name: "${{ inputs.resourceGroupName }}"
+      TF_VAR_aks_nodes: "${{ inputs.aksNodes }}"
+      TF_VAR_aks_node_type: "${{ inputs.aksNodeType }}"
+      TF_VAR_aks_node_disk_size: "${{ inputs.aksNodeDiskSize }}"
+      TF_VAR_k8s_version: "${{ inputs.k8sVersion }}"
+      TF_VAR_suffix: "${{ inputs.suffix }}"
+    runs-on: ubuntu-20.04
+
+    outputs:
+      aks_cluster_name: ${{ steps.set_outputs.outputs.aks_cluster_name }}
+      base64_kubeconfig: ${{ steps.set_outputs.outputs.base64_kubeconfig }}
+
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/azure/cluster
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    - name: Generate backend configuration
+      run: |
+          cp ../backend/backend.tf .
+          echo "resource_group_name = \"${{ secrets.TF_BACKEND_resource_group_name }}\"" > config.azurerm.tfbackend
+          echo "storage_account_name = \"${{ secrets.TF_BACKEND_storage_account_name }}\"" >> config.azurerm.tfbackend
+          echo "container_name = \"${{ secrets.TF_BACKEND_storage_container_name }}\"" >> config.azurerm.tfbackend
+          echo "key = \"${{ inputs.resourceGroupName }}.cluster.${{ inputs.clusterName }}.tfstate\"" >> config.azurerm.tfbackend
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.azurerm.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: terraform destroy -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        aks_cluster_name=$(terraform output --raw aks_cluster_name)
+        echo "aks_cluster_name=${aks_cluster_name}" >> $GITHUB_OUTPUT
+        base64_kubeconfig=$(terraform output --raw contents_of_kubeconfig | base64 -w 0)
+        echo "base64_kubeconfig=${base64_kubeconfig}" >> $GITHUB_OUTPUT
+
+  install-tanzu-cluster-essentials:
+    needs: terraform
+    uses: ./.github/workflows/install-tanzu-cluster-essentials.yml
+    with:
+      cluster-provider: "aks"
+    secrets:
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ needs.terraform.outputs.base64_kubeconfig }}
+
+  install-tanzu-standard-repo:
+    needs: [terraform,install-tanzu-cluster-essentials]
+    uses: ./.github/workflows/install-tanzu-standard-repo.yml
+    with:
+      cluster-provider: "aks"
+      tkg-version: "v1.6.0"
+    secrets:
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      KUBECONFIG_CONTENTS: ${{ needs.terraform.outputs.base64_kubeconfig }}
+
+  install-tanzu-data-services-repo:
+    if: inputs.action == 'create'
+    needs: [obtain-base64-encoded-kubeconfig-from-cluster,install-tanzu-cluster-essentials]
+    uses: ./.github/workflows/install-tanzu-data-services-repo.yml
+    with:
+      cluster-provider: "aks"
+      tds-version: "1.5.0"
+    secrets:
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      KUBECONFIG_CONTENTS: ${{ needs.terraform.outputs.base64_kubeconfig }}

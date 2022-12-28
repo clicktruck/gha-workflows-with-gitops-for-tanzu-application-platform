@@ -1,0 +1,367 @@
+name: "onboard-cluster-to-app-live-view"
+
+on:
+  workflow_call:
+    inputs:
+      domain:
+        description: "A domain that the installation of TAP will be addressable from"
+        type: string
+        required: true
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        type: string
+        required: true
+      dev-namespace:
+        description: "A pre-existing namespace that will accommodate Workloads"
+        type: string
+        required: true
+      backstage-catalog:
+        description: "A Git repository and path to a Backstage catalog file"
+        type: string
+        required: true
+      container-image-registry-url:
+        description: "The container registry that will host the packages and images for the installation"
+        type: string
+        required: true
+      container-image-registry-prefix:
+        description: "In most cases this value will be tanzu."
+        type: string
+        required: true
+        default: ""
+      container-image-registry-username:
+        description: "The container registry's admin account username"
+        type: string
+        required: true
+      container-image-registry-password:
+        description: "The container registry's admin account password"
+        type: string
+        required: true
+      cluster-provider:
+        description: "The Kubernetes service provider"
+        type: string
+        required: true
+      deployment-name:
+        description: "The name you want to give this deployment. (It will be suffixed with the active-profile)."
+        type: string
+        required: true
+      active-profile:
+        description: "The TAP profile to be installed"
+        type: string
+        required: true
+      aws-region:
+        description: "An existing AWS region consumed by ClusterIssuer DNS solver configuration"
+        type: string
+        required: false
+      azure-resource-group:
+        description: "An existing Azure resource group name consumed by ClusterIssuer DNS solver configuration"
+        type: string
+        required: false
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      AWS_SESSION_TOKEN:
+        required: false
+      AZURE_AD_CLIENT_ID:
+        required: false
+      AZURE_AD_CLIENT_SECRET:
+        required: false
+      AZURE_SUBSCRIPTION_ID:
+        required: false
+      AZURE_AD_TENANT_ID:
+        required: false
+      GOOGLE_PROJECT_ID:
+        required: false
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: false
+      KUBECONFIG_CONTENTS:
+        required: true
+      PA_TOKEN:
+        required: true
+      GIT_SSH_PRIVATE_KEY:
+        required: true
+      GIT_SSH_PUBLIC_KEY:
+        required: true
+      GIT_SSH_KNOWN_HOSTS:
+        required: true
+      CSP_API_TOKEN:
+        required: true
+      OIDC_AUTH_PROVIDER:
+        required: false
+      OIDC_AUTH_CLIENT_ID:
+        required: false
+      OIDC_AUTH_CLIENT_SECRET:
+        required: false
+      TANZU_NETWORK_USERNAME:
+        required: true
+      TANZU_NETWORK_PASSWORD:
+        required: true
+      OBSERVED_CLUSTERS:
+        required: true
+
+jobs:
+
+  encode-tanzu-application-platform-install-script:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+        result="$(cat "scripts/install-package.sh" | base64 -w 0)"
+        echo "result=${result}" >> $GITHUB_OUTPUT
+
+  encode-observe-clusters-script:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+        result="$(cat "scripts/observe-clusters.sh" | base64 -w 0)"
+        echo "result=${result}" >> $GITHUB_OUTPUT
+
+  install:
+    needs: [encode-tanzu-application-platform-install-script,encode-observe-clusters-script]
+    if: always()
+    runs-on: ubuntu-20.04
+
+    env:
+      GITOPS_DIR: gitops/tanzu/application-platform
+      HAS_OBSERVED_CLUSTERS: ${{ secrets.OBSERVED_CLUSTERS != '' }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    ## We'll likely source manufactured sensitive data like domain, private registry credentials from a secrets management store like AWS Secrets Manager or Azure KeyVault
+
+    - name: Fetch observed cluster details
+      id: details
+      if: env.HAS_OBSERVED_CLUSTERS == 'true' && contains(fromJson('["eks","gke","tkg»aws"]'), inputs.cluster-provider) != true
+      uses: ./docker/actions/tanzu-runsh-setup-action
+      with:
+        script-contents: ${{ needs.encode-observe-clusters-script.outputs.result }}
+        script-arguments: "${{ secrets.OBSERVED_CLUSTERS }} ${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: Fetch observed cluster details on AWS
+      id: details-on-aws
+      if: env.HAS_OBSERVED_CLUSTERS == 'true' && contains(fromJson('["eks","tkg»aws"]'), inputs.cluster-provider)
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        script-contents: ${{ needs.encode-observe-clusters-script.outputs.result }}
+        script-arguments: "${{ secrets.OBSERVED_CLUSTERS }} ${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: Fetch observed cluster details on Google
+      id: details-on-google
+      if: env.HAS_OBSERVED_CLUSTERS == 'true' && inputs.cluster-provider == 'gke'
+      uses: ./docker/actions/google/tanzu-runsh-setup-action
+      with:
+        google-project-id: ${{ secrets.GOOGLE_PROJECT_ID }}
+        google-service-account-key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        script-contents: ${{ needs.encode-observe-clusters-script.outputs.result }}
+        script-arguments: "${{ secrets.OBSERVED_CLUSTERS }} ${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: Was observed cluster configuration obtained successfully
+      id: observed-clusters-config
+      run: |
+        OBSERVED_CLUSTERS_CONFIG_FILEPATH=$GITOPS_DIR/.init/observed-clusters-config.tpl
+        echo "Does $OBSERVED_CLUSTERS_CONFIG_FILEPATH exist?"
+        if [ -f "$OBSERVED_CLUSTERS_CONFIG_FILEPATH" ]; then
+          result="$(cat $OBSERVED_CLUSTERS_CONFIG_FILEPATH | base64 -w 0)"
+          echo "Yes!"
+          echo "hasResult=true" >> $GITHUB_OUTPUT
+          echo "result=${result}" >> $GITHUB_OUTPUT
+        else
+          echo "No!"
+          echo "hasResult=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Insert observed cluster config into tap-install-secrets
+      if: steps.observed-clusters-config.outputs.hasResult == 'true'
+      env:
+        GITOPS_DIR: ${{ env.GITOPS_DIR }}
+        ENCODED_OBSERVED_CLUSTERS_CONFIG: ${{ steps.observed-clusters-config.outputs.result }}
+      run: |
+        cd $GITOPS_DIR/.init
+        sed -n '1,/#! observed-clusters/p' tap-install-secrets.tpl > oc1.tpl
+        echo $ENCODED_OBSERVED_CLUSTERS_CONFIG | base64 -d > oc2.tpl
+        sed -n '/#! observed-clusters/,$p' tap-install-secrets.tpl > oc3.tpl
+        cat oc1.tpl oc2.tpl oc3.tpl > observed-tap-install-secrets.tpl
+
+    - name: Render observed tap-install-secrets
+      id: rendered-cluster-config
+      if: steps.observed-clusters-config.outputs.hasResult == 'true'
+      uses: chuhlomin/render-template@v1.6
+      env:
+        OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+        OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+        OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/observed-tap-install-secrets.tpl
+        vars: |
+          app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
+          email_address: ${{ inputs.email-address }}
+          tanzu_network_username: ${{ secrets.TANZU_NETWORK_USERNAME }}
+          tanzu_network_password: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+          container_image_registry_url: ${{ inputs.container-image-registry-url }}
+          container_image_registry_username: ${{ inputs.container-image-registry-username }}
+          container_image_registry_password: ${{ inputs.container-image-registry-password }}
+          git_host: github.com
+          git_username: ${{ github.actor }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
+          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
+          oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
+          oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""
+        result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.yml
+
+    - name: Render git-secrets
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template:  ${{ env.GITOPS_DIR }}/.init/git-secrets.tpl
+        vars: |
+          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/git-secrets.yml
+
+    - name: Render tap-install-config
+      if: contains(fromJson('["eks","tkg»aws"]'), inputs.cluster-provider) != true
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/tap-install-config.tpl
+        vars: |
+          app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
+          domain: ${{ inputs.domain }}
+          dev_namespace: ${{ inputs.dev-namespace }}
+          backstage_catalog: ${{ inputs.backstage-catalog }}
+          container_image_registry_prefix: ${{ inputs.container-image-registry-prefix }}
+          gitops_provider: "github.com"
+          gitops_username: ${{ github.actor }}
+          gitops_repo_name: "tap-gitops-depot"
+          gitops_repo_branch: "main"
+        result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-config.yml
+
+    - name: Render tap-install-config with contour addition
+      if: contains(fromJson('["eks","tkg»aws"]'), inputs.cluster-provider)
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/tap-install-config-aws.tpl
+        vars: |
+          app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
+          domain: ${{ inputs.domain }}
+          dev_namespace: ${{ inputs.dev-namespace }}
+          backstage_catalog: ${{ inputs.backstage-catalog }}
+          container_image_registry_prefix: ${{ inputs.container-image-registry-prefix }}
+          gitops_provider: "github.com"
+          gitops_username: ${{ github.actor }}
+          gitops_repo_name: "tap-gitops-depot"
+          gitops_repo_branch: "main"
+        result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-config.yml
+
+    - name: Render tap-install-secrets
+      if: steps.observed-clusters-config.outputs.hasResult == 'false'
+      uses: chuhlomin/render-template@v1.6
+      env:
+        OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+        OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+        OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.tpl
+        vars: |
+          app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
+          email_address: ${{ inputs.email-address }}
+          tanzu_network_username: ${{ secrets.TANZU_NETWORK_USERNAME }}
+          tanzu_network_password: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+          container_image_registry_url: ${{ inputs.container-image-registry-url }}
+          container_image_registry_username: ${{ inputs.container-image-registry-username }}
+          container_image_registry_password: ${{ inputs.container-image-registry-password }}
+          git_host: github.com
+          git_username: ${{ github.actor }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
+          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
+          oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
+          oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""
+        result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.yml
+
+    - name: Render tap-install
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.install/tap-install.tpl
+        vars: |
+          app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
+          git_ref_name: ${{ github.ref_name }}
+          profile: ${{ inputs.active-profile }}
+        result_path: ${{ env.GITOPS_DIR }}/.install/tap-install.yml
+
+    - name: Render tap-post-install
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.post-install/tap-post-install.tpl
+        vars: |
+          app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
+          git_ref_name: ${{ github.ref_name }}
+          profile: ${{ inputs.active-profile }}
+        result_path: ${{ env.GITOPS_DIR }}/.post-install/tap-post-install.yml
+
+    - name: "Update Tanzu Application Platform"
+      if: contains(fromJson('["eks","gke","tkg»aws"]'), inputs.cluster-provider) != true
+      uses: ./docker/actions/tanzu-runsh-setup-action
+      with:
+        script-contents: ${{ needs.encode-tanzu-application-platform-install-script.outputs.result }}
+        script-arguments: "${{ env.GITOPS_DIR }} ${{ inputs.deployment-name }}-${{ inputs.active-profile }}"
+        kubeconfig-contents: ${{ secrets.KUBECONFIG_CONTENTS }}
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Update Tanzu Application Platform on AWS"
+      if: contains(fromJson('["eks","tkg»aws"]'), inputs.cluster-provider)
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        script-contents: ${{ needs.encode-tanzu-application-platform-install-script.outputs.result }}
+        script-arguments: "${{ env.GITOPS_DIR }} ${{ inputs.deployment-name }}-${{ inputs.active-profile }}"
+        kubeconfig-contents: ${{ secrets.KUBECONFIG_CONTENTS }}
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Update Tanzu Application Platform on Google"
+      if: inputs.cluster-provider == 'gke'
+      uses: ./docker/actions/google/tanzu-runsh-setup-action
+      with:
+        google-project-id: ${{ secrets.GOOGLE_PROJECT_ID }}
+        google-service-account-key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        script-contents: ${{ needs.encode-tanzu-application-platform-install-script.outputs.result }}
+        script-arguments: "${{ env.GITOPS_DIR }} ${{ inputs.deployment-name }}-${{ inputs.active-profile }}"
+        kubeconfig-contents: ${{ secrets.KUBECONFIG_CONTENTS }}
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}

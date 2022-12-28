@@ -1,0 +1,24 @@
+name: "google-get-cloud-dns-zone-name-for-domain-under-management-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      google-project-id:
+        description: "Google project that is hosting the Cloud DNS zone"
+        required: true
+      google-service-account-key:
+        description: "Base64-encoded service account keyfile contents of an account with write permissions to a Cloud DNS zone"
+        required: true
+      domain:
+        description: "A domain under management by a Google Cloud DNS zone"
+        required: true
+
+jobs:
+
+  run-script:
+    uses: ./.github/workflows/google-get-clouddns-zone-for-domain.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ github.event.inputs.google-project-id }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ github.event.inputs.google-service-account-key }}

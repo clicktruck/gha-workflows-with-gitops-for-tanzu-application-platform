@@ -1,0 +1,35 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
+---
+#@ def stack_config():
+  stack_configuration: #@ data.values.tap.stack_configuration
+#@ end
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  name: tbs-full-dependencies
+  namespace: #@ data.values.tap.namespace
+  annotations:
+    kapp.k14s.io/change-group: tap-install/tbs-full-deps
+    kapp.k14s.io/change-rule.0: "upsert after upserting tap-install/tap"
+    kapp.k14s.io/change-rule.1: "upsert after upserting tap-install/tbs-full-deps-repo"
+    packaging.carvel.dev/downgradable: ""
+spec:
+  packageRef:
+    refName: full-tbs-deps.tanzu.vmware.com
+    versionSelection:
+      constraints: #@ str(data.values.buildService.version)
+      prereleases: {}
+  serviceAccountName: tap-default-sa
+  values:
+  - secretRef:
+      name: tbs-full-dependencies
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tbs-full-dependencies
+  namespace: #@ data.values.tap.namespace
+stringData:
+  tbs-full-dependencies-secrets.yml: #@ yaml.encode(stack_config())

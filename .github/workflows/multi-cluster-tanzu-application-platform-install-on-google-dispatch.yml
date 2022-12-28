@@ -1,0 +1,221 @@
+name: "multi-cluster-tanzu-application-platform-install-on-google-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      google-project-id:
+        description: "Google project that is hosting this TAP footprint"
+        required: true
+      secrets-manager-instance-name:
+        description: "The name of a Google Cloud Secret Manager instance"
+        required: true
+      domain:
+        description: "A domain that the installation of TAP will be addressable from"
+        required: true
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        required: true
+      dev-namespace:
+        description: "A pre-existing namespace that will accommodate Workloads"
+        required: true
+        default: "default"
+      backstage-catalog:
+        description: "A Git repository and path to a Backstage catalog file"
+        required: true
+
+jobs:
+  obtain-secrets-from-secrets-manager:
+    runs-on: ubuntu-20.04
+
+    outputs:
+      harbor-admin-username: ${{ steps.vars.outputs.harbor-admin-username }}
+      harbor-admin-password: ${{ steps.vars.outputs.harbor-admin-password }}
+      harbor-domain: ${{ steps.vars.outputs.harbor-domain }}
+      b64-harbor-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-harbor-cluster-kubeconfig-contents }}
+      b64-tap-build-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-build-cluster-kubeconfig-contents }}
+      b64-tap-iterate-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-iterate-cluster-kubeconfig-contents }}
+      b64-tap-view-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-view-cluster-kubeconfig-contents }}
+      b64-tap-run-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-run-cluster-kubeconfig-contents }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # - id: 'auth'
+    #   name: Authenticate to Google Cloud
+    #   uses: google-github-actions/auth@v0
+    #   with:
+    #     credentials_json: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+
+    # - id: obtain-secret-valuemap
+    #   name: Obtain Secret-Value Map
+    #   uses: google-github-actions/get-secretmanager-secrets@v0
+    #   with:
+    #     secrets: |-
+    #       result:${{ inputs.google-project-id }}/${{ inputs.secrets-manager-instance-name }}
+
+    - name: "Fetch secrets from secret manager instance"
+      id: obtain-secret-valuemap
+      uses: ./docker/actions/google/tanzu-cli-setup-action
+      with:
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+        google-project-id: ${{ inputs.google-project-id }}
+        google-service-account-key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        command: "export ENCODED_KVMAP=$(gcloud secrets versions access latest --secret=${{ github.event.inputs.secrets-manager-instance-name }} | tr -d '\n' | base64 -w 0)"
+        query-for-output: "echo $ENCODED_KVMAP"
+
+    - name: 🏗 Set up yq
+      uses: frenck/action-setup-yq@v1
+
+    - name: Set output variables
+      id: vars
+      run: |
+        KVMAP=$(echo ${{ steps.obtain-secret-valuemap.outputs.result }} | base64 -d)
+        HARBOR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.harbor-admin-username')
+        echo "harbor-admin-username=$HARBOR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
+        HARBOR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.harbor-admin-password')
+        echo "harbor-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
+        HARBOR_DOMAIN=$(echo $KVMAP | yq -p=json -M '.harbor-domain')
+        echo "harbor-domain=$HARBOR_DOMAIN" >> $GITHUB_OUTPUT
+        HARBOR_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-harbor-cluster-kubeconfig')
+        echo "b64-harbor-cluster-kubeconfig-contents=$HARBOR_KCONFIG" >> $GITHUB_OUTPUT
+        TAP_BUILD_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-build-cluster-kubeconfig')
+        echo "b64-tap-build-cluster-kubeconfig-contents=$TAP_BUILD_KCONFIG" >> $GITHUB_OUTPUT
+        TAP_ITERATE_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-iterate-cluster-kubeconfig')
+        echo "b64-tap-iterate-cluster-kubeconfig-contents=$TAP_ITERATE_KCONFIG" >> $GITHUB_OUTPUT
+        TAP_VIEW_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-view-cluster-kubeconfig')
+        echo "b64-tap-view-cluster-kubeconfig-contents=$TAP_VIEW_KCONFIG" >> $GITHUB_OUTPUT
+        TAP_RUN_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-run-cluster-kubeconfig')
+        echo "b64-tap-run-cluster-kubeconfig-contents=$TAP_RUN_KCONFIG" >> $GITHUB_OUTPUT
+
+  install-tap-build-on-google:
+    needs: [obtain-secrets-from-secrets-manager,prepare-metadata-store-secrets]
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-prefix: "tanzu"
+      email-address: ${{ github.event.inputs.email-address }}
+      cluster-provider: "gke"
+      deployment-name: "tap"
+      active-profile: "build"
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-build-cluster-kubeconfig-contents }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  install-tap-iterate-on-google:
+    needs: obtain-secrets-from-secrets-manager
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-prefix: "tanzu"
+      email-address: ${{ github.event.inputs.email-address }}
+      cluster-provider: "gke"
+      deployment-name: "tap"
+      active-profile: "iterate"
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-iterate-cluster-kubeconfig-contents }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  install-tap-view-on-google:
+    needs: obtain-secrets-from-secrets-manager
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-prefix: "tanzu"
+      email-address: ${{ github.event.inputs.email-address }}
+      cluster-provider: "gke"
+      deployment-name: "tap"
+      active-profile: "view"
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  prepare-metadata-store-secrets:
+    needs: [obtain-secrets-from-secrets-manager,install-tap-view-on-google]
+    uses: ./.github/workflows/prepare-metadata-store-secrets.yml
+    with:
+      cluster-provider: ${{ github.event.inputs.cluster-provider }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      TAP_BUILD_KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-build-cluster-kubeconfig-contents }}
+      TAP_VIEW_KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
+
+  install-tap-run-on-google:
+    needs: obtain-secrets-from-secrets-manager
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-prefix: "tanzu"
+      email-address: ${{ github.event.inputs.email-address }}
+      cluster-provider: "gke"
+      deployment-name: "tap"
+      active-profile: "run"
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-run-cluster-kubeconfig-contents }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}

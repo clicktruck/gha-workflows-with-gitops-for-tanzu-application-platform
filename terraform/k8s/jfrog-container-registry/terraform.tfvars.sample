@@ -1,0 +1,3 @@
+domain = "your.domain.com"
+acme_email = "your@email.com"
+kubeconfig_path = "~/.kube/config"

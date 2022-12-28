@@ -1,0 +1,32 @@
+apiVersion: training.eduk8s.io/v1alpha2
+kind: Workshop
+metadata:
+  name: cnr-serving-advanced
+  namespace: learningcenter-supplemental
+spec:
+  title: Advanced Knative Serving for Cloud Native Runtimes for VMware Tanzu
+  description: A workshop that presents advanced topics in Knative Serving for users of the Cloud Native Runtimes for VMware Tanzu
+  vendor: learningcenter.tanzu.vmware.com
+  authors:
+  - The Developer Experience TSL Team
+  difficulty: intermediate
+  duration: 15m
+  url: https://github.com/tanzu-developer-experience/cnr-serving-advanced
+  content:
+    image: ghcr.io/clue2solve/knative-workshop-eduk8s:latest
+    files: github.com/tanzu-developer-experience/cnr-serving-advanced
+  session:
+    namespaces:
+      budget: xxx-large
+      limits:
+        min:
+          cpu: 25m
+    applications:
+      terminal:
+        enabled: true
+        layout: split
+      console:
+        enabled: true
+        vendor: octant
+      editor:
+        enabled: true

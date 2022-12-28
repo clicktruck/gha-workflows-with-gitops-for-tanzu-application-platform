@@ -1,0 +1,33 @@
+apiVersion: learningcenter.tanzu.vmware.com/v1beta1
+kind: Workshop
+metadata:
+  name: cnr-fundamentals
+  namespace: learningcenter-supplemental
+spec:
+  title: Cloud Native Runtimes for VMware Tanzu Fundamentals
+  description: A workshop that shows users hands-on how to use the Cloud Native Runtimes for VMware Tanzu
+  vendor: learningcenter.tanzu.vmware.com
+  authors:
+  - Anand Rao
+  - Craig Olrich
+  difficulty: intermediate
+  duration: 15m
+  url: https://github.com/tanzu-developer-experience/cnr-developer-workshop
+  content:
+    image: ghcr.io/clue2solve/knative-workshop-eduk8s:latest
+    files: github.com/tanzu-developer-experience/cnr-developer-workshop
+  session:
+    namespaces:
+      budget: xxx-large
+      limits:
+        min:
+          cpu: 25m
+    applications:
+      terminal:
+        enabled: true
+        layout: split
+      console:
+        enabled: true
+        vendor: octant
+      editor:
+        enabled: true

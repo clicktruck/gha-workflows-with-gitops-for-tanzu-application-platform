@@ -1,0 +1,5 @@
+eks_cluster_id = "tap-full-JOcWUJ"
+eks_cluster_endpoint = "https://A5E25854C56B9F2A283ABE1C454697F8.gr7.us-west-2.eks.amazonaws.com"
+eks_cluster_version = "1.24"
+oidc_provider = "oidc.eks.us-west-2.amazonaws.com/id/A5E25854C56B9F2A283ABE1C454697F8"
+kubeconfig_path = "~/.kube/config"

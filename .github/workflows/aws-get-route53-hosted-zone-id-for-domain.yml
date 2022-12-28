@@ -1,0 +1,53 @@
+name: "aws-get-route53-hosted-zone-id-for-domain-under-management"
+
+on:
+  workflow_call:
+    inputs:
+      domain:
+        description: "A domain under management by a Route53 hosted zone"
+        type: string
+        required: true
+      region:
+        description: "The AWS region where the Route53 Hosted Zone is available"
+        type: string
+        required: true
+    secrets:
+      ROUTE53_ZONE_AWS_ACCESS_KEY_ID:
+        description: "AWS access key identifier for an account with write permissions to a Route53 hosted zone"
+        required: true
+      ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY:
+        description: "AWS secret access key for an account with write permissions to a Route53 hosted zone"
+        required: true
+
+    outputs:
+      hosted_zone_id:
+        description: "The AWS Route53 Hosted Zone identifier of a domain under management"
+        value: ${{ jobs.aws-cli.outputs.hosted_zone_id }}
+
+jobs:
+
+  aws-cli:
+    runs-on: ubuntu-20.04
+    name: "Fetch hosted zone id by domain with aws CLI"
+    env:
+      AWS_PAGER: ""
+
+    outputs:
+      hosted_zone_id: ${{ steps.set_outputs.outputs.hosted_zone_id }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.ROUTE53_ZONE_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ inputs.region }}
+
+    - name: Set Outputs
+      id: set_outputs
+      run: |
+        hosted_zone_id=$(aws route53 list-hosted-zones-by-name --dns-name ${{ inputs.domain }} --query='HostedZones[?Name==`${{ inputs.domain }}.`].Id' | sed '2q;d' | tr -d '"' | tr -d " " | tr -d "/hostedzone/")
+        echo "hosted_zone_id=${hosted_zone_id}" >> $GITHUB_OUTPUT

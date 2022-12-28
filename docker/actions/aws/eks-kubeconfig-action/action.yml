@@ -1,0 +1,32 @@
+name: "Get .kube/config from EKS cluster Action"
+description: "Use eksctl CLI to obtain .kube/config then emit contents base 64 encoded"
+inputs:
+  cluster-name:
+    description: "The name of the EKS cluster"
+    required: true
+  aws-region:
+    description: "The AWS region where the EKS cluster is running"
+    required: true
+  aws-access-key-id:
+    description: "An access key identifier for an AWS user account or role"
+    required: true
+  aws-secret-access-key:
+    description: "A secret access key tied to an AWS user account or role"
+    required: true
+  aws-session-token:
+    description: "A temporary token issued by the AWS Secure Token Service"
+    required: false
+outputs:
+  b64kubeconfig:
+    description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - "${{ inputs.cluster-name }}"
+    - "${{ inputs.aws-region }}"
+  env:
+    AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+    AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+    AWS_SESSION_TOKEN: ${{ inputs.aws-session-token }}

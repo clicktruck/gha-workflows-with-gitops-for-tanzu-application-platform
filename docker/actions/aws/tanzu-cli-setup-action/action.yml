@@ -1,0 +1,49 @@
+name: "Tanzu CLI Setup Action"
+description: "Execute a command with the kubectl or tanzu CLI"
+inputs:
+  enable-tanzu-cli:
+    description: "Whether or not to install the tanzu CLI and configure plugins"
+    required: false
+    default: "false"
+  command:
+    description: "The kubectl or tanzu CLI command to execute"
+    required: true
+    default: "tanzu version"
+  query-for-output:
+    description: "What may be applied to fetch result of command execution.  (Must be an quoted string-value)."
+    required: false
+  kubeconfig-contents:
+    description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+    required: false
+  csp-api-token:
+    description: "VMware Cloud Service Platform API Token, used for authenticating to the VMware Marketplace"
+    required: true
+  aws-access-key-id:
+    description: "An access key identifier for an AWS user account or role"
+    required: true
+  aws-secret-access-key:
+    description: "A secret access key tied to an AWS user account or role"
+    required: true
+  aws-session-token:
+    description: "A temporary token issued by the AWS Secure Token Service"
+    required: false
+  aws-region:
+    description: "An AWS region"
+    required: false
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - "${{ inputs.command }}"
+    - "${{ inputs.kubeconfig-contents }}"
+    - "${{ inputs.query-for-output }}"
+  env:
+    TANZU_CLI_VERSION: 1.6.0
+    TANZU_CLI_CORE_VERSION: 0.25.0
+    CSP_API_TOKEN: ${{ inputs.csp-api-token }}
+    AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+    AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+    AWS_SESSION_TOKEN: ${{ inputs.aws-session-token }}
+    AWS_REGION: ${{ inputs.aws-region }}
+    TANZU_CLI_ENABLED: ${{ inputs.enable-tanzu-cli }}

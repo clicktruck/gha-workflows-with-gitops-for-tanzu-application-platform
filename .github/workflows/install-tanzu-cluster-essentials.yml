@@ -1,0 +1,88 @@
+name: "install-tanzu-cluster-essentials"
+
+on:
+  workflow_call:
+    inputs:
+      cluster-provider:
+        description: "The Kubernetes service provider"
+        type: string
+        required: true
+    secrets:
+      GOOGLE_PROJECT_ID:
+        required: false
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: false
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      AWS_SESSION_TOKEN:
+        required: false
+      TANZU_NETWORK_API_TOKEN:
+        required: true
+      TANZU_NETWORK_USERNAME:
+        required: true
+      TANZU_NETWORK_PASSWORD:
+        required: true
+      CSP_API_TOKEN:
+        required: true
+      KUBECONFIG_CONTENTS:
+        required: true
+
+jobs:
+  encode-tanzu-cluster-essentials-install-script:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+          result="$(cat "scripts/install-tanzu-cluster-essentials.sh" | base64 -w 0)"
+          echo "result=${result}" >> $GITHUB_OUTPUT
+
+  install:
+    needs: encode-tanzu-cluster-essentials-install-script
+    runs-on: ubuntu-20.04
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: "Install Tanzu Cluster Essentials"
+      if: contains(fromJson('["eks","gke"]'), inputs.cluster-provider) != true
+      uses: ./docker/actions/tanzu-runsh-setup-action
+      with:
+        script-contents: ${{ needs.encode-tanzu-cluster-essentials-install-script.outputs.result }}
+        script-arguments: '${{ secrets.TANZU_NETWORK_API_TOKEN }} ${{ secrets.TANZU_NETWORK_USERNAME }} ${{ secrets.TANZU_NETWORK_PASSWORD }}'
+        kubeconfig-contents: ${{ secrets.KUBECONFIG_CONTENTS }}
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Install Tanzu Cluster Essentials on GKE"
+      if: inputs.cluster-provider == 'gke'
+      uses: ./docker/actions/google/tanzu-runsh-setup-action
+      with:
+        script-contents: ${{ needs.encode-tanzu-cluster-essentials-install-script.outputs.result }}
+        script-arguments: '${{ secrets.TANZU_NETWORK_API_TOKEN }} ${{ secrets.TANZU_NETWORK_USERNAME }} ${{ secrets.TANZU_NETWORK_PASSWORD }}'
+        kubeconfig-contents: ${{ secrets.KUBECONFIG_CONTENTS }}
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+        google-project-id: ${{ secrets.GOOGLE_PROJECT_ID }}
+        google-service-account-key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+
+    - name: "Install Tanzu Cluster Essentials on EKS"
+      if: inputs.cluster-provider == 'eks'
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        script-contents: ${{ needs.encode-tanzu-cluster-essentials-install-script.outputs.result }}
+        script-arguments: '${{ secrets.TANZU_NETWORK_API_TOKEN }} ${{ secrets.TANZU_NETWORK_USERNAME }} ${{ secrets.TANZU_NETWORK_PASSWORD }}'
+        kubeconfig-contents: ${{ secrets.KUBECONFIG_CONTENTS }}
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}

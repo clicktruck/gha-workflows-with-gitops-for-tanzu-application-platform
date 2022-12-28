@@ -1,0 +1,43 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:base64", "base64")
+---
+apiVersion: v1
+data:
+  client-secret: #@ base64.encode(data.values.azure.credentials.clientSecret)
+kind: Secret
+metadata:
+  name: azuredns-config
+  namespace: cert-manager
+  annotations:
+    kapp.k14s.io/change-group: "cert-manager-azuredns-credentials"
+    kapp.k14s.io/change-rule.create-order: "upsert after upserting cert-manager"
+    kapp.k14s.io/change-rule.delete-order: "delete before deleting cert-manager"
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-contour-cluster-issuer
+  annotations:
+    kapp.k14s.io/change-rule.create-order: "upsert after upserting cert-manager-azuredns-credentials"
+    kapp.k14s.io/change-rule.delete-order: "delete before deleting cert-manager-azuredns-credentials"
+spec:
+  acme:
+    email: #@ data.values.acme.email
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+    # @see https://cert-manager.io/docs/configuration/acme/dns01/azuredns/
+    - dns01:
+        azureDNS:
+          clientID: #@ data.values.azure.credentials.clientId
+          clientSecretSecretRef:
+            # The following is the secret we created in Kubernetes. Issuer will use this to present challenge to Azure DNS.
+            name: azuredns-config
+            key: client-secret
+          subscriptionID: #@ data.values.azure.credentials.subscriptionId
+          tenantID: #@ data.values.azure.credentials.tenantId
+          resourceGroupName: #@ data.values.azure.resourceGroup
+          hostedZoneName: #@ data.values.ingress.domain
+          # Azure Cloud Environment, default to AzurePublicCloud
+          environment: AzurePublicCloud

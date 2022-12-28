@@ -1,0 +1,48 @@
+name: "Tanzu Kubernetes Grid Create Management Cluster Github Action"
+description: "Creates a management cluster and vends the Base64-encoded contents of the .kube-tkg/config file"
+inputs:
+  path-to-cluster-config:
+    description: "Path to management cluster configuration"
+    required: true
+  bootstrap-kubeconfig-contents:
+    description: "The base64 encoded contents of a .kube/config file for a Kind cluster that has the current Kubernetes cluster context set"
+    required: true
+  management-kubeconfig-contents:
+    description: "The base64 encoded contents of a .kube/config file from a TKG management cluster that already has the current Kubernetes cluster context set. (If supplied, we'll attempt to authenticate, if successful we will skip management cluster creation and just set the output of this action to be the same)."
+    required: false
+  csp-api-token:
+    description: "VMware Cloud Service Platform API Token, used for authenticating to the VMware Marketplace"
+    required: true
+  aws-access-key-id:
+    description: "An access key identifier for an AWS user account or role"
+    required: true
+  aws-secret-access-key:
+    description: "A secret access key tied to an AWS user account or role"
+    required: true
+  aws-session-token:
+    description: "A temporary token issued by the AWS Secure Token Service"
+    required: false
+  aws-region:
+    description: "An AWS region"
+    required: false
+outputs:
+  create_secret:
+    description: "Whether or not to create a Github secret. (Never overwrite an existing secret)."
+  kubeconfig_contents:
+    description: "The base64 encoded contents of a .kube/config file from a TKG management cluster that already has the current Kubernetes cluster context set"
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - "${{ inputs.path-to-cluster-config }}"
+    - "${{ inputs.bootstrap-kubeconfig-contents }}"
+    - "${{ inputs.management-kubeconfig-contents }}"
+  env:
+    TANZU_CLI_VERSION: 1.6.0
+    TANZU_CLI_CORE_VERSION: 0.25.0
+    CSP_API_TOKEN: ${{ inputs.csp-api-token }}
+    AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+    AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+    AWS_SESSION_TOKEN: ${{ inputs.aws-session-token }}
+    AWS_REGION: ${{ inputs.aws-region }}

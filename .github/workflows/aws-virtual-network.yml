@@ -1,0 +1,130 @@
+name: "aws-05-administer-virtual-private-cloud"
+
+on:
+  workflow_call:
+    inputs:
+      vpc-cidr:
+        description: "The VPC CIDR block"
+        required: true
+        type: string
+      region:
+        description: "The AWS region where the VPC will be created"
+        required: true
+        type: string
+      action:
+        required: true
+        type: string
+        description: "Create (new) or destroy (existing)"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+      TF_BACKEND_s3_bucket_name:
+        required: true
+      AWS_KMS_ALIAS:
+        required: true
+    outputs:
+      vpc_id:
+        value: ${{ jobs.terraform.outputs.vpc_id }}
+      a_public_subnet_id:
+        value: ${{ jobs.terraform.outputs.a_public_subnet_id }}
+      public_subnet_ids:
+        value: ${{ jobs.terraform.outputs.public_subnet_ids }}
+      private_subnet_ids:
+        value: ${{ jobs.terraform.outputs.private_subnet_ids }}
+      provisioner_security_group_id:
+        value: ${{ jobs.terraform.outputs.provisioner_security_group_id }}
+      private_subnets_cidr_blocks:
+        value: ${{ jobs.terraform.outputs.private_subnets_cidr_blocks }}
+      public_subnets_cidr_blocks:
+        value: ${{ jobs.terraform.outputs.public_subnets_cidr_blocks }}
+
+jobs:
+  terraform:
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ inputs.region }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_VAR_vpc_cidr: ${{ inputs.vpc-cidr }}
+    runs-on: ubuntu-20.04
+
+    outputs:
+      vpc_id: ${{ steps.set_outputs.outputs.vpc_id }}
+      a_public_subnet_id: ${{ steps.set_outputs.outputs.a_public_subnet_id }}
+      public_subnet_ids: ${{ steps.set_outputs.outputs.public_subnet_ids }}
+      private_subnet_ids: ${{ steps.set_outputs.outputs.private_subnet_ids }}
+      provisioner_security_group_id: ${{ steps.set_outputs.outputs.provisioner_security_group_id }}
+      private_subnets_cidr_blocks: ${{ steps.set_outputs.outputs.private_subnets_cidr_blocks }}
+      public_subnets_cidr_blocks: ${{ steps.set_outputs.outputs.public_subnets_cidr_blocks }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/aws/virtual-network
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    - name: Generate backend configuration
+      run: |
+          cp ../backend/backend.tf .
+          echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
+          echo "key = \"vpc/terraform.tfstate\"" >> config.aws.tfbackend
+          echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
+          echo "encrypt = true" >> config.aws.tfbackend
+          echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
+          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.aws.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: terraform destroy -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        vpc_id=$(terraform output --raw vpc_id)
+        echo "vpc_id=${vpc_id}" >> $GITHUB_OUTPUT
+        a_public_subnet_id=$(terraform output --raw a_public_subnet_id)
+        echo "a_public_subnet_id=${a_public_subnet_id}" >> $GITHUB_OUTPUT
+        public_subnet_ids=$(terraform output --raw public_subnet_ids)
+        echo "public_subnet_ids=${public_subnet_ids}" >> $GITHUB_OUTPUT
+        private_subnet_ids=$(terraform output --raw private_subnet_ids)
+        echo "private_subnet_ids=${private_subnet_ids}" >> $GITHUB_OUTPUT
+        provisioner_security_group_id=$(terraform output --raw provisioner_security_group_id)
+        echo "provisioner_security_group_id=${provisioner_security_group_id}" >> $GITHUB_OUTPUT
+        private_subnets_cidr_blocks=$(terraform output --raw private_subnets_cidr_blocks)
+        echo "private_subnets_cidr_blocks=${private_subnets_cidr_blocks}" >> $GITHUB_OUTPUT
+        public_subnets_cidr_blocks=$(terraform output --raw public_subnets_cidr_blocks)
+        echo "public_subnets_cidr_blocks=${public_subnets_cidr_blocks}" >> $GITHUB_OUTPUT

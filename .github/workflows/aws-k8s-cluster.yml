@@ -1,0 +1,300 @@
+name: "aws-06-administer-elastic-kubernetes-service"
+
+on:
+  workflow_call:
+    inputs:
+      cluster-name:
+        description: "Name of the EKS cluster."
+        type: string
+        required: true
+      vpc-id:
+        description: "An identifier of an existing AWS VPC"
+        type: string
+        required: true
+      node-pool-instance-type:
+        description: "The instance type of each node in pool"
+        type: string
+        required: true
+      desired-nodes:
+        description: "The desired number of worker nodes in cluster"
+        type: string
+        required: true
+      k8s-version:
+        description: "A supported and available Kubernetes (major.minor) version"
+        type: string
+        required: true
+      ssh-key-name:
+        description: "An existing SSH keypair name"
+        type: string
+        required: true
+      provisioner-security-group-id:
+        description: "The security group id of a public subnet that will host bastion"
+        type: string
+        required: true
+      private-subnet-ids:
+        description: "Comma-separated list of private subnet identifiers"
+        type: string
+        required: true
+      public-subnet-ids:
+        description: "Comma-separated list of public subnet identifiers"
+        type: string
+        required: true
+      region:
+        description: "The AWS region where the EKS cluster will be created"
+        required: true
+        type: string
+      action:
+        required: true
+        type: string
+        description: "Create (new) or destroy (existing)"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+      TF_BACKEND_s3_bucket_name:
+        required: true
+      AWS_KMS_ALIAS:
+        required: true
+      TANZU_NETWORK_API_TOKEN:
+        required: true
+      TANZU_NETWORK_USERNAME:
+        required: true
+      TANZU_NETWORK_PASSWORD:
+        required: true
+      CSP_API_TOKEN:
+        required: true
+      GIT_SSH_PRIVATE_KEY:
+        required: true
+      GIT_SSH_KNOWN_HOSTS:
+        required: true
+
+    outputs:
+      eks_cluster_id:
+        description: "The name of the Elastic Kubernetes Service cluster"
+        value: ${{ jobs.manage-cluster.outputs.eks_cluster_id }}
+      eks_cluster_security_group_id:
+        description: "EKS created security group ID applied to ENI that is attached to EKS Control Plane master nodes, as well as any managed workloads"
+        value: ${{ jobs.manage-cluster.outputs.eks_cluster_security_group_id }}
+
+jobs:
+  manage-cluster:
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ inputs.region }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_PAGER: ""
+      TF_VAR_vpc_id: ${{ inputs.vpc-id }}
+      TF_VAR_eks_cluster_id: ${{ inputs.cluster-name }}
+      TF_VAR_desired_nodes: "${{ inputs.desired-nodes }}"
+      TF_VAR_node_pool_instance_type: "${{ inputs.node-pool-instance-type }}"
+      TF_VAR_kubernetes_version: "${{ inputs.k8s-version }}"
+      TF_VAR_ssh_key_name: "${{ inputs.ssh-key-name }}"
+      TF_VAR_provisioner_security_group_id: "${{ inputs.provisioner-security-group-id }}"
+      TF_VAR_private_subnet_ids: "${{ inputs.private-subnet-ids }}"
+      TF_VAR_public_subnet_ids: "${{ inputs.public-subnet-ids }}"
+      TF_VAR_kubeconfig_path: "/tmp/.kube/config"
+      KUBECONFIG: "/tmp/.kube/config"
+
+    runs-on: ubuntu-20.04
+
+    outputs:
+      eks_cluster_id: ${{ steps.set_outputs.outputs.eks_cluster_id }}
+      eks_cluster_security_group_id: ${{ steps.set_outputs.outputs.eks_cluster_security_group_id }}
+      eks_cluster_endpoint: ${{ steps.set_outputs.outputs.eks_cluster_endpoint }}
+      eks_cluster_version: ${{ steps.set_outputs.outputs.eks_cluster_version }}
+      oidc_provider: ${{ steps.set_outputs.outputs.oidc_provider }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/aws/cluster
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      if: inputs.action == 'destroy'
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+        mask-aws-account-id: false
+
+    - name: Fetch base64-encoded kubeconfig by cluster name
+      if: inputs.action == 'destroy'
+      id: cluster_credentials
+      run: |
+        cluster_name=$(aws eks list-clusters --region ${{ inputs.region }} --query 'clusters[?contains(@, `${{ inputs.cluster-name }}`)]' | sed -n '2p' | tr -d '"' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        aws eks update-kubeconfig --name ${cluster_name} --region "${{ inputs.region }}"
+        b64_kubeconfig=$(cat $KUBECONFIG | base64 -w 0)
+        echo "b64_kubeconfig=${b64_kubeconfig}" >> $GITHUB_OUTPUT
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    - name: Generate backend configuration
+      run: |
+          cp ../backend/backend.tf .
+          echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
+          echo "key = \"cluster/${{ inputs.cluster-name }}/terraform.tfstate\"" >> config.aws.tfbackend
+          echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
+          echo "encrypt = true" >> config.aws.tfbackend
+          echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
+          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+
+    - name: Copy provider variant into place
+      run: |
+        cp ${{ inputs.action}}/providers.tf .
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.aws.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: |
+        mkdir -p /tmp/.kube
+        echo "${{ steps.cluster_credentials.outputs.b64_kubeconfig }}" | base64 -d > $KUBECONFIG
+        chmod 600 $KUBECONFIG
+        terraform destroy -auto-approve
+
+    - name: Set Outputs
+      if: inputs.action == 'create'
+      id: set_outputs
+      run: |
+        eks_cluster_id=$(terraform output --raw eks_cluster_id)
+        echo "eks_cluster_id=${eks_cluster_id}" >> $GITHUB_OUTPUT
+        eks_cluster_endpoint=$(terraform output --raw eks_cluster_endpoint)
+        echo "eks_cluster_endpoint=${eks_cluster_endpoint}" >> $GITHUB_OUTPUT
+        eks_cluster_security_group_id=$(terraform output --raw eks_cluster_security_group_id)
+        echo "eks_cluster_security_group_id=${eks_cluster_security_group_id}" >> $GITHUB_OUTPUT
+        oidc_provider=$(terraform output --raw oidc_provider)
+        echo "oidc_provider=${oidc_provider}" >> $GITHUB_OUTPUT
+
+  obtain-base64-encoded-kubeconfig-from-cluster:
+    if: inputs.action == 'create'
+    needs: manage-cluster
+    uses: ./.github/workflows/aws-obtain-base64-encoded-kubeconfig-for-cluster.yml
+    with:
+      cluster-name: ${{ needs.manage-cluster.outputs.eks_cluster_id }}
+      region: ${{ inputs.region }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+
+  install-eks-cluster-addons:
+    if: inputs.action == 'create'
+    needs: [manage-cluster,obtain-base64-encoded-kubeconfig-from-cluster]
+    uses: ./.github/workflows/aws-k8s-cluster-addons.yml
+    with:
+      cluster-id: ${{ needs.manage-cluster.outputs.eks_cluster_id }}
+      cluster-name: ${{ inputs.cluster-name }}
+      cluster-endpoint: ${{ needs.manage-cluster.outputs.eks_cluster_endpoint }}
+      k8s-version: ${{ inputs.k8s-version }}
+      oidc-provider: ${{ needs.manage-cluster.outputs.oidc_provider }}
+      region: ${{ inputs.region }}
+      action: "install"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+
+  update-cluster-storage-class-default:
+    if: inputs.action == 'create'
+    needs: [install-eks-cluster-addons,obtain-base64-encoded-kubeconfig-from-cluster]
+    uses: ./.github/workflows/aws-k8s-cluster-storage.yml
+    with:
+      cluster-name: ${{ inputs.cluster-name }}
+      region: ${{ inputs.region }}
+      action: "update"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+
+  install-tanzu-cluster-essentials:
+    if: inputs.action == 'create'
+    needs: [obtain-base64-encoded-kubeconfig-from-cluster,install-eks-cluster-addons]
+    uses: ./.github/workflows/install-tanzu-cluster-essentials.yml
+    with:
+      cluster-provider: "eks"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}
+
+  install-tanzu-standard-repo:
+    if: inputs.action == 'create'
+    needs: [obtain-base64-encoded-kubeconfig-from-cluster,install-tanzu-cluster-essentials]
+    uses: ./.github/workflows/install-tanzu-standard-repo.yml
+    with:
+      cluster-provider: "eks"
+      tkg-version: "v1.6.0"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}
+
+  install-tanzu-data-services-repo:
+    if: inputs.action == 'create'
+    needs: [obtain-base64-encoded-kubeconfig-from-cluster,install-tanzu-cluster-essentials]
+    uses: ./.github/workflows/install-tanzu-data-services-repo.yml
+    with:
+      cluster-provider: "eks"
+      tds-version: "1.5.0"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}

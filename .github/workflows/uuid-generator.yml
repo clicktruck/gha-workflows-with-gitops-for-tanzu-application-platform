@@ -1,0 +1,22 @@
+name: "uuid-generator"
+
+on:
+  workflow_call:
+    outputs:
+      uuid:
+        description: "A universally unique identifier (UUID) is a 128-bit label used for information in computer systems"
+        value: ${{ jobs.randomize.outputs.uuid }}
+
+jobs:
+  randomize:
+    runs-on: ubuntu-20.04
+
+    outputs:
+      uuid: ${{ steps.set_outputs.outputs.uuid }}
+
+    steps:
+    - name: Set Outputs
+      id: set_outputs
+      run: |
+        uuid=$(uuidgen)
+        echo "uuid=${uuid}" >> $GITHUB_OUTPUT

@@ -1,0 +1,355 @@
+name: "tkg-on-aws-create-workshop-environment"
+
+on:
+  workflow_dispatch:
+    inputs:
+      vpc-cidr:
+        description: "The VPC CIDR block"
+        required: true
+        default: "10.60.0.0/18"
+      footprint:
+        description: "Footprint for Tanzu Application Platform deployment"
+        required: true
+        type: choice
+        options:
+        - "single-cluster"
+        - "multi-cluster"
+        default: "single-cluster"
+      aws-access-key-id:
+        description: "AWS access key identifier for an account with write permissions to a Route53 hosted zone"
+        required: true
+      aws-secret-access-key:
+        description: "AWS secret access key for an account with write permissions to a Route53 hosted zone"
+        required: true
+      region:
+        description: "The AWS region where all resources will be created"
+        required: true
+        type: choice
+        options:
+        - us-east-1
+        - us-east-2
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - eu-north-1
+        - eu-south-1
+        - me-south-1
+        - sa-east-1
+        default: "us-west-2"
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        required: true
+      domain:
+        description: "Domain under management by an existing Route53 Hosted Zone"
+        required: true
+      control-plane-node-machine-type:
+        description: "The Amazon EC2 instance type of the control plane nodes"
+        required: true
+        type: choice
+        options:
+        - c4.large
+        - c5.large
+        - c5a.large
+        - c6a.large
+        - m4.large
+        - m5.large
+        - m5a.large
+        - m6a.large
+        - t3.large
+        - t3a.large
+        default: "t3a.large"
+      worker-node-machine-type:
+        description: "The Amazon EC2 instance type of the worker nodes"
+        required: true
+        type: choice
+        options:
+        - c4.xlarge
+        - c5.xlarge
+        - c5a.xlarge
+        - c6a.xlarge
+        - m4.xlarge
+        - m5.xlarge
+        - m5a.xlarge
+        - m6a.xlarge
+        - t3.xlarge
+        - t3a.xlarge
+        default: "m5a.xlarge"
+
+jobs:
+  create-keypair:
+    uses: ./.github/workflows/aws-keypair.yml
+    with:
+      ssh-key-name: "tap-admin-key"
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  create-vnet:
+    uses: ./.github/workflows/aws-virtual-network.yml
+    with:
+      vpc-cidr: ${{ github.event.inputs.vpc-cidr }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  create-management-cluster:
+    uses: ./.github/workflows/tkg-management-cluster-on-aws.yml
+    needs: [create-keypair,create-vnet]
+    with:
+      cluster-name: "overlord"
+      vpc-id: ${{ needs.create-vnet.outputs.vpc_id }}
+      private-subnet-ids: ${{ needs.create-vnet.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.create-vnet.outputs.public_subnet_ids }}
+      control-plane-node-machine-type: ${{ github.event.inputs.control-plane-node-machine-type }}
+      worker-node-machine-type: ${{ github.event.inputs.worker-node-machine-type }}
+      region: ${{ github.event.inputs.region }}
+      availability-zones: ${{ github.event.inputs.availability-zones }}
+      ssh-keypair-name: ${{ needs.create-keypair.outputs.ssh_key_name }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  create-harbor-cluster:
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [create-keypair,create-management-cluster]
+    with:
+      cluster-name: "harbor"
+      vpc-id: ${{ needs.create-vnet.outputs.vpc_id }}
+      private-subnet-ids: ${{ needs.create-vnet.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.create-vnet.outputs.public_subnet_ids }}
+      control-plane-node-machine-type: ${{ github.event.inputs.control-plane-node-machine-type }}
+      worker-node-machine-type: ${{ github.event.inputs.worker-node-machine-type }}
+      region: ${{ github.event.inputs.region }}
+      availability-zones: ${{ github.event.inputs.availability-zones }}
+      ssh-keypair-name: ${{ needs.create-keypair.outputs.ssh_key_name }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      NEW_TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ needs.create-management-cluster.outputs.kubeconfig_contents }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  fetch-route53-hosted-zone-id:
+    uses: ./.github/workflows/aws-get-route53-hosted-zone-id-for-domain.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      region: ${{ github.event.inputs.region }}
+    secrets:
+      ROUTE53_ZONE_AWS_ACCESS_KEY_ID: ${{ github.event.inputs.aws-access-key-id }}
+      ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY: ${{ github.event.inputs.aws-secret-access-key }}
+  install-tanzu-ingress-into-harbor-cluster:
+    uses: ./.github/workflows/install-tanzu-ingress.yml
+    needs: [create-harbor-cluster,fetch-route53-hosted-zone-id]
+    with:
+      target-cloud: "aws"
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      aws-region: ${{ github.event.inputs.region }}
+      aws-route53-hosted-zone-id: ${{ needs.fetch-route53-hosted-zone-id.outputs.hosted_zone_id }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ needs.create-harbor-cluster.outputs.kubeconfig_contents }}
+      ROUTE53_ZONE_AWS_ACCESS_KEY_ID: ${{ github.event.inputs.aws-access-key-id }}
+      ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY: ${{ github.event.inputs.aws-secret-access-key }}
+  install-harbor:
+    uses: ./.github/workflows/aws-harbor.yml
+    needs: [create-harbor-cluster,install-tanzu-ingress-into-harbor-cluster]
+    with:
+      email-address: ${{ github.event.inputs.email-address }}
+      domain: ${{ github.event.inputs.domain }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ needs.create-harbor-cluster.outputs.kubeconfig_contents }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  create-new-project-in-harbor:
+    needs: install-harbor
+    uses: ./.github/workflows/create-harbor-project.yml
+    with:
+      api-endpoint: harbor.${{ github.event.inputs.domain }}
+      project: "tanzu"
+    secrets:
+      HARBOR_USERNAME: "admin"
+      HARBOR_PASSWORD: ${{ needs.install-harbor.outputs.harbor_admin_password }}
+  create-tap-cluster:
+    if: github.event.inputs.footprint == 'single-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [create-keypair,create-management-cluster]
+    with:
+      cluster-name: "tap"
+      vpc-id: ${{ needs.create-vnet.outputs.vpc_id }}
+      private-subnet-ids: ${{ needs.create-vnet.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.create-vnet.outputs.public_subnet_ids }}
+      control-plane-node-machine-type: ${{ github.event.inputs.control-plane-node-machine-type }}
+      worker-node-machine-type: ${{ github.event.inputs.worker-node-machine-type }}
+      region: ${{ github.event.inputs.region }}
+      availability-zones: ${{ github.event.inputs.availability-zones }}
+      ssh-keypair-name: ${{ needs.create-keypair.outputs.ssh_key_name }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      NEW_TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ needs.create-management-cluster.outputs.kubeconfig_contents }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  create-tap-build-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [create-keypair,create-management-cluster]
+    with:
+      cluster-name: "tap-build"
+      vpc-id: ${{ needs.create-vnet.outputs.vpc_id }}
+      private-subnet-ids: ${{ needs.create-vnet.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.create-vnet.outputs.public_subnet_ids }}
+      control-plane-node-machine-type: ${{ github.event.inputs.control-plane-node-machine-type }}
+      worker-node-machine-type: ${{ github.event.inputs.worker-node-machine-type }}
+      region: ${{ github.event.inputs.region }}
+      availability-zones: ${{ github.event.inputs.availability-zones }}
+      ssh-keypair-name: ${{ needs.create-keypair.outputs.ssh_key_name }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      NEW_TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ needs.create-management-cluster.outputs.kubeconfig_contents }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  create-tap-iterate-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [create-keypair,create-management-cluster]
+    with:
+      cluster-name: "tap-iterate"
+      vpc-id: ${{ needs.create-vnet.outputs.vpc_id }}
+      private-subnet-ids: ${{ needs.create-vnet.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.create-vnet.outputs.public_subnet_ids }}
+      control-plane-node-machine-type: ${{ github.event.inputs.control-plane-node-machine-type }}
+      worker-node-machine-type: ${{ github.event.inputs.worker-node-machine-type }}
+      region: ${{ github.event.inputs.region }}
+      availability-zones: ${{ github.event.inputs.availability-zones }}
+      ssh-keypair-name: ${{ needs.create-keypair.outputs.ssh_key_name }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      NEW_TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ needs.create-management-cluster.outputs.kubeconfig_contents }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  create-tap-view-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [create-keypair,create-management-cluster]
+    with:
+      cluster-name: "tap-view"
+      vpc-id: ${{ needs.create-vnet.outputs.vpc_id }}
+      private-subnet-ids: ${{ needs.create-vnet.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.create-vnet.outputs.public_subnet_ids }}
+      control-plane-node-machine-type: ${{ github.event.inputs.control-plane-node-machine-type }}
+      worker-node-machine-type: ${{ github.event.inputs.worker-node-machine-type }}
+      region: ${{ github.event.inputs.region }}
+      availability-zones: ${{ github.event.inputs.availability-zones }}
+      ssh-keypair-name: ${{ needs.create-keypair.outputs.ssh_key_name }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      NEW_TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ needs.create-management-cluster.outputs.kubeconfig_contents }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  create-tap-run-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/tkg-workload-cluster-on-aws.yml
+    needs: [create-keypair,create-management-cluster]
+    with:
+      cluster-name: "tap-run"
+      vpc-id: ${{ needs.create-vnet.outputs.vpc_id }}
+      private-subnet-ids: ${{ needs.create-vnet.outputs.private_subnet_ids }}
+      public-subnet-ids: ${{ needs.create-vnet.outputs.public_subnet_ids }}
+      control-plane-node-machine-type: ${{ github.event.inputs.control-plane-node-machine-type }}
+      worker-node-machine-type: ${{ github.event.inputs.worker-node-machine-type }}
+      region: ${{ github.event.inputs.region }}
+      availability-zones: ${{ github.event.inputs.availability-zones }}
+      ssh-keypair-name: ${{ needs.create-keypair.outputs.ssh_key_name }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      NEW_TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ needs.create-management-cluster.outputs.kubeconfig_contents }}
+      TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS: ${{ secrets.TKG_MANAGEMENT_CLUSTER_KUBECONFIG_CONTENTS }}
+  create-secrets-manager:
+    uses: ./.github/workflows/aws-secrets-manager.yml
+    with:
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  update-secrets-manager-secrets-for-single-cluster-footprint:
+    if: github.event.inputs.footprint == 'single-cluster'
+    uses: ./.github/workflows/aws-secrets-manager-secrets.yml
+    needs: [create-keypair,create-secrets-manager,create-harbor-cluster,install-harbor,create-tap-cluster]
+    with:
+      secretsManagerName: ${{ needs.create-secrets-manager.outputs.secrets_manager_name }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      secretsMap: '{ "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-harbor-cluster-kubeconfig-contents" : "${{ needs.create-harbor-cluster.outputs.kubeconfig_contents }}", "b64-tap-cluster-kubeconfig-contents" : "${{ needs.create-tap-cluster.outputs.kubeconfig_contents }}" }'
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+  update-secrets-manager-secrets-for-multi-cluster-footprint:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/aws-secrets-manager-secrets.yml
+    needs: [create-keypair,create-secrets-manager,create-harbor-cluster,install-harbor,create-tap-build-cluster,create-tap-iterate-cluster,create-tap-view-cluster,create-tap-run-cluster]
+    with:
+      secretsManagerName: ${{ needs.create-secrets-manager.outputs.secrets_manager_name }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      secretsMap: '{ "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-harbor-cluster-kubeconfig-contents" : "${{ needs.create-harbor-cluster.outputs.kubeconfig_contents }}", "b64-tap-build-cluster-kubeconfig-contents" : "${{ needs.create-tap-build-cluster.outputs.kubeconfig_contents }}", "b64-tap-iterate-cluster-kubeconfig-contents" : "${{ needs.create-tap-iterate-cluster.outputs.kubeconfig_contents }}", "b64-tap-view-cluster-kubeconfig-contents" : "${{ needs.create-tap-view-cluster.outputs.kubeconfig_contents }}", "b64-tap-run-cluster-kubeconfig-contents" : "${{ needs.create-tap-run-cluster.outputs.kubeconfig_contents }}" }'
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}

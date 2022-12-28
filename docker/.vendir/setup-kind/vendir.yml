@@ -1,0 +1,10 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+- path: ../../actions/setup-kind
+  contents:
+  - path: .
+    git:
+      url: https://github.com/pacphi/setup-kind
+      ref: origin/main
+    newRootPath: .

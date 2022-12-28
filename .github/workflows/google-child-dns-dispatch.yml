@@ -1,0 +1,36 @@
+name: "google-dispatch-child-dns-zone"
+
+on:
+  workflow_dispatch:
+    inputs:
+      google-project-id:
+        description: "Google project that is hosting the Cloud DNS zone"
+        required: true
+      google-service-account-key:
+        description: "Base64-encoded service account keyfile contents of an account with write permissions to a Cloud DNS zone"
+        required: true
+      root-domain-zone-name:
+        description: "Name of zone hosting the root domain under management by Cloud DNS"
+        required: true
+      subdomain:
+        description: "The prefix to use as the subdomain for the child zone"
+        required: true
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+jobs:
+  manage-child-dns:
+    uses: ./.github/workflows/google-child-dns.yml
+    with:
+      root-domain-zone-name: ${{ github.event.inputs.root-domain-zone-name }}
+      subdomain: ${{ github.event.inputs.subdomain }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ github.event.inputs.google-project-id }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ github.event.inputs.google-service-account-key }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}

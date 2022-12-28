@@ -1,0 +1,332 @@
+name: "google-destroy-autopilot-workshop-environment"
+
+on:
+  workflow_dispatch:
+    inputs:
+      footprint:
+        description: "Footprint for TAP installation"
+        required: true
+        type: choice
+        options:
+        - "single-cluster"
+        - "multi-cluster"
+        default: "single-cluster"
+      vpc-network-name:
+        description: "The Google Cloud VPC network name"
+        required: true
+        default: "tap-demo-network"
+      region:
+        description: "The Google Cloud region where all resources will be destroyed"
+        required: true
+        type: choice
+        options:
+        - asia-east1
+        - asia-east2
+        - asia-northeast1
+        - asia-northeast2
+        - asia-northeast3
+        - asia-south1
+        - asia-south2
+        - asia-southeast1
+        - asia-southeast2
+        - australia-southeast1
+        - australia-southeast2
+        - europe-central2
+        - europe-north1
+        - europe-southwest1
+        - europe-west1
+        - europe-west2
+        - europe-west3
+        - europe-west4
+        - europe-west6
+        - europe-west8
+        - europe-west9
+        - northamerica-northeast1
+        - northamerica-northeast2
+        - southamerica-east1
+        - southamerica-west1
+        - us-central1
+        - us-east1
+        - us-east4
+        - us-east5
+        - us-south1
+        - us-west1
+        - us-west2
+        - us-west3
+        - us-west4
+        default: "us-west2"
+      container-image-registry-provider:
+        description: "A choice of provider for a container image registry"
+        required: true
+        type: choice
+        options:
+        - google-container-registry
+        - google-artifact-registry
+        - harbor
+        default: "harbor"
+
+jobs:
+  region-to-geo:
+    if: github.event.inputs.container-image-registry-provider == 'google-container-registry'
+    runs-on: ubuntu-20.04
+
+    outputs:
+      result: ${{ steps.convert.outputs.geo }}
+
+    steps:
+    - name: Convert region to geo
+      id: convert
+      run: |
+        region="${{ github.event.inputs.region }}"
+        geo=$(echo $region | cut -d- -f1)
+        case $geo in
+          europe)
+            geo="eu"
+            ;;
+          northamerica | southamerica)
+            geo="us"
+            ;;
+          australia)
+            geo="asia"
+            ;;
+          *)
+            geo="us"
+            ;;
+        esac
+        echo "geo=${geo}" >> $GITHUB_OUTPUT
+  destroy-google-container-registry:
+    needs: region-to-geo
+    uses: ./.github/workflows/google-container-registry-2.yml
+    with:
+      region: ${{ needs.region-to-geo.outputs.result }}
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+  destroy-google-artifact-registry:
+    if: github.event.inputs.container-image-registry-provider == 'google-artifact-registry'
+    uses: ./.github/workflows/google-container-registry.yml
+    with:
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  destroy-harbor-cluster:
+    if: github.event.inputs.container-image-registry-provider == 'harbor'
+    uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
+    with:
+      cluster-name: "harbor"
+      region: ${{ github.event.inputs.region }}
+      k8s-version: "1.24"
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      master_ipv4_cidr_block_28: "10.1.0.0/28"
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-vnet-single-cluster-with-google-container-registry:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'google-container-registry'
+    uses: ./.github/workflows/google-virtual-network.yml
+    needs: [destroy-tap-cluster]
+    with:
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  destroy-vnet-single-cluster-with-google-artifact-registry:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'google-artifact-registry'
+    uses: ./.github/workflows/google-virtual-network.yml
+    needs: [destroy-tap-cluster]
+    with:
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  destroy-vnet-single-cluster-with-harbor:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'harbor'
+    uses: ./.github/workflows/google-virtual-network.yml
+    needs: [destroy-harbor-cluster,destroy-tap-cluster]
+    with:
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  destroy-vnet-multi-cluster-with-google-container-registry:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'google-container-registry'
+    uses: ./.github/workflows/google-virtual-network.yml
+    needs: [destroy-tap-build-cluster,destroy-tap-iterate-cluster,destroy-tap-view-cluster,destroy-tap-run-cluster]
+    with:
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  destroy-vnet-multi-cluster-with-google-artifact-registry:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'google-artifact-registry'
+    uses: ./.github/workflows/google-virtual-network.yml
+    needs: [destroy-tap-build-cluster,destroy-tap-iterate-cluster,destroy-tap-view-cluster,destroy-tap-run-cluster]
+    with:
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  destroy-vnet-multi-cluster-with-harbor:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'harbor'
+    uses: ./.github/workflows/google-virtual-network.yml
+    needs: [destroy-harbor-cluster,destroy-tap-build-cluster,destroy-tap-iterate-cluster,destroy-tap-view-cluster,destroy-tap-run-cluster]
+    with:
+      vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+  destroy-tap-cluster:
+    if: github.event.inputs.footprint == 'single-cluster'
+    uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
+    with:
+      cluster-name: "tap"
+      region: ${{ github.event.inputs.region }}
+      k8s-version: "1.24"
+      vpc-network-name: "tap-demo-network"
+      master_ipv4_cidr_block_28: "10.2.0.0/28"
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-tap-build-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
+    with:
+      cluster-name: "tap-build"
+      region: ${{ github.event.inputs.region }}
+      k8s-version: "1.24"
+      vpc-network-name: "tap-demo-network"
+      master_ipv4_cidr_block_28: "10.2.0.0/28"
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-tap-iterate-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
+    with:
+      cluster-name: "tap-iterate"
+      region: ${{ github.event.inputs.region }}
+      k8s-version: "1.24"
+      vpc-network-name: "tap-demo-network"
+      master_ipv4_cidr_block_28: "10.3.0.0/28"
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-tap-view-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
+    with:
+      cluster-name: "tap-view"
+      region: ${{ github.event.inputs.region }}
+      k8s-version: "1.24"
+      vpc-network-name: "tap-demo-network"
+      master_ipv4_cidr_block_28: "10.4.0.0/28"
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-tap-run-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster'
+    uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
+    with:
+      cluster-name: "tap-run"
+      region: ${{ github.event.inputs.region }}
+      k8s-version: "1.24"
+      vpc-network-name: "tap-demo-network"
+      master_ipv4_cidr_block_28: "10.5.0.0/28"
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}
+      TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  destroy-secrets-manager:
+    uses: ./.github/workflows/google-secrets-manager.yml
+    with:
+      secret-manager-instance-name: "tap-secret-store"
+      region: ${{ github.event.inputs.region }}
+      action: destroy
+    secrets:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_BACKEND_GCS_BUCKET_NAME: ${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}
+      GOOGLE_KMS_KEYRING: ${{ secrets.GOOGLE_KMS_KEYRING }}

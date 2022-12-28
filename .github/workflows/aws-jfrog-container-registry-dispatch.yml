@@ -1,0 +1,63 @@
+name: "aws-jfrog-container-registry-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "A domain that the installation of JFrog Container Registry will be addressable from"
+        required: true
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        required: true
+      region:
+        description: "The AWS region of the cluster where the JFrog Container Registry instance will be deployed"
+        required: true
+        type: choice
+        options:
+        - us-east-1
+        - us-east-2
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - eu-north-1
+        - eu-south-1
+        - me-south-1
+        - sa-east-1
+        default: "us-west-2"
+      kubeconfig-contents:
+        description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+        required: true
+      action:
+        required: true
+        type: choice
+        description: "Create (new) or destroy (existing)"
+        options:
+        - create
+        - destroy
+
+jobs:
+  jcr-on-aws:
+    uses: ./.github/workflows/aws-jfrog-container-registry.yml
+    with:
+      aws-route53-hosted-zone-id: ${{ github.event.inputs.aws-route53-hosted-zone-id }}
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      region: ${{ github.event.inputs.region }}
+      action: ${{ github.event.inputs.action }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}

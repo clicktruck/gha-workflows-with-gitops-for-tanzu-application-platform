@@ -1,0 +1,20 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  name: #@ "{}-operator".format(data.values.scg.namespace)
+  namespace: #@ data.values.scg.namespace
+  annotations:
+    kapp.k14s.io/change-group: scg-install/operator
+    kapp.k14s.io/change-rule.0: "upsert after upserting scg-install/repo"
+spec:
+  packageRef:
+    refName: spring-cloud-gateway.tanzu.vmware.com
+    versionSelection:
+      constraints: #@ data.values.scg.version
+      prereleases: {}
+  serviceAccountName: scg-install-gitops-sa
+  values:
+  - secretRef:
+      name: spring-cloud-gateway-values

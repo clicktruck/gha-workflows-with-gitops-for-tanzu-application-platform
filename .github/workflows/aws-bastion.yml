@@ -1,0 +1,130 @@
+name: "aws-07-administer-linux-vm-based-on-toolset-image"
+
+on:
+  workflow_call:
+    inputs:
+      sshKeyName:
+        description: "The name of an SSH keypair"
+        type: string
+        required: true
+      subnetId:
+        description: "Subnet ID of a pre-existing public subnet within a VPC"
+        type: string
+        required: true
+      provisionerSecurityGroupId:
+        description: "The security group id of a public subnet that will host bastion"
+        type: string
+        required: true
+      eksClusterSecurityGroupId:
+        description: "The security group id of a private subnet that will host cluster"
+        type: string
+        required: true
+      toolsetAmiOwner:
+        description: "The owner of the toolset AMI"
+        type: string
+        required: true
+      toolsetAmiName:
+        description: "The name of the AMI (without the timestamp or version suffix)"
+        type: string
+        required: true
+      vmSize:
+        description: "The EC2 instance type and size for the bastion"
+        type: string
+        required: true
+      region:
+        description: "The AWS region where the bastion EC2 instance will be available"
+        type: string
+        required: true
+      action:
+        required: true
+        type: string
+        description: "Create (new) or destroy (existing)"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+      TF_BACKEND_s3_bucket_name:
+        required: true
+      AWS_KMS_ALIAS:
+        required: true
+    outputs:
+      to_ssh_to_bastion:
+        description: "How to connect to the Bastion via SSH"
+        value: ${{ jobs.terraform.outputs.to_ssh_to_bastion }}
+
+jobs:
+  terraform:
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ inputs.region }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_VAR_ssh_key_name: ${{ inputs.sshKeyName }}
+      TF_VAR_subnet_id: ${{ inputs.subnetId }}
+      TF_VAR_provisioner_security_group_id: ${{ inputs.provisionerSecurityGroupId }}
+      TF_VAR_eks_cluster_security_group_id: ${{ inputs.eksClusterSecurityGroupId }}
+      TF_VAR_toolset_ami_owner: ${{ inputs.toolsetAmiOwner }}
+      TF_VAR_vm_size: ${{ inputs.vmSize }}
+    runs-on: ubuntu-20.04
+
+    outputs:
+      to_ssh_to_bastion: ${{ steps.set_outputs.outputs.to_ssh_to_bastion }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/aws/bastion
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    - name: Generate backend configuration
+      run: |
+          cp ../backend/backend.tf .
+          echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
+          echo "key = \"bastion/terraform.tfstate\"" >> config.aws.tfbackend
+          echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
+          echo "encrypt = true" >> config.aws.tfbackend
+          echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
+          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.aws.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: terraform destroy -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        to_ssh_to_bastion=$(terraform output --raw to_ssh_to_bastion)
+        echo "to_ssh_to_bastion=${to_ssh_to_bastion}" >> $GITHUB_OUTPUT

@@ -1,0 +1,60 @@
+name: 'azure-00-setup-remote-backend-for-terraform-state'
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      resourceGroup:
+        description: "The new resource group to create for the TF backend storage (e.g., tapworkshop)"
+        required: true
+      storageAccountName:
+        description: "The Azure storage account name - must be unique across Azure (e.g., tapworksoptf)"
+        required: true
+      storageContainerName:
+        description: "The Azure storage container name (e.g., tapworkshoptfstates)"
+        required: true
+jobs:
+
+  create-backend-storage:
+    runs-on: ubuntu-20.04
+    env:
+      AZURE_REGION: ${{ secrets.AZURE_REGION }}
+      AZURE_RESOURCE_GROUP: ${{ github.event.inputs.resourceGroup }}
+      AZURE_STORAGE_ACCOUNT_NAME: ${{ github.event.inputs.storageAccountName }}
+      AZURE_STORAGE_CONTAINER_NAME: ${{ github.event.inputs.storageContainerName }}
+    steps:
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Azure CLI script file
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          chmod +x $GITHUB_WORKSPACE/scripts/azure/setup-azure-provided-remote-backend.sh
+          $GITHUB_WORKSPACE/scripts/azure/setup-azure-provided-remote-backend.sh
+
+  add-backend-config-as-secrets:
+    runs-on: ubuntu-20.04
+    needs: create-backend-storage
+    steps:
+    - name: Set Terraform backend resource group name
+      env:
+        GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
+      run: |
+        gh secret set TF_BACKEND_resource_group_name --body ${{ github.event.inputs.resourceGroup }}
+    - name: Set Terraform backend storage account name
+      env:
+        GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
+      run: |
+        gh secret set TF_BACKEND_storage_account_name --body ${{ github.event.inputs.storageAccountName }}
+    - name: Set Terraform backend storage container name
+      env:
+        GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
+      run:
+        gh secret set TF_BACKEND_storage_container_name --body ${{ github.event.inputs.storageContainerName }}

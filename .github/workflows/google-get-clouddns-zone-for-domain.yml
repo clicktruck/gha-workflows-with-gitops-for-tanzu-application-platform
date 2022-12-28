@@ -1,0 +1,58 @@
+name: "google-get-cloud-dns-zone-name-for-domain-under-management"
+
+on:
+  workflow_call:
+    inputs:
+      domain:
+        description: "A domain under management by a Google Cloud DNS zone"
+        type: string
+        required: true
+    secrets:
+      GOOGLE_PROJECT_ID:
+        required: true
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: true
+
+    outputs:
+      zone_name:
+        description: "The Google Cloud DNS Zone name of a domain under management"
+        value: ${{ jobs.gcloud-cli.outputs.zone_name }}
+
+jobs:
+
+  gcloud-cli:
+    runs-on: ubuntu-20.04
+    name: "Fetch hosted zone id by domain with gcloud CLI"
+
+    outputs:
+      zone_name: ${{ steps.set_outputs.outputs.result }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v0'
+      with:
+        credentials_json: '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}'
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v0'
+      with:
+        version: "409.0.0"
+
+    - name: Set Outputs
+      id: set_outputs
+      run: |
+        echo "Attempting to dash separate ${{ inputs.domain }}"
+        dash_separated_domain=$(echo "${{ inputs.domain }}" | sed 's/\./-/g')
+        echo "> Result was: ${dash_separated_domain}"
+        echo "Attempting to remove root domain"
+        root_domain_stripped=${dash_separated_domain%-*}
+        echo "> Result was ${root_domain_stripped}"
+        echo "Attempting to construct canonical zone name"
+        zone_name=$(echo "${root_domain_stripped}-zone")
+        echo "> Result is ${zone_name}"
+        echo "Validating there's an existing Google Cloud DNS zone named ${zone_name}"
+        gcloud dns managed-zones describe ${zone_name}
+        echo "result=${zone_name}" >> $GITHUB_OUTPUT

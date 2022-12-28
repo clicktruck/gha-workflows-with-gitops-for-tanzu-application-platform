@@ -1,0 +1,236 @@
+name: "install-tanzu-application-platform-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "A domain that the installation of TAP will be addressable from"
+        required: true
+      email-address:
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+        required: true
+      dev-namespace:
+        description: "A pre-existing namespace that will accommodate Workloads"
+        required: true
+        default: "default"
+      backstage-catalog:
+        description: "A Git repository and path to a Backstage catalog file"
+        required: true
+      container-image-registry-connection-details:
+        description: "An ordered, semi-colon separated, list of connection details for a container image registry. The registry will host the packages and images for the installation as well as application OCI artifacts. Sample: {url}; {username}; {password}; {prefix}.  Single line base64-encoded passwords only!  Prefix is usually \"tanzu\"."
+        required: true
+      aws-region:
+        description: "[Optional: AWS-only] existing region consumed by ClusterIssuer DNS solver configuration"
+        type: choice
+        options:
+        - '-'
+        - us-east-1
+        - us-east-2
+        - us-west-2
+        - af-south-1
+        - ap-east-1
+        - ap-south-1
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-northeast-3
+        - ap-southeast-1
+        - ap-southeast-2
+        - ca-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - eu-north-1
+        - eu-south-1
+        - me-south-1
+        - sa-east-1
+        default: '-'
+        required: false
+      azure-resource-group:
+        description: "[Optional: Azure-only] existing resource group name consumed by ClusterIssuer DNS solver configuration"
+        type: string
+        required: false
+      cluster-provider:
+        description: "The Kubernetes service provider"
+        type: choice
+        required: true
+        options:
+          - eks
+          - aks
+          - gke
+          - tkg»aws
+          - tkg»azure
+          - other
+      active-profile:
+        description: "The TAP profile to be installed"
+        type: choice
+        required: true
+        options:
+        - full
+        - build
+        - iterate
+        - run
+        - view
+        default: full
+      kubeconfig-contents:
+        description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
+        required: true
+
+jobs:
+  container-image-registry-connection-details:
+    runs-on: ubuntu-20.04
+
+    outputs:
+      url: ${{ steps.vars.outputs.container_image_registry_url }}
+      username: ${{ steps.vars.outputs.container_image_registry_username }}
+      password: ${{ steps.vars.outputs.container_image_registry_password }}
+      prefix: ${{ steps.vars.outputs.container_image_registry_prefix }}
+
+    steps:
+      - uses: jungwinter/split@v2
+        id: split
+        with:
+          msg: '${{ github.event.inputs.container-image-registry-connection-details }}'
+          separator: ';'
+
+      - name: Set URL, username, password and prefix
+        id: vars
+        run: |
+          array_length=${{ steps.split.outputs.length }}
+          echo "container_image_registry_url=${{ steps.split.outputs._0}}" >> $GITHUB_OUTPUT
+          echo "container_image_registry_username=${{ steps.split.outputs._1}}" >> $GITHUB_OUTPUT
+          echo "container_image_registry_password=${{ steps.split.outputs._2}}" >> $GITHUB_OUTPUT
+          if [ "$array_length" == "3" ]; then
+            result=""
+            echo "container_image_registry_prefix=${result}" >> $GITHUB_OUTPUT
+          else
+            echo "container_image_registry_prefix=${{ steps.split.outputs._3}}" >> $GITHUB_OUTPUT
+          fi
+
+  install-tap:
+    if: contains(fromJson('["other"]'), github.event.inputs.cluster-provider)
+    needs: container-image-registry-connection-details
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
+      container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
+      container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
+      container-image-registry-prefix: ${{ needs.container-image-registry-connection-details.outputs.prefix }}
+      cluster-provider: ${{ github.event.inputs.cluster-provider }}
+      deployment-name: "tap"
+      active-profile: ${{ github.event.inputs.active-profile }}
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  install-tap-on-aws:
+    if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
+    needs: container-image-registry-connection-details
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
+      container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
+      container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
+      container-image-registry-prefix: ${{ needs.container-image-registry-connection-details.outputs.prefix }}
+      cluster-provider: ${{ github.event.inputs.cluster-provider }}
+      deployment-name: "tap"
+      active-profile: ${{ github.event.inputs.active-profile }}
+      aws-region: ${{ github.event.inputs.aws-region }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      ROUTE53_ZONE_AWS_ACCESS_KEY_ID: ${{ secrets.ROUTE53_ZONE_AWS_ACCESS_KEY_ID }}
+      ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY: ${{ secrets.ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  install-tap-on-azure:
+    if: contains(fromJson('["aks","tkg»azure"]'), github.event.inputs.cluster-provider)
+    needs: container-image-registry-connection-details
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
+      container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
+      container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
+      container-image-registry-prefix: ${{ needs.container-image-registry-connection-details.outputs.prefix }}
+      cluster-provider: ${{ github.event.inputs.cluster-provider }}
+      deployment-name: "tap"
+      active-profile: ${{ github.event.inputs.active-profile }}
+      azure-resource-group: ${{ github.event.inputs.azure-resource-group }}
+    secrets:
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  install-tap-on-google:
+    if: github.event.inputs.cluster-provider == 'gke'
+    needs: container-image-registry-connection-details
+    uses: ./.github/workflows/install-tanzu-application-platform.yml
+    with:
+      domain: ${{ github.event.inputs.domain }}
+      email-address: ${{ github.event.inputs.email-address }}
+      dev-namespace: ${{ github.event.inputs.dev-namespace }}
+      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
+      container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
+      container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
+      container-image-registry-prefix: ${{ needs.container-image-registry-connection-details.outputs.prefix }}
+      cluster-provider: ${{ github.event.inputs.cluster-provider }}
+      deployment-name: "tap"
+      active-profile: ${{ github.event.inputs.active-profile }}
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
+      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}

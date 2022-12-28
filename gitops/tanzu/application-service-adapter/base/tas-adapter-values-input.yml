@@ -1,0 +1,15 @@
+#@data/values
+
+#@overlay/match-child-defaults missing_ok=True
+---
+tap:
+  namespace: tap-install
+  registry:
+    host: registry.tap.tanzu.corp
+
+tas_adapter:
+  version: "1.1.0-dev.67"
+  namespace: tas-adapter-install
+
+  domains:
+    main: tap.tanzu.corp

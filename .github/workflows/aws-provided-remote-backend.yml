@@ -1,0 +1,151 @@
+name: "aws-02-administer-remote-backend-for-terraform-state"
+
+on:
+  workflow_call:
+    inputs:
+      s3-bucket-name:
+        description: "The S3 storage bucket name used for Terraform state."
+        type: string
+        required: true
+      region:
+        description: "The AWS region where the S3 bucket will be created to manage Terraform state"
+        type: string
+        required: true
+      action:
+        required: true
+        type: string
+        description: "Create (new) or destroy (existing)"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+      PA_TOKEN:
+        required: true
+      AWS_KMS_ALIAS:
+        required: true
+
+jobs:
+  create-backend-storage:
+    if: inputs.action == 'create'
+    env:
+      #AWS connection vars for TF
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_REGION: ${{ inputs.region }}
+      TF_VAR_alias: ${{ secrets.AWS_KMS_ALIAS }}
+      TF_VAR_bucket_name: ${{ inputs.s3-bucket-name }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/aws/tfstate-support
+
+    runs-on: ubuntu-20.04
+
+    outputs:
+      provisioned_bucket_name: ${{ steps.set_outputs.outputs.provisioned_bucket_name }}
+
+    steps:
+    - name: Checkout
+      if: inputs.action == 'create'
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      if: inputs.action == 'create'
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      if: inputs.action == 'create'
+      run: terraform init -upgrade
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      if: inputs.action == 'create'
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        provisioned_bucket_name=$(terraform output --raw provisioned_bucket_name)
+        echo "provisioned_bucket_name=${provisioned_bucket_name}" >> $GITHUB_OUTPUT
+        provisioned_dynamodb_table_name=$(terraform output --raw provisioned_dynamodb_table_name)
+        echo "provisioned_dynamodb_table_name=${provisioned_dynamodb_table_name}" >> $GITHUB_OUTPUT
+
+  add-github-secret:
+    if: inputs.action == 'create'
+    needs: create-backend-storage
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Add S3 bucket name as secret
+      env:
+        GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
+      run: |
+        gh secret set TF_BACKEND_s3_bucket_name --body ${{ needs.create-backend-storage.outputs.provisioned_bucket_name }}
+
+  destroy-backend-storage:
+    if: inputs.action == 'destroy'
+    runs-on: ubuntu-20.04
+    env:
+      AWS_PAGER: ""
+
+    steps:
+    - name: Configure AWS credentials
+      if: inputs.action == 'destroy'
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+
+    - name: Delete all versioned objects and markers
+      if: inputs.action == 'destroy'
+      run: |
+        aws s3api delete-objects \
+          --bucket ${{ inputs.s3-bucket-name }} \
+          --delete "$(aws s3api list-object-versions \
+          --output=json \
+          --query='{Objects: Versions[].{Key:Key,VersionId:VersionId}}')"
+        aws s3api delete-objects \
+          --bucket ${{ inputs.s3-bucket-name }} \
+          --delete "$(aws s3api list-object-versions \
+          --output=json \
+          --query='{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}')"
+
+
+    - name: Empty S3 bucket
+      if: inputs.action == 'destroy'
+      run: |
+        aws s3 rm s3://${{ inputs.s3-bucket-name }} --recursive
+
+    - name: Destroy S3 bucket
+      if: inputs.action == 'destroy'
+      run: |
+        aws s3api delete-bucket --bucket ${{ inputs.s3-bucket-name }}
+
+    - name: Destroy DynamoDB table
+      if: inputs.action == 'destroy'
+      run: |
+        aws dynamodb delete-table --table-name ${{ inputs.s3-bucket-name }}

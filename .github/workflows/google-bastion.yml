@@ -1,0 +1,128 @@
+name: "google-administer-linux-vm-based-on-toolset-image"
+
+on:
+  workflow_call:
+    inputs:
+      vm-name:
+        description: "The name of the VM instance"
+        required: true
+        type: string
+      vm-network:
+        description: "Name of a pre-existing VPC network"
+        required: true
+        type: string
+      vm-subnetwork:
+        description: "Name of a pre-existing public subnet within a VPC network"
+        required: true
+        type: string
+      os-image:
+        description: "The name of the AMI (without the timestamp or version suffix)"
+        required: true
+        type: string
+      machine-type:
+        description: "The VM instance type and size for the bastion"
+        required: true
+        type: string
+      region:
+        description: "The Google Cloud region where the bastion VM instance will be available"
+        required: true
+        type: string
+      zone:
+        description: "Availability zone (valid within region)"
+        required: true
+        type: string
+      action:
+        description: "Create (new) or destroy (existing)"
+        required: true
+        type: string
+    secrets:
+      GOOGLE_PROJECT_ID:
+        required: true
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: true
+      TF_BACKEND_GCS_BUCKET_NAME:
+        required: true
+      GOOGLE_KMS_KEYRING:
+        required: true
+    outputs:
+      to_ssh_to_bastion:
+        description: "How to connect to the Bastion via SSH"
+        value: ${{ jobs.terraform.outputs.to_ssh_to_bastion }}
+
+jobs:
+  terraform:
+    env:
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      TF_VAR_project: ${{ secrets.GOOGLE_PROJECT_ID }}
+      TF_VAR_vm_name: ${{ inputs.vm-name }}
+      TF_VAR_region: ${{ inputs.region }}
+      TF_VAR_zone: ${{ inputs.zone }}
+      TF_VAR_os_image: ${{ inputs.os-image }}
+      TF_VAR_machine_type: ${{ inputs.machine-type }}
+      TF_VAR_vm_network: ${{ inputs.vm-network }}
+      TF_VAR_vm_subnetwork: ${{ inputs.vm-subnetwork }}
+      TF_VAR_has_public_ip: true
+    runs-on: ubuntu-20.04
+
+    outputs:
+      to_ssh_to_bastion: ${{ steps.set_outputs.outputs.to_ssh_to_bastion }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/google/bastion
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.6
+
+    - name: Generate backend configuration
+      run: |
+        cp ../backend/backend.tf .
+        echo "bucket = \"${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}\"" > config.gcs.tfbackend
+        echo "prefix = \"bastion\"" >> config.gcs.tfbackend
+
+    - name: Decrypt service account keyfile contents and write to /tmp/gcloud/sa.json
+      env:
+        GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      run: |
+        mkdir -p /tmp/gcloud
+        echo "$GOOGLE_SERVICE_ACCOUNT_KEY" | base64 -d > /tmp/gcloud/sa.json
+        chmod 600 /tmp/gcloud/sa.json
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.gcs.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      if: inputs.action == 'create'
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: inputs.action == 'create'
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: terraform destroy -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      if: inputs.action == 'create'
+      run: |
+        to_ssh_to_bastion=$(terraform output --raw to_ssh_to_bastion)
+        echo "to_ssh_to_bastion=${to_ssh_to_bastion}" >> $GITHUB_OUTPUT

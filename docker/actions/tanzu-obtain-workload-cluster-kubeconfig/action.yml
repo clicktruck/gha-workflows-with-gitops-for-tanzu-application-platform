@@ -1,0 +1,30 @@
+name: "Obtain Base64-encoded ~/.kube/config contents for a TKG workload cluster"
+description: "Github Action dedicated to obtaining Base64-encoded contents of a TKG workload cluster"
+inputs:
+  workload-cluster-name:
+    description: "Name of the workload cluster"
+    required: true
+  new-management-cluster-kubeconfig-contents:
+    description: "The base64 encoded contents of a .kube-tkg/config file from a new TKG management cluster that already has the current Kubernetes cluster context set"
+    required: false
+  existing-management-cluster-kubeconfig-contents:
+    description: "The base64 encoded contents of a .kube-tkg/config file from an existing TKG management cluster that already has the current Kubernetes cluster context set"
+    required: false
+  csp-api-token:
+    description: "VMware Cloud Service Platform API Token, used for authenticating to the VMware Marketplace"
+    required: true
+outputs:
+  kubeconfig_contents:
+    description: "The base64 encoded contents of a .kube/config file from a TKG workload cluster that already has the current Kubernetes cluster context set"
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - "${{ inputs.workload-cluster-name }}"
+    - "${{ inputs.new-management-cluster-kubeconfig-contents }}"
+    - "${{ inputs.existing-management-cluster-kubeconfig-contents }}"
+  env:
+    TANZU_CLI_VERSION: 1.6.0
+    TANZU_CLI_CORE_VERSION: 0.25.0
+    CSP_API_TOKEN: ${{ inputs.csp-api-token }}

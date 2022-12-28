@@ -1,0 +1,90 @@
+name: "uninstall-tanzu-standard-repo"
+
+on:
+  workflow_call:
+    inputs:
+      cluster-provider:
+        description: "The Kubernetes service provider"
+        type: string
+        required: true
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      AWS_SESSION_TOKEN:
+        required: false
+      GOOGLE_PROJECT_ID:
+        required: false
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: false
+      KUBECONFIG_CONTENTS:
+        required: true
+      CSP_API_TOKEN:
+        required: true
+
+jobs:
+  encode-tanzu-standard-repo-uninstall-script:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+          result="$(cat "scripts/uninstall-package.sh" | base64 -w 0)"
+          echo "result=${result}" >> $GITHUB_OUTPUT
+
+  uninstall:
+    needs: encode-tanzu-standard-repo-uninstall-script
+    runs-on: ubuntu-20.04
+
+    env:
+      GITOPS_DIR: gitops/tanzu/standard
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: "Uninstall Tanzu Standard Repo"
+      if: contains(fromJson('["aks","gke","other"]'), inputs.cluster-provider)
+      uses: ./docker/actions/tanzu-runsh-setup-action
+      with:
+        script-contents: ${{ needs.encode-tanzu-standard-repo-uninstall-script.outputs.result }}
+        script-arguments: '${{ env.GITOPS_DIR }} tanzu-standard-repo'
+        kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Uninstall Tanzu Standard Repo on EKS"
+      if: inputs.cluster-provider == 'eks'
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        script-contents: ${{ needs.encode-tanzu-standard-repo-uninstall-script.outputs.result }}
+        script-arguments: '${{ env.GITOPS_DIR }} tanzu-standard-repo'
+        kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Uninstall Tanzu Standard Repo on GKE"
+      if: inputs.cluster-provider == 'gke'
+      uses: ./docker/actions/google/tanzu-runsh-setup-action
+      with:
+        google-project-id: ${{ secrets.GOOGLE_PROJECT_ID }}
+        google-service-account-key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        script-contents: ${{ needs.encode-tanzu-standard-repo-uninstall-script.outputs.result }}
+        script-arguments: '${{ env.GITOPS_DIR }} tanzu-standard-repo'
+        kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}

@@ -1,0 +1,22 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  name: tap
+  namespace: #@ data.values.tap.namespace
+  annotations:
+    kapp.k14s.io/change-group: tap-install/tap
+    kapp.k14s.io/change-rule.0: "upsert after upserting tap-install/rbac"
+    kapp.k14s.io/change-rule.1: "upsert after upserting tap-install/tap-repo"
+    packaging.carvel.dev/downgradable: ""
+spec:
+  packageRef:
+    refName: tap.tanzu.vmware.com
+    versionSelection:
+      constraints: #@ str(data.values.tap.version)
+      prereleases: {}
+  serviceAccountName: tap-default-sa
+  values:
+  - secretRef:
+      name: tap-values
