@@ -8,6 +8,10 @@ output "cluster-ocid" {
   value = oci_containerengine_cluster.oke-cluster.id
 }
 
+output "cluster-region" {
+  value =  var.region
+}
+
 output "endpoint_config" {
   value = oci_containerengine_cluster.oke-cluster.endpoint_config
 }
