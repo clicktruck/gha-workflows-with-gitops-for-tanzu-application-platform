@@ -9,7 +9,7 @@ output "cluster-ocid" {
 }
 
 output "cluster-region" {
-  value =  var.region
+  value = var.region
 }
 
 output "endpoint_config" {

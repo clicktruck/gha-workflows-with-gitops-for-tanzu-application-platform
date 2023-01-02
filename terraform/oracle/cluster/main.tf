@@ -1,3 +1,7 @@
+data "oci_identity_availability_domains" "ads" {
+  compartment_id = var.tenancy_ocid
+}
+
 data "oci_core_images" "i" {
   compartment_id           = var.compartment_ocid
   operating_system         = local.instance_os
@@ -21,11 +25,11 @@ resource "random_string" "suffix" {
 resource "oci_containerengine_cluster" "oke-cluster" {
   compartment_id     = var.compartment_ocid
   kubernetes_version = var.k8s_version
-  name               = "${var.cluster_name}-${random_string.suffix.result}"
+  name               = "${var.oke_cluster_name}-${random_string.suffix.result}"
   vcn_id             = var.vcn_ocid
 
   endpoint_config {
-    is_public_ip_enabled = var.enable_public_k8s_api_endpoint
+    is_public_ip_enabled = var.is_api_endpoint_subnet_public
     subnet_id            = var.k8s_api_endpoint_subnet_ocid
   }
   options {
@@ -49,8 +53,9 @@ resource "oci_containerengine_node_pool" "oke-node-pool" {
   cluster_id         = oci_containerengine_cluster.oke-cluster.id
   compartment_id     = var.compartment_ocid
   kubernetes_version = var.k8s_version
-  name               = "${var.cluster_name}-pool-${random_string.suffix.result}"
+  name               = "${var.oke_cluster_name}-pool-${random_string.suffix.result}"
   node_shape         = var.compute_instance_shape
+
   node_config_details {
     placement_configs {
       availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
@@ -69,6 +74,7 @@ resource "oci_containerengine_node_pool" "oke-node-pool" {
 
     size = var.node_pool_size
   }
+
   dynamic "node_shape_config" {
     for_each = local.is_flexible_node_shape ? [1] : []
     content {
@@ -90,8 +96,9 @@ resource "oci_containerengine_node_pool" "oke-node-pool" {
 
   initial_node_labels {
     key   = "name"
-    value = "${var.cluster_name}-pool"
+    value = "${var.oke_cluster_name}-pool"
   }
 
   ssh_public_key = file(var.ssh_public_key_path)
 }
+

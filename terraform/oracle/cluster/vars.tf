@@ -78,7 +78,7 @@ variable "compute_instance_disksize" {
 
 variable "k8s_version" {
   type        = string
-  description = "A support Kubernetes cluster version (e.g., v1.20.11).  See https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengaboutk8sversions.htm."
+  description = "A support Kubernetes cluster version (e.g., v1.24.1).  See https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengaboutk8sversions.htm."
   default     = "v1.24.1"
 }
 
@@ -97,6 +97,24 @@ variable "k8s_node_pool_subnet_ocid" {
   description = "OCID of the Kubernetes node pool subnet"
 }
 
+variable "is_api_endpoint_subnet_public" {
+  type    = bool
+  default = true
+}
+
+variable "oke_cluster_name" {
+  type        = string
+  description = "The name ascribed to the Kubernetes cluster"
+}
+
+variable "node_pool_size" {
+  default = 3
+}
+
+variable "node_pool_name" {
+  default = "standard"
+}
+
 variable "k8s_net_pods_cidr" {
   type    = string
   default = "10.1.0.0/16"
@@ -105,19 +123,4 @@ variable "k8s_net_pods_cidr" {
 variable "k8s_net_services_cidr" {
   type    = string
   default = "10.2.0.0/16"
-}
-
-variable "cluster_name" {
-  type        = string
-  description = "The name ascribed to the Kubernetes cluster"
-}
-
-variable "node_pool_size" {
-  default = 6
-}
-
-variable "enable_public_k8s_api_endpoint" {
-  type        = bool
-  description = "Whether there'll be a public IP address available on port 6443 where kubectl can interact with the cluster"
-  default     = true
 }

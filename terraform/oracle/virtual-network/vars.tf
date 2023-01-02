@@ -24,7 +24,7 @@ variable "region" {
   description = "Oracle Cloud data center location (e.g., us-phoenix-1)"
 }
 
-variable "vcn_compartment_ocid" {
+variable "compartment_ocid" {
   type        = string
   description = "Oracle-assigned unique ID for compartment where virtual cloud network will reside"
 }
@@ -35,21 +35,23 @@ variable "vcn_name" {
   default     = "vcn"
 }
 
-
 variable "vcn_cidr" {
   type        = string
   description = "CIDR block for the VCN"
-  default     = "10.0.0.0/16"
+  default     = "192.168.0.0/16"
 }
 
-variable "private_subnet_cidr" {
-  type        = string
-  description = "CIDR block for the private subnet"
-  default     = "10.0.1.0/24"
+variable "nodepool_subnet_cidr" {
+  type    = string
+  default = "192.168.1.0/24"
 }
 
-variable "public_subnet_cidr" {
-  type        = string
-  description = "CIDR block for the public subnet"
-  default     = "10.0.0.0/24"
+variable "lb_subnet_cidr" {
+  type    = string
+  default = "192.168.2.0/24"
+}
+
+variable "api_endpoint_subnet_cidr" {
+  type    = string
+  default = "192.168.3.0/24"
 }
