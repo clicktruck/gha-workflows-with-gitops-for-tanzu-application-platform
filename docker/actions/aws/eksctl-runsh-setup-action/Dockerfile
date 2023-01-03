@@ -1,4 +1,4 @@
-FROM alpine:3.16
+FROM alpine:3.17
 
 LABEL "com.github.actions.name"="eksctl-runsh-setup-action"
 LABEL "com.github.actions.description"="Execute a shell script where eksctl CLI commands may be invoked one or more times"

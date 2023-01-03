@@ -1,4 +1,4 @@
-FROM alpine:3.16
+FROM alpine:3.17
 
 LABEL "com.github.actions.name"="eks-kubeconfig-action"
 LABEL "com.github.actions.description"="Use eksctl CLI to obtain .kube/config then emit contents base 64 encoded"
