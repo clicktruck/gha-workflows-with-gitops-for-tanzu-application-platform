@@ -20,7 +20,7 @@ pivnet login --api-token=$TANZU_NETWORK_API_TOKEN
 
 mkdir -p $HOME/tanzu
 cd /tmp
-TAP_VERSION="1.4.0-rc.13"
+TAP_VERSION="1.4.0-rc.18"
 TAP_PRODUCT_FILE_ID=1385855
 
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --product-file-id="${TAP_PRODUCT_FILE_ID}"
