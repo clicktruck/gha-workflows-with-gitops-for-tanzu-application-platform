@@ -39,7 +39,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
@@ -49,43 +49,43 @@ jobs:
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/init.sh"
-          target: "packer/aws/ubuntu/20_04/init.sh"
+          target: "packer/aws/ubuntu/22_04/init.sh"
 
       - name: Copy inventory.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/inventory.sh"
-          target: "packer/aws/ubuntu/20_04/inventory.sh"
+          target: "packer/aws/ubuntu/22_04/inventory.sh"
 
       - name: Copy kind-load-cafile.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/kind-load-cafile.sh"
-          target: "packer/aws/ubuntu/20_04/kind-load-cafile.sh"
+          target: "packer/aws/ubuntu/22_04/kind-load-cafile.sh"
 
       - name: Copy fetch-tanzu-cli.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/fetch-tanzu-cli.sh"
-          target: "packer/aws/ubuntu/20_04/fetch-tanzu-cli.sh"
+          target: "packer/aws/ubuntu/22_04/fetch-tanzu-cli.sh"
 
       - name: Copy fetch-and-install-oci-cli.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/fetch-and-install-oci-cli.sh"
-          target: "packer/aws/ubuntu/20_04/fetch-and-install-oci-cli.sh"
+          target: "packer/aws/ubuntu/22_04/fetch-and-install-oci-cli.sh"
 
       - name: Copy install-tap-plugins.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/install-tap-plugins.sh"
-          target: "packer/aws/ubuntu/20_04/install-tap-plugins.sh"
+          target: "packer/aws/ubuntu/22_04/install-tap-plugins.sh"
 
       - name: Copy install-krew-and-plugins.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/install-krew-and-plugins.sh"
-          target: "packer/aws/ubuntu/20_04/install-krew-and-plugins.sh"
+          target: "packer/aws/ubuntu/22_04/install-krew-and-plugins.sh"
 
       - name: Use latest Packer
         uses: hashicorp-contrib/setup-packer@v2
@@ -93,11 +93,11 @@ jobs:
           packer-version: 1.8.5
 
       - name: Initialize Packer
-        working-directory: ./packer/aws/ubuntu/20_04
+        working-directory: ./packer/aws/ubuntu/22_04
         run: packer init .
 
       - name: Build image from template
-        working-directory: ./packer/aws/ubuntu/20_04
+        working-directory: ./packer/aws/ubuntu/22_04
         run: packer build -only=standard.* -var "ami_name=k8s-toolset-image" -var "instance_type=${{ github.event.inputs.instanceType }}" -var "vpc_region=${{ github.event.inputs.region }}" .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

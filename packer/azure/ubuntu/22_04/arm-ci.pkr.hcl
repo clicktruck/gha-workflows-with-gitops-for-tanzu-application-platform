@@ -23,11 +23,6 @@ variable "tenant_id" {
   default = ""
 }
 
-variable "use_azure_cli_auth" {
-  type    = bool
-  default = true
-}
-
 variable "resource_group" {
   type    = string
   default = "cloudmonk"
@@ -57,9 +52,11 @@ variable "cloud_environment_name" {
 # build blocks. A build block runs provisioner and post-processors on a
 # source. Read the documentation for source blocks here:
 # https://www.packer.io/docs/templates/hcl_templates/blocks/source
-
 source "azure-arm" "k8s-toolset" {
-  use_azure_cli_auth                 = var.use_azure_cli_auth
+  client_id                          = var.client_id
+  client_secret                      = var.client_secret
+  subscription_id                    = var.subscription_id
+  tenant_id                          = var.tenant_id
 
   cloud_environment_name             = var.cloud_environment_name     # One of Public, China, Germany, or USGovernment. Defaults to Public. Long forms such as USGovernmentCloud and AzureUSGovernmentCloud are also supported.
 
@@ -70,7 +67,7 @@ source "azure-arm" "k8s-toolset" {
     image_version                    = local.image_version
     resource_group                   = var.resource_group
     gallery_name                     = "toolsetvms"     # Shared Image Gallery must already exist in resource group
-    replication_regions              = [ "eastus", "westus2", "centralus", "westcentralus", "northeurope", "ukwest", "southeastasia", "australiasoutheast" ]
+    replication_regions              = [ "eastus", "westus2", "centralus", "westcentralus" ]
   }
 
   managed_image_resource_group_name  = var.resource_group
@@ -78,14 +75,16 @@ source "azure-arm" "k8s-toolset" {
   managed_image_storage_account_type = "Premium_LRS"
 
   os_type                            = "Linux"
-  os_disk_size_gb                    = 50
+  os_disk_size_gb                    = 60
 
   image_publisher                    = "Canonical"                    # e.g., az vm image list-publishers --location westus2 -o table
-  image_offer                        = "0001-com-ubuntu-server-focal" # e.g., az vm image list-offers --location westus2 --publisher Canonical -o table
-  image_sku                          = "20_04-lts-gen2"               # e.g., az vm image list-skus --location westus2 --publisher Canonical --offer 0001-com-ubuntu-minimal-focal-daily -o table
+  image_offer                        = "0001-com-ubuntu-server-jammy" # e.g., az vm image list-offers --location westus2 --publisher Canonical -o table
+  image_sku                          = "22_04-lts-gen2"               # e.g., az vm image list-skus --location westus2 --publisher Canonical --offer 0001-com-ubuntu-server-jammy -o table
   image_version                      = "latest"
 
   vm_size                            = var.vm_size                    # e.g., az vm list-sizes --location westus -o table
+
+  keep_os_disk                       = "true"
 
   ssh_username                       = "ubuntu"
 }

@@ -121,12 +121,12 @@ Under Github Actions, manually trigger [google-dispatch-remote-backend-for-terra
 
 ### Create Toolset Image
 
-Under Github Actions, manually trigger [google-build-toolset-image](../../../actions/workflows/google-ubuntu-20_04.yml).
+Under Github Actions, manually trigger [google-build-toolset-image](../../../actions/workflows/google-ubuntu-22_04.yml).
 
 Alternatively, you could create the AMI by executing the aws CLI and Packer script by following these guides:
 
-* [Build](../packer/google/ubuntu/20_04/BUILD.md)
-* [Test](../packer/google/ubuntu/20_04/TEST.md)
+* [Build](../packer/google/ubuntu/22_04/BUILD.md)
+* [Test](../packer/google/ubuntu/22_04/TEST.md)
 
 
 ## How do I use this?

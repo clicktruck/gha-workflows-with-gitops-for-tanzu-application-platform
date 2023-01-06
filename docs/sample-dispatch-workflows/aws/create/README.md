@@ -47,7 +47,7 @@ gh repo fork pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
 <p>
 
 ```bash
-echo '{ "instance-type": "t3a.xlarge", "region": "us-west-2" }' | gh workflow run aws-ubuntu-20_04.yml --json
+echo '{ "instance-type": "t3a.xlarge", "region": "us-west-2" }' | gh workflow run aws-ubuntu-22_04.yml --json
 ```
 
 </p>

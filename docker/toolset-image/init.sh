@@ -5,11 +5,9 @@ main() {
   TZ=America/Los_Angeles
   ARGO_VERSION=3.4.4
   ARGOCD_VERSION=2.5.5
-  BOSH_VERSION=7.1.0
+  BOSH_VERSION=7.1.1
   CF_VERSION=8.5.0
   CREDHUB_VERSION=2.9.3
-  GH_VERSION=2.21.2
-  GO_VERSION=1.19.2
   HELM_VERSION=3.10.3
   HELMFILE_VERSION=0.149.0
   AWS_IAM_AUTHENTICATOR_VERSION=0.5.9
@@ -18,21 +16,20 @@ main() {
   KBLD_VERSION=0.36.1
   KCTRL_VERSION=0.44.1
   KIND_VERSION=0.17.0
-  KPACK_CLI_VERSION=0.7.0
+  KPACK_CLI_VERSION=0.9.0
   KWT_VERSION=0.0.6
-  KUBECTL_VERSION=1.24.8
-  KNATIVE_VERSION=1.7.0
+  KUBECTL_VERSION=1.24.9
+  KNATIVE_VERSION=1.8.1
   LEFTOVERS_VERSION=0.62.0
   OCI_CLI_VERSION=3.22.0
   OM_VERSION=7.5.0
   MKPCLI_VERSION=0.15.1
-  PACK_CLI_VERSION=0.27.0
   PIVNET_VERSION=3.0.1
-  TEKTONCD_VERSION=0.26.0
+  TEKTONCD_VERSION=0.29.0
   TERRAFORM_VERSION=1.3.7
   TERRAFORM_DOCS_VERSION=0.16.0
   TMC_VERSION=0.5.2-5b1552f5
-  VELERO_VERSION=1.9.3
+  VELERO_VERSION=1.9.5
   VENDIR_VERSION=0.32.2
   YTT_VERSION=0.44.1
 
@@ -44,10 +41,13 @@ main() {
 
   # Bring OS package management up-to-date
   apt update -y
+  apt upgrade -y
 
   # Install packages from APT
-  apt install build-essential curl default-jre git gpg graphviz gzip httpie libnss3-tools jq openssl pv python3-pip python3-dev python3-venv ruby-dev snapd sudo tmux tree tzdata unzip wget -y
+  apt install build-essential curl default-jre git golang-go gpg graphviz gzip httpie libnss3-tools jq openssl pv python3-pip python3-dev python3-venv ruby-dev snapd sudo tmux tree tzdata unzip wget -y
   apt install apt-transport-https ca-certificates gnupg lsb-release software-properties-common dirmngr vim -y
+  add-apt-repository ppa:cncf-buildpacks/pack-cli
+  apt install pack-cli -y
 
   # Install Github CLI
   curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
@@ -55,16 +55,12 @@ main() {
   sudo apt update
   sudo apt install gh -y
 
-  # Install pack CLI
-  (curl -sSL "https://github.com/buildpacks/pack/releases/download/v${PACK_CLI}/pack-v${PACK_CLI}-linux.tgz" | sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack)
-
-
   # Install yq
   sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
   sudo chmod a+x /usr/local/bin/yq
 
   # Install NodeJS
-  curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
+  curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash -
   sudo apt-get install -y nodejs
 
   # Install Python 3
@@ -109,7 +105,7 @@ main() {
   # Install Oracle Cloud CLI
   curl -LO https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
   chmod +x install.sh
-  ./install.sh --accept-all-defaults --oci-cli-version ${OCI_CLI}
+  ./install.sh --accept-all-defaults --oci-cli-version ${OCI_CLI_VERSION}
 
   # Install Cloud Foundry UAA CLI
   gem install cf-uaac
@@ -228,17 +224,6 @@ main() {
   tar -xvf tkn_${TEKTONCD_VERSION}_Linux_x86_64.tar.gz
   chmod +x tkn
   sudo mv tkn /usr/local/bin
-
-  # Install Github CLI
-  curl -LO https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
-  tar -xvf gh_${GH_VERSION}_linux_amd64.tar.gz
-  chmod +x gh_${GH_VERSION}_linux_amd64/bin/gh
-  sudo mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
-
-  # Install Golang
-  wget -c https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz -O - | sudo tar -xz -C /usr/local
-  sudo ln -s /usr/local/go/bin/go /usr/local/bin/go
-  sudo ln -s /usr/local/go/bin/gofmt /usr/local/bin/gofmt
 
   # Install mkcert
   git clone https://github.com/FiloSottile/mkcert && cd mkcert

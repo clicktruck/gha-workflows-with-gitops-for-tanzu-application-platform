@@ -21,7 +21,7 @@ on:
       toolsetAmiName:
         description: "The name of the AMI (without the timestamp or version suffix)"
         required: true
-        default: "tap-workshop-k8s-toolset-image"
+        default: "k8s-toolset-image"
       vmSize:
         description: "The EC2 instance type and size for the bastion"
         required: true

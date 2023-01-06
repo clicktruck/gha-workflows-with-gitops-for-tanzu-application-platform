@@ -128,14 +128,14 @@ Under Github Actions, manually trigger [azure-00-setup-remote-backend-for-terraf
 
 ### Create Shared Image Gallery, Image Definition, and Toolset Image
 
-Under Github Actions, manually trigger [azure-08-build-toolset-image](../../../actions/workflows/azure-ubuntu-20_04.yml).
+Under Github Actions, manually trigger [azure-08-build-toolset-image](../../../actions/workflows/azure-ubuntu-22_04.yml).
 
 > Record or remember the resource group name you specify in this action as you will need it in later steps.
 
 Alternatively, you could create the gallery, image definition, and image by executing the az CLI and Packer script by following these guides:
 
-* [Build](../packer/azure/ubuntu/20_04/BUILD.md)
-* [Test](../packer/azure/ubuntu/20_04/TEST.md)
+* [Build](../packer/azure/ubuntu/22_04/BUILD.md)
+* [Test](../packer/azure/ubuntu/22_04/TEST.md)
 
 
 ## How do I use this?

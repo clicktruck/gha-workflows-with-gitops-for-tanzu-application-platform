@@ -62,7 +62,8 @@ jobs:
       TF_VAR_vm_network: ${{ inputs.vm-network }}
       TF_VAR_vm_subnetwork: ${{ inputs.vm-subnetwork }}
       TF_VAR_has_public_ip: true
-    runs-on: ubuntu-20.04
+
+    runs-on: ubuntu-22.04
 
     outputs:
       to_ssh_to_bastion: ${{ steps.set_outputs.outputs.to_ssh_to_bastion }}

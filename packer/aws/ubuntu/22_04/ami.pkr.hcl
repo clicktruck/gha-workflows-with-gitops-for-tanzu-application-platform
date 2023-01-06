@@ -1,8 +1,8 @@
 packer {
   required_plugins {
-    googlecompute = {
-      version = ">= 0.0.1"
-      source  = "github.com/hashicorp/googlecompute"
+    amazon = {
+      version = ">= 0.0.2"
+      source  = "github.com/hashicorp/amazon"
     }
   }
 }
@@ -11,19 +11,9 @@ locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
-variable "image_name" {
+variable "ami_name" {
   type    = string
   default = "k8s-toolset-image"
-}
-
-variable "project_id" {
-  type = string
-  default = "fe-cphillipson"
-}
-
-variable "machine_type" {
-  type    = string
-  default = "e2-standard-4"
 }
 
 variable "init_script" {
@@ -31,9 +21,14 @@ variable "init_script" {
   default = "init.sh"
 }
 
-variable "zone" {
+variable "instance_type" {
   type    = string
-  default = "us-west2-c"
+  default = "m5a.xlarge"
+}
+
+variable "vpc_region" {
+  type    = string
+  default = "us-west-2"
 }
 
 # source blocks are generated from your builders; a source can be referenced in
@@ -41,16 +36,30 @@ variable "zone" {
 # source. Read the documentation for source blocks here:
 # https://www.packer.io/docs/templates/hcl_templates/blocks/source
 
-source "googlecompute" "k8s-toolset" {
-  project_id          = var.project_id
-  image_name          = "${var.image_name}-${local.timestamp}"
-  enable_secure_boot  = true
-  machine_type        = var.machine_type
-  source_image_family = "ubuntu-minimal-2004-lts"
-  ssh_username        = "ubuntu"
-  zone                = var.zone
-  disk_size           = 50
-  disk_type           = "pd-ssd"
+source "amazon-ebs" "k8s-toolset" {
+  associate_public_ip_address = true
+  ami_groups                  = ["all"]
+  ami_name                    = "${var.ami_name}-${local.timestamp}"
+  instance_type               = var.instance_type
+  region                      = var.vpc_region
+  ssh_pty                     = "true"
+  ssh_timeout                 = "120m"
+  ssh_username                = "ubuntu"
+  source_ami_filter {
+    filters = {
+      name                = "ubuntu/images/*ubuntu-jammy-22.04-amd64-server-*"
+      root-device-type    = "ebs"
+      virtualization-type = "hvm"
+    }
+    most_recent = true
+    owners      = ["099720109477"]
+  }
+  launch_block_device_mappings {
+    device_name           = "/dev/sda1"
+    volume_size           = 60
+    volume_type           = "gp2"
+    delete_on_termination = true
+  }
 }
 
 # a build block invokes sources and runs provisioning steps on them. The
@@ -62,7 +71,7 @@ build {
   name = "with-tanzu"
 
   sources = [
-    "source.googlecompute.k8s-toolset"
+    "source.amazon-ebs.k8s-toolset"
   ]
 
   provisioner "file" {
@@ -133,7 +142,7 @@ build {
   name = "standard"
 
   sources = [
-    "source.googlecompute.k8s-toolset"
+    "source.amazon-ebs.k8s-toolset"
   ]
 
   provisioner "file" {

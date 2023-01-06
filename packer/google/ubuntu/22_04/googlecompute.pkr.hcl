@@ -1,36 +1,29 @@
+packer {
+  required_plugins {
+    googlecompute = {
+      version = ">= 0.0.1"
+      source  = "github.com/hashicorp/googlecompute"
+    }
+  }
+}
+
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
-  image_version = formatdate("YYYY.M.D", timestamp())
-}
-
-variable "client_id" {
-  type    = string
-  default = ""
-}
-
-variable "client_secret" {
-  type    = string
-  default = ""
-}
-
-variable "subscription_id" {
-  type    = string
-  default = ""
-}
-
-variable "tenant_id" {
-  type    = string
-  default = ""
-}
-
-variable "resource_group" {
-  type    = string
-  default = "cloudmonk"
 }
 
 variable "image_name" {
   type    = string
-  default = "K8sToolsetImage"
+  default = "k8s-toolset-image"
+}
+
+variable "project_id" {
+  type = string
+  default = "fe-cphillipson"
+}
+
+variable "machine_type" {
+  type    = string
+  default = "e2-standard-4"
 }
 
 variable "init_script" {
@@ -38,55 +31,26 @@ variable "init_script" {
   default = "init.sh"
 }
 
-variable "vm_size" {
+variable "zone" {
   type    = string
-  default = "Standard_D4s_v4"
-}
-
-variable "cloud_environment_name" {
-  type    = string
-  default = "Public"
+  default = "us-west2-c"
 }
 
 # source blocks are generated from your builders; a source can be referenced in
 # build blocks. A build block runs provisioner and post-processors on a
 # source. Read the documentation for source blocks here:
 # https://www.packer.io/docs/templates/hcl_templates/blocks/source
-source "azure-arm" "k8s-toolset" {
-  client_id                          = var.client_id
-  client_secret                      = var.client_secret
-  subscription_id                    = var.subscription_id
-  tenant_id                          = var.tenant_id
 
-  cloud_environment_name             = var.cloud_environment_name     # One of Public, China, Germany, or USGovernment. Defaults to Public. Long forms such as USGovernmentCloud and AzureUSGovernmentCloud are also supported.
-
-  build_resource_group_name          = var.resource_group
-
-  shared_image_gallery_destination {
-    image_name                       = var.image_name
-    image_version                    = local.image_version
-    resource_group                   = var.resource_group
-    gallery_name                     = "toolsetvms"     # Shared Image Gallery must already exist in resource group
-    replication_regions              = [ "eastus", "westus2", "centralus", "westcentralus" ]
-  }
-
-  managed_image_resource_group_name  = var.resource_group
-  managed_image_name                 = "${var.image_name}${local.timestamp}"
-  managed_image_storage_account_type = "Premium_LRS"
-
-  os_type                            = "Linux"
-  os_disk_size_gb                    = 50
-
-  image_publisher                    = "Canonical"                    # e.g., az vm image list-publishers --location westus2 -o table
-  image_offer                        = "0001-com-ubuntu-server-focal" # e.g., az vm image list-offers --location westus2 --publisher Canonical -o table
-  image_sku                          = "20_04-lts-gen2"               # e.g., az vm image list-skus --location westus2 --publisher Canonical --offer 0001-com-ubuntu-minimal-focal-daily -o table
-  image_version                      = "latest"
-
-  vm_size                            = var.vm_size                    # e.g., az vm list-sizes --location westus -o table
-
-  keep_os_disk                       = "true"
-
-  ssh_username                       = "ubuntu"
+source "googlecompute" "k8s-toolset" {
+  project_id          = var.project_id
+  image_name          = "${var.image_name}-${local.timestamp}"
+  enable_secure_boot  = true
+  machine_type        = var.machine_type
+  source_image_family = "ubuntu-minimal-2204-lts"
+  ssh_username        = "ubuntu"
+  zone                = var.zone
+  disk_size           = 60
+  disk_type           = "pd-ssd"
 }
 
 # a build block invokes sources and runs provisioning steps on them. The
@@ -98,17 +62,17 @@ build {
   name = "with-tanzu"
 
   sources = [
-    "source.azure-arm.k8s-toolset"
+    "source.googlecompute.k8s-toolset"
   ]
-
-  provisioner "file" {
-    source      = "install-krew-and-plugins.sh"
-    destination = "/home/ubuntu/install-krew-and-plugins.sh"
-  }
 
   provisioner "file" {
     source      = "dist/"
     destination = "/home/ubuntu"
+  }
+
+  provisioner "file" {
+    source      = "install-krew-and-plugins.sh"
+    destination = "/home/ubuntu/install-krew-and-plugins.sh"
   }
 
   provisioner "file" {
@@ -169,7 +133,7 @@ build {
   name = "standard"
 
   sources = [
-    "source.azure-arm.k8s-toolset"
+    "source.googlecompute.k8s-toolset"
   ]
 
   provisioner "file" {

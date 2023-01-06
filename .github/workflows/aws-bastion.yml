@@ -68,7 +68,8 @@ jobs:
       TF_VAR_eks_cluster_security_group_id: ${{ inputs.eksClusterSecurityGroupId }}
       TF_VAR_toolset_ami_owner: ${{ inputs.toolsetAmiOwner }}
       TF_VAR_vm_size: ${{ inputs.vmSize }}
-    runs-on: ubuntu-20.04
+
+    runs-on: ubuntu-22.04
 
     outputs:
       to_ssh_to_bastion: ${{ steps.set_outputs.outputs.to_ssh_to_bastion }}

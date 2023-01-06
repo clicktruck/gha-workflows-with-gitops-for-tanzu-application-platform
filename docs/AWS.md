@@ -128,7 +128,7 @@ Under Github Actions, manually trigger [aws-02-dispatch-remote-backend-for-terra
 
 ### Create Toolset AMI
 
-Under Github Actions, manually trigger [aws-04-build-toolset-image](../../../actions/workflows/aws-ubuntu-20_04.yml).
+Under Github Actions, manually trigger [aws-04-build-toolset-image](../../../actions/workflows/aws-ubuntu-22_04.yml).
 
 If the job completes successfully, you will need to look up the `Owner account ID`.
 
@@ -141,8 +141,8 @@ https://{AWS_REGION}.console.aws.amazon.com/ec2/v2/home?region={AWS_REGION}#Imag
 
 Alternatively, you could create the AMI by executing the aws CLI and Packer script by following these guides:
 
-* [Build](../packer/aws/ubuntu/20_04/BUILD.md)
-* [Test](../packer/aws/ubuntu/20_04/TEST.md)
+* [Build](../packer/aws/ubuntu/22_04/BUILD.md)
+* [Test](../packer/aws/ubuntu/22_04/TEST.md)
 
 
 ## How do I use this?

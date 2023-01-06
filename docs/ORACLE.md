@@ -134,12 +134,12 @@ Under Github Actions, manually trigger [oracle-dispatch-remote-backend-for-terra
 
 ### Create Toolset Image
 
-Under Github Actions, manually trigger [oracle-build-toolset-image](../../../actions/workflows/oracle-ubuntu-20_04.yml).
+Under Github Actions, manually trigger [oracle-build-toolset-image](../../../actions/workflows/oracle-ubuntu-22_04.yml).
 
 Alternatively, you could create the image by executing the oci CLI and Packer script by following these guides:
 
-* [Build](../packer/oracle/ubuntu/20_04/BUILD.md)
-* [Test](../packer/oracle/ubuntu/20_04/TEST.md)
+* [Build](../packer/oracle/ubuntu/22_04/BUILD.md)
+* [Test](../packer/oracle/ubuntu/22_04/TEST.md)
 
 
 ## How do I use this?

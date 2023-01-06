@@ -1,19 +1,41 @@
-packer {
-  required_plugins {
-    amazon = {
-      version = ">= 0.0.2"
-      source  = "github.com/hashicorp/amazon"
-    }
-  }
-}
-
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
+  image_version = formatdate("YYYY.M.D", timestamp())
 }
 
-variable "ami_name" {
+variable "client_id" {
   type    = string
-  default = "k8s-toolset-image"
+  default = ""
+}
+
+variable "client_secret" {
+  type    = string
+  default = ""
+}
+
+variable "subscription_id" {
+  type    = string
+  default = ""
+}
+
+variable "tenant_id" {
+  type    = string
+  default = ""
+}
+
+variable "use_azure_cli_auth" {
+  type    = bool
+  default = true
+}
+
+variable "resource_group" {
+  type    = string
+  default = "cloudmonk"
+}
+
+variable "image_name" {
+  type    = string
+  default = "K8sToolsetImage"
 }
 
 variable "init_script" {
@@ -21,14 +43,14 @@ variable "init_script" {
   default = "init.sh"
 }
 
-variable "instance_type" {
+variable "vm_size" {
   type    = string
-  default = "m5a.xlarge"
+  default = "Standard_D4s_v4"
 }
 
-variable "vpc_region" {
+variable "cloud_environment_name" {
   type    = string
-  default = "us-west-2"
+  default = "Public"
 }
 
 # source blocks are generated from your builders; a source can be referenced in
@@ -36,30 +58,36 @@ variable "vpc_region" {
 # source. Read the documentation for source blocks here:
 # https://www.packer.io/docs/templates/hcl_templates/blocks/source
 
-source "amazon-ebs" "k8s-toolset" {
-  associate_public_ip_address = true
-  ami_groups                  = ["all"]
-  ami_name                    = "${var.ami_name}-${local.timestamp}"
-  instance_type               = var.instance_type
-  region                      = var.vpc_region
-  ssh_pty                     = "true"
-  ssh_timeout                 = "120m"
-  ssh_username                = "ubuntu"
-  source_ami_filter {
-    filters = {
-      name                = "ubuntu/images/*ubuntu-focal-20.04-amd64-server-*"
-      root-device-type    = "ebs"
-      virtualization-type = "hvm"
-    }
-    most_recent = true
-    owners      = ["099720109477"]
+source "azure-arm" "k8s-toolset" {
+  use_azure_cli_auth                 = var.use_azure_cli_auth
+
+  cloud_environment_name             = var.cloud_environment_name     # One of Public, China, Germany, or USGovernment. Defaults to Public. Long forms such as USGovernmentCloud and AzureUSGovernmentCloud are also supported.
+
+  build_resource_group_name          = var.resource_group
+
+  shared_image_gallery_destination {
+    image_name                       = var.image_name
+    image_version                    = local.image_version
+    resource_group                   = var.resource_group
+    gallery_name                     = "toolsetvms"     # Shared Image Gallery must already exist in resource group
+    replication_regions              = [ "eastus", "westus2", "centralus", "westcentralus", "northeurope", "ukwest", "southeastasia", "australiasoutheast" ]
   }
-  launch_block_device_mappings {
-    device_name           = "/dev/sda1"
-    volume_size           = 30
-    volume_type           = "gp2"
-    delete_on_termination = true
-  }
+
+  managed_image_resource_group_name  = var.resource_group
+  managed_image_name                 = "${var.image_name}${local.timestamp}"
+  managed_image_storage_account_type = "Premium_LRS"
+
+  os_type                            = "Linux"
+  os_disk_size_gb                    = 60
+
+  image_publisher                    = "Canonical"                    # e.g., az vm image list-publishers --location westus2 -o table
+  image_offer                        = "0001-com-ubuntu-server-jammy" # e.g., az vm image list-offers --location westus2 --publisher Canonical -o table
+  image_sku                          = "22_04-lts-gen2"               # e.g., az vm image list-skus --location westus2 --publisher Canonical --offer 0001-com-ubuntu-minimal-jammy -o table
+  image_version                      = "latest"
+
+  vm_size                            = var.vm_size                    # e.g., az vm list-sizes --location westus -o table
+
+  ssh_username                       = "ubuntu"
 }
 
 # a build block invokes sources and runs provisioning steps on them. The
@@ -71,17 +99,17 @@ build {
   name = "with-tanzu"
 
   sources = [
-    "source.amazon-ebs.k8s-toolset"
+    "source.azure-arm.k8s-toolset"
   ]
-
-  provisioner "file" {
-    source      = "dist/"
-    destination = "/home/ubuntu"
-  }
 
   provisioner "file" {
     source      = "install-krew-and-plugins.sh"
     destination = "/home/ubuntu/install-krew-and-plugins.sh"
+  }
+
+  provisioner "file" {
+    source      = "dist/"
+    destination = "/home/ubuntu"
   }
 
   provisioner "file" {
@@ -142,7 +170,7 @@ build {
   name = "standard"
 
   sources = [
-    "source.amazon-ebs.k8s-toolset"
+    "source.azure-arm.k8s-toolset"
   ]
 
   provisioner "file" {

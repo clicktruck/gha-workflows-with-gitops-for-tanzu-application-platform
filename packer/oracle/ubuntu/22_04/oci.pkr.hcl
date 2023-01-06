@@ -69,8 +69,8 @@ source "oracle-oci" "k8s-toolset" {
   availability_domain = var.availability_domain
   base_image_filter {
     operating_system         = "Canonical Ubuntu"
-    operating_system_version = "20.04"
-    display_name_search      = "^Canonical-Ubuntu-20\\.04-2022\\.\\d+"
+    operating_system_version = "22.04"
+    display_name_search      = "^Canonical-Ubuntu-22\\.04-2022\\.\\d+"
   }
   image_name   = "${var.image_name}-${local.timestamp}"
   shape        = var.machine_type

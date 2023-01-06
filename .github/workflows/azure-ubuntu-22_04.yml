@@ -28,7 +28,7 @@ jobs:
       galleryName: toolsetvms
       resourceGroupName: ${{ github.event.inputs.resourceGroupName }}
       imageName: k8stoolsetvm
-      imageSku: "2022"
+      imageSku: "2023"
       imagePublisher: workshop
       imageOffer: 0000-com-vmware-k8s-toolset-vm
       action: create
@@ -43,7 +43,7 @@ jobs:
       TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
 
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: create-shared-gallery-image-def
     steps:
       - name: Checkout code
@@ -53,43 +53,43 @@ jobs:
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/init.sh"
-          target: "packer/azure/ubuntu/20_04/init.sh"
+          target: "packer/azure/ubuntu/22_04/init.sh"
 
       - name: Copy inventory.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/inventory.sh"
-          target: "packer/azure/ubuntu/20_04/inventory.sh"
+          target: "packer/azure/ubuntu/22_04/inventory.sh"
 
       - name: Copy kind-load-cafile.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/kind-load-cafile.sh"
-          target: "packer/azure/ubuntu/20_04/kind-load-cafile.sh"
+          target: "packer/azure/ubuntu/22_04/kind-load-cafile.sh"
 
       - name: Copy fetch-tanzu-cli.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/fetch-tanzu-cli.sh"
-          target: "packer/azure/ubuntu/20_04/fetch-tanzu-cli.sh"
+          target: "packer/azure/ubuntu/22_04/fetch-tanzu-cli.sh"
 
       - name: Copy fetch-and-install-oci-cli.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/fetch-and-install-oci-cli.sh"
-          target: "packer/azure/ubuntu/20_04/fetch-and-install-oci-cli.sh"
+          target: "packer/azure/ubuntu/22_04/fetch-and-install-oci-cli.sh"
 
       - name: Copy install-tap-plugins.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/install-tap-plugins.sh"
-          target: "packer/azure/ubuntu/20_04/install-tap-plugins.sh"
+          target: "packer/azure/ubuntu/22_04/install-tap-plugins.sh"
 
       - name: Copy install-krew-and-plugins.sh
         uses: canastro/copy-file-action@master
         with:
           source: "scripts/install-krew-and-plugins.sh"
-          target: "packer/azure/ubuntu/20_04/install-krew-and-plugins.sh"
+          target: "packer/azure/ubuntu/22_04/install-krew-and-plugins.sh"
 
       - name: Use latest Packer
         uses: hashicorp-contrib/setup-packer@v2
@@ -97,11 +97,11 @@ jobs:
           packer-version: 1.8.5
 
       - name: Initialize Packer
-        working-directory: ./packer/azure/ubuntu/20_04
+        working-directory: ./packer/azure/ubuntu/22_04
         run: packer init arm-ci.pkr.hcl
 
       - name: Build image from template
-        working-directory: ./packer/azure/ubuntu/20_04
+        working-directory: ./packer/azure/ubuntu/22_04
         run: packer build -var image_name="k8stoolsetvm" -var resource_group="${{ github.event.inputs.resourceGroupName }}" -var subscription_id="${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.AZURE_AD_TENANT_ID }}" -var client_id="${{ secrets.AZURE_AD_CLIENT_ID }}" -var client_secret="${{ secrets.AZURE_AD_CLIENT_SECRET }}" -only="standard.*" arm-ci.pkr.hcl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -60,10 +60,10 @@ For example
 az sig image-definition create \
    --resource-group cloudmonk \
    --gallery-name toolsetvms \
-   --gallery-image-definition SpringOne2021K8sToolsetImage \
+   --gallery-image-definition K8sToolsetImage \
    --publisher myPublisher \
    --offer 0000-com-vmware-k8s-toolset-vm \
-   --sku 2022 \
+   --sku 2023 \
    --os-type Linux \
    --os-state generalized
 ```

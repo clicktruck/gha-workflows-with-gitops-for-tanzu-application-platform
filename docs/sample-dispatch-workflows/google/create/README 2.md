@@ -44,7 +44,7 @@ gh repo fork pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
 <p>
 
 ```bash
-echo '{ "instanceType": "e2-standard-4", "region": "us-west2-a" }' | gh workflow run google-ubuntu-20_04.yml --json
+echo '{ "instanceType": "e2-standard-4", "region": "us-west2-a" }' | gh workflow run google-ubuntu-22_04.yml --json
 ```
 
 </p>

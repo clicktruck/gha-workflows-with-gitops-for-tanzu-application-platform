@@ -80,9 +80,9 @@ packer build --var instance_type=m4.xlarge --var vpc_region=eu-west-3 -only='sta
 
 * [Packer and AWS: Tutorial - Build an image](https://learn.hashicorp.com/tutorials/packer/aws-get-started-build-image?in=packer/aws-get-started)
 * [Amazon EC2 AMI Locator](https://cloud-images.ubuntu.com/locator/ec2/)
-  * Ubuntu 20.04 AMD ebs-ssd images
-    * us-east-1 - ami-019212a8baeffb0fa
-    * us-west-2 - ami-02868af3c3df4b3aa
-    * eu-west-3 - ami-06d3fffafe8d48b35
+  * Ubuntu 22.04 AMD ebs-ssd images
+    * us-east-1 - ami-0ea1c7db66fee3098
+    * us-west-2 - ami-0497e51c56f8ea7da
+    * eu-west-3 - ami-09672f16270ce9efb
 * [Amazon AMI Builder](https://www.packer.io/docs/builders/amazon)
 * [AMI Builder (EBS backed)](https://www.packer.io/docs/builders/amazon/ebs)
