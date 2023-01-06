@@ -13,6 +13,10 @@ excluded_packages:
 #! installed_for_vmware_internal_use: "true"
 ceip_policy_disclosed: true
 
+shared:
+  ingress_domain: #@ data.values.tap.domains.main
+  ingress_issuer: #@ data.values.tap.cluster.issuerRef.name
+
 buildservice:
   kp_default_repository: #@ "{}/{}".format(data.values.tap.credentials.registry.host, data.values.tap.registry.repositories.buildService)
   kp_default_repository_username: #@ data.values.tap.credentials.registry.username
@@ -64,12 +68,6 @@ appliveview_connector:
     sslDisabled: false
     ingressEnabled: true
     host: #@ "appliveview.{}".format(data.values.tap.domains.main)
-
-package_overlays:
-- name:  cnrs
-  secrets:
-  - name: cnrs-network-config-overlay
-  - name: cnrs-certmanager-config-overlay
 
 #@ end
 ---

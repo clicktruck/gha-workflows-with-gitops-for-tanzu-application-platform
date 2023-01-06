@@ -184,10 +184,6 @@ cnrs:
       namespace: tanzu-system-ingress
 
 package_overlays:
-- name: cnrs
-  secrets:
-  - name: cnrs-network-config-overlay
-  - name: cnrs-certmanager-config-overlay
 - name:  learningcenter
   secrets:
   - name: learningcenter-config-overlay

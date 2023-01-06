@@ -13,7 +13,12 @@ excluded_packages:
 #! installed_for_vmware_internal_use: "true"
 ceip_policy_disclosed: true
 
+shared:
+  ingress_domain: #@ data.values.tap.domains.main
+  ingress_issuer: #@ data.values.tap.cluster.issuerRef.name
+
 supply_chain: basic
+
 ootb_supply_chain_basic:
   registry:
     server: #@ data.values.tap.credentials.registry.host
@@ -43,10 +48,6 @@ appliveview_connector:
     host: #@ "appliveview.{}".format(data.values.tap.domains.main)
 
 package_overlays:
-- name: cnrs
-  secrets:
-  - name: cnrs-network-config-overlay
-  - name: cnrs-certmanager-config-overlay
 - name: ootb-templates
   secrets:
   - name: honor-deliverable-subpath-overlay
