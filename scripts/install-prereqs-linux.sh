@@ -71,6 +71,11 @@ echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.clou
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 sudo apt update -y && sudo apt install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y
 
+# Install Oracle Cloud CLI
+curl -LO https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
+chmod +x install.sh
+./install.sh --accept-all-defaults
+
 # Install VSCode
 wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"

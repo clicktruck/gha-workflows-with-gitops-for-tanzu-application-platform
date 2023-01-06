@@ -44,17 +44,19 @@
 
 ### Account credentials
 
-* Github
-* One or more on: AWS, Azure, Google Cloud, Oracle
+* [Github](https://github.com/)
+* One or more on: [AWS](https://aws.amazon.com/), [Azure](https://azure.microsoft.com/en-us/), [Google Cloud](https://cloud.google.com/), [Oracle](https://www.oracle.com/cloud/)
+* [Tanzu Network](https://network.pivotal.io)
+* [VMware Marketplace](https://marketplace.cloud.vmware.com/)
 
 ### CLIs
 
-* One or more of: aws, az, gcloud, oci
-* docker
-* git
-* gh
-* packer
-* terraform
+* One or more of: [aws](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html), [az](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli), [gcloud](https://cloud.google.com/sdk/docs/install), [oci](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm)
+* [docker](https://www.docker.com/products/docker-desktop/)
+* [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+* [gh](https://github.com/cli/cli#installation)
+* [packer](https://developer.hashicorp.com/packer/tutorials/docker-get-started/get-started-install-cli)
+* [terraform](https://developer.hashicorp.com/terraform/downloads)
 
 For your convenience a set of scripts exist to install a complement of the prerequisite toolset:
 

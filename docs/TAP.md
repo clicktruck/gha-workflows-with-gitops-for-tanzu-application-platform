@@ -5,6 +5,7 @@
 * [Prerequisites](#prerequisites)
   * [Fork this repository](#fork-this-repository)
   * [Setup a Personal Access Token in Github](#setup-a-personal-access-token-in-github)
+  * [Establish accounts on VMware sites](#establish-accounts-on-vmware-sites)
   * [Configure Github Secrets](#configure-github-secrets)
   * [Create a Gitops repository for your deliverables](#create-a-gitops-repository-for-your-deliverables)
 * [Lifecycle Management](#lifecycle-management)
@@ -68,6 +69,18 @@ gh repo sync --source pacphi/gha-workflows-with-gitops-for-tanzu-application-pla
 ### Setup a Personal Access Token in Github
 
 A PAT is required so that workflows can add secrets to the repository in order to be used in downstream jobs.  Documentation can be found [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
+
+
+### Establish accounts on VMware sites
+
+You will need to setup accounts on
+
+* [Tanzu Network](https://login.run.pivotal.io/login)
+  > Click on the Create Account link
+* [VMware Marketplace](https://marketplace.cloud.vmware.com/)
+  > Click on the Create Marketplace Account link
+
+Store your account credentials, they will be required in the next step.
 
 
 ### Configure Github Secrets
