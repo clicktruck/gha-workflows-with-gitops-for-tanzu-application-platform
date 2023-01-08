@@ -70,5 +70,5 @@ else
     tanzu plugin list
 
     echo "Cleaning up."
-    rm -Rf dist tanzu-cli-bundle-linux-amd64.tar.gz
+    rm -Rf dist tanzu-cli-bundle-${OS}-amd64.tar.gz
 fi
