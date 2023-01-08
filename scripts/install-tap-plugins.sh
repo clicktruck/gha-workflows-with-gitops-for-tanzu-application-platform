@@ -6,12 +6,30 @@ if [ -z "$1" ]; then
 	exit 1
 fi
 
+OS="$(uname | tr '[:upper:]' '[:lower:]')"
+case $OS in
+  darwin)
+    echo "Installing MacOS version of Tanzu Application Platform plugins for tanzu CLI"
+	TAP_PRODUCT_FILE_ID=1404617
+    ;;
+
+  linux)
+    echo "Installing Linux version of Tanzu Application Platform plugins for tanzu CLI"
+	TAP_PRODUCT_FILE_ID=140618
+    ;;
+
+  *)
+    echo "[ Unsupported OS ] cannot install Tanzu Application Platform plugins for tanzu CLI"
+	exit 1
+    ;;
+esac
+
 if ! command -v pivnet &> /dev/null
 then
     echo "Downloading pivnet CLI..."
-	curl -LO https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
-	chmod +x pivnet-linux-amd64-3.0.1
-	sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
+	curl -LO https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-${OS}-amd64-3.0.1
+	chmod +x pivnet-${OS}-amd64-3.0.1
+	sudo mv pivnet-${OS}-amd64-3.0.1 /usr/local/bin/pivnet
 fi
 
 
@@ -20,11 +38,10 @@ pivnet login --api-token=$TANZU_NETWORK_API_TOKEN
 
 mkdir -p $HOME/tanzu
 cd /tmp
-TAP_VERSION="1.4.0-rc.18"
-TAP_PRODUCT_FILE_ID=1385855
+TAP_VERSION="1.4.0-rc.22"
 
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --product-file-id="${TAP_PRODUCT_FILE_ID}"
-tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
+tar -xvf tanzu-framework-${OS}-amd64.tar -C $HOME/tanzu
 
 cd $HOME/tanzu
 tanzu plugin delete package || true

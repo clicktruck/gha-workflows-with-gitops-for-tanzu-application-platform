@@ -9,7 +9,7 @@ CSP_API_TOKEN="$1"
 OS="$2"
 TANZU_CLI_VERSION="$3"
 TANZU_CLI_CORE_VERSION="$4"
-MKPCLI_VERSION=0.15.0
+MKPCLI_VERSION=0.15.1
 
 if ! command -v mkpcli &> /dev/null
 then

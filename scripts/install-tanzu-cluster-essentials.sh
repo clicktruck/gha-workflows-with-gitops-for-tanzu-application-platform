@@ -6,7 +6,6 @@ set -eo pipefail
 ## Tanzu Network
 ## (package configuration)
 ESS_VERSION="1.3.0"
-ESS_PRODUCT_FILE_ID=1330470
 export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:54bf611711923dccd7c7f10603c846782b90644d48f1cb570b43a082d18e23b9
 export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
 
@@ -17,6 +16,24 @@ if  [ -z "$1" ] && [ -z "$2" ] && [ -z "$3" ]; then
 	echo "Usage: install-tanzu-cluster-essentials.sh {tanzu-network-api-token} {tanzu-network-username} {tanzu-network-password}"
 	exit 1
 fi
+
+OS="$(uname | tr '[:upper:]' '[:lower:]')"
+case $OS in
+  darwin)
+    echo "Installing MacOS version of Cluster Essentials for VMware Tanzu"
+	  ESS_PRODUCT_FILE_ID=1330472
+    ;;
+
+  linux)
+    echo "Installing Linux version of Cluster Essentials for VMware Tanzu"
+	  ESS_PRODUCT_FILE_ID=1330470
+    ;;
+
+  *)
+    echo "[ Unsupported OS ] cannot install Cluster Essentials for VMware Tanzu"
+	exit 1
+    ;;
+esac
 
 if ! command -v pivnet &> /dev/null
 then
