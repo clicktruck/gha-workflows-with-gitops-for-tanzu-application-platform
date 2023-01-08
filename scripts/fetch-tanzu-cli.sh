@@ -14,8 +14,8 @@ MKPCLI_VERSION=0.15.1
 if ! command -v mkpcli &> /dev/null
 then
   echo "Downloading VMware Marketplace CLI..."
-	curl -LO https://github.com/vmware-labs/marketplace-cli/releases/download/v${MKPCLI_VERSION}/mkpcli-linux-amd64.tgz
-  tar -xvf mkpcli-linux-amd64.tgz
+	curl -LO https://github.com/vmware-labs/marketplace-cli/releases/download/v${MKPCLI_VERSION}/mkpcli-${OS}-amd64.tgz
+  tar -xvf mkpcli-${OS}-amd64.tgz
 	chmod +x mkpcli
 	sudo mv mkpcli /usr/local/bin
 fi
