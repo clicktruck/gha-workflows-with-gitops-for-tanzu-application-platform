@@ -25,7 +25,7 @@ on:
 
 jobs:
   encode-tanzu-standard-repo-uninstall-script:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
@@ -42,12 +42,12 @@ jobs:
 
   uninstall:
     needs: encode-tanzu-standard-repo-uninstall-script
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
       GITOPS_DIR: gitops/tanzu/standard
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

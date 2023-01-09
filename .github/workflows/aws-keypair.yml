@@ -42,7 +42,7 @@ jobs:
       AWS_REGION: ${{ inputs.region }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       TF_VAR_ssh_key_name: ${{ inputs.ssh-key-name }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       ssh_key_name: ${{ steps.set_outputs.outputs.ssh_key_name }}
@@ -50,7 +50,7 @@ jobs:
       ssh_private_key: ${{ steps.set_outputs.outputs.ssh_private_key }}
       ssh_public_key: ${{ steps.set_outputs.outputs.ssh_public_key }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

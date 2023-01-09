@@ -8,7 +8,7 @@ locals {
   ]
   is_flexible_compute_instance_shape = contains(local.compute_flexible_shapes, var.compute_instance_shape)
   instance_os                        = "Canonical Ubuntu"
-  os_version                         = "20.04"
+  os_version                         = "22.04"
 }
 
 variable "tenancy_ocid" {

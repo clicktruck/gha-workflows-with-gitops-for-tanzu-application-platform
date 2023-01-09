@@ -1,4 +1,4 @@
-# Ubuntu 20.04 on Google Compute: Packer
+# Ubuntu 22.04 on Google Compute: Packer
 
 ## Instructions
 

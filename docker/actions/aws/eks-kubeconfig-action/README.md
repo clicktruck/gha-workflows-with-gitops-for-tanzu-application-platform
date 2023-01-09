@@ -76,7 +76,7 @@ on:
 
 jobs:
   run:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       b64kubeconfig: ${{ steps.obtain_kubeconfig.outputs.b64kubeconfig }}

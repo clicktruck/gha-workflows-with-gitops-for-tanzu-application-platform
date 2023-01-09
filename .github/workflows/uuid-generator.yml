@@ -9,7 +9,7 @@ on:
 
 jobs:
   randomize:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       uuid: ${{ steps.set_outputs.outputs.uuid }}

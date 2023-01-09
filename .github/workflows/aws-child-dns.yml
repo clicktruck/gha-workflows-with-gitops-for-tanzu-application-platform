@@ -50,14 +50,14 @@ jobs:
       TF_VAR_base_domain: ${{ inputs.baseDomain }}
       TF_VAR_domain_prefix: "${{ inputs.domainPrefix }}"
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       base_domain: ${{ steps.set_outputs.outputs.base_domain }}
       child_domain: ${{ steps.set_outputs.outputs.child_domain }}
       hosted_zone_id: ${{ steps.set_outputs.outputs.hosted_zone_id }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

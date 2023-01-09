@@ -38,13 +38,13 @@ jobs:
       TF_VAR_root_domain_zone_name: ${{ inputs.root-domain-zone-name }}
       TF_VAR_subdomain: "${{ inputs.subdomain }}"
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       zone_name: ${{ steps.set_outputs.outputs.zone_name }}
       zone_subdomain: ${{ steps.set_outputs.outputs.zone_subdomain }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

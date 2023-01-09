@@ -100,13 +100,13 @@ jobs:
       #TF_VAR_vpc_subnetwork_name: "prv-10-0-100-0"
       #TF_VAR_master_authorized_networks_cidr_list: "10.0.90.0/24"
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       cluster_name: ${{ steps.set_outputs.outputs.cluster_name }}
 
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

@@ -1,4 +1,4 @@
-# Ubuntu 20.04 on AWS: Packer
+# Ubuntu 22.04 on AWS: Packer
 
 ## Instructions
 

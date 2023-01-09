@@ -24,7 +24,7 @@ on:
 jobs:
   create-cloudformation-stack:
     if: inputs.action == 'create'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout
@@ -43,7 +43,7 @@ jobs:
 
   destroy-cloudformation-stack:
     if: inputs.action == 'destroy'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       AWS_PAGER: ""
 

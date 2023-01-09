@@ -16,7 +16,7 @@ on:
 jobs:
 
   create-backend-storage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       AZURE_REGION: ${{ secrets.AZURE_REGION }}
       AZURE_RESOURCE_GROUP: ${{ github.event.inputs.resourceGroup }}
@@ -40,7 +40,7 @@ jobs:
           $GITHUB_WORKSPACE/scripts/azure/setup-azure-provided-remote-backend.sh
 
   add-backend-config-as-secrets:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: create-backend-storage
     steps:
     - name: Set Terraform backend resource group name

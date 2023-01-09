@@ -79,7 +79,7 @@ on:
 jobs:
   region-to-geo:
     if: github.event.inputs.container-image-registry-provider == 'google-container-registry'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       result: ${{ steps.convert.outputs.geo }}

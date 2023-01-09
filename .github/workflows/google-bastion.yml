@@ -68,7 +68,7 @@ jobs:
     outputs:
       to_ssh_to_bastion: ${{ steps.set_outputs.outputs.to_ssh_to_bastion }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

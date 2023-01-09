@@ -19,7 +19,7 @@ on:
 
 jobs:
   create-new-project:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}

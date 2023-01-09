@@ -475,7 +475,7 @@ jobs:
       TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
 
   b64-script:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash

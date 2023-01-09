@@ -178,7 +178,7 @@ jobs:
       GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
 
   encode-tanzu-application-platform-install-script:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
@@ -194,7 +194,7 @@ jobs:
         echo "result=${result}" >> $GITHUB_OUTPUT
 
   encode-observe-clusters-script:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
@@ -212,12 +212,12 @@ jobs:
   install:
     needs: [install-tanzu-ingress-into-tap-cluster-on-aws,install-tanzu-ingress-into-tap-cluster-on-azure,install-tanzu-ingress-into-tap-cluster-on-google,encode-tanzu-application-platform-install-script,encode-observe-clusters-script]
     if: always()
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
       GITOPS_DIR: gitops/tanzu/application-platform
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

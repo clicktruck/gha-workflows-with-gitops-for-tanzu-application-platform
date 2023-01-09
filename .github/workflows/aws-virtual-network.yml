@@ -50,7 +50,7 @@ jobs:
       AWS_REGION: ${{ inputs.region }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       TF_VAR_vpc_cidr: ${{ inputs.vpc-cidr }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       vpc_id: ${{ steps.set_outputs.outputs.vpc_id }}
@@ -61,7 +61,7 @@ jobs:
       private_subnets_cidr_blocks: ${{ steps.set_outputs.outputs.private_subnets_cidr_blocks }}
       public_subnets_cidr_blocks: ${{ steps.set_outputs.outputs.public_subnets_cidr_blocks }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

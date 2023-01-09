@@ -32,12 +32,12 @@ jobs:
       TF_VAR_project: ${{ secrets.GOOGLE_PROJECT_ID }}
       TF_VAR_root_domain: ${{ inputs.domain }}
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       zone_name: ${{ steps.set_outputs.outputs.zone_name }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

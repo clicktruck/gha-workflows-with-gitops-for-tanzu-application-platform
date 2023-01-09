@@ -61,7 +61,7 @@
 For your convenience a set of scripts exist to install a complement of the prerequisite toolset:
 
 * [MacOS](scripts/install-prereqs-macos.sh) >= 10.15
-* [Ubuntu](scripts/install-prereqs-linux.sh) >= 20.04
+* [Ubuntu](scripts/install-prereqs-linux.sh) >= 22.04
 * [Windows](scripts/install-prereqs-windows.ps1) >= 10
 
 However, if you already have Docker installed on your workstation or laptop, you might alternatively consider making use of this Docker [toolset image](docker/toolset-image/README.md).

@@ -39,13 +39,13 @@ jobs:
       TF_VAR_alias: ${{ secrets.AWS_KMS_ALIAS }}
       TF_VAR_bucket_name: ${{ inputs.s3-bucket-name }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
         working-directory: terraform/aws/tfstate-support
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       provisioned_bucket_name: ${{ steps.set_outputs.outputs.provisioned_bucket_name }}
@@ -94,7 +94,7 @@ jobs:
   add-github-secret:
     if: inputs.action == 'create'
     needs: create-backend-storage
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -106,7 +106,7 @@ jobs:
 
   destroy-backend-storage:
     if: inputs.action == 'destroy'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       AWS_PAGER: ""
 

@@ -1,6 +1,6 @@
 # K8s Toolset
 
-An Ubuntu 20.04-based Docker image of curated tools for use with Kubernetes environments.
+An Ubuntu 22.04-based Docker image of curated tools for use with Kubernetes environments.
 
 ## Prerequistes
 

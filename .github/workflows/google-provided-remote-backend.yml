@@ -37,13 +37,13 @@ jobs:
       # Uncomment when this open issue is addressed: https://github.com/hashicorp/terraform/issues/24967.
       #TF_VAR_keyring: ${{ secrets.GOOGLE_KMS_KEYRING }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
         working-directory: terraform/google/tfstate-support
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       provisioned_bucket_name: ${{ steps.set_outputs.outputs.provisioned_bucket_name }}
@@ -98,7 +98,7 @@ jobs:
   add-github-secret:
     if: inputs.action == 'create'
     needs: create-backend-storage
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -110,7 +110,7 @@ jobs:
 
   destroy-backend-storage:
     if: inputs.action == 'destroy'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions-hub/gcloud@master

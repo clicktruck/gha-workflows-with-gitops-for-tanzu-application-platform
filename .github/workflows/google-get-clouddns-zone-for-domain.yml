@@ -21,7 +21,7 @@ on:
 jobs:
 
   gcloud-cli:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: "Fetch hosted zone id by domain with gcloud CLI"
 
     outputs:

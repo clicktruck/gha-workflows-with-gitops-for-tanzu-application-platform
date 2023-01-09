@@ -67,7 +67,7 @@ jobs:
       TF_VAR_vnet_cidr: ${{ inputs.virtualNetworkCidr }}
       TF_VAR_operator_subnet_cidr: ${{ inputs.operatorSubnetCidr }}
       TF_VAR_aks_subnet_cidr: ${{ inputs.aksSubnetCidr }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       vnet_name: ${{ steps.set_outputs.outputs.vnet_name }}
@@ -78,7 +78,7 @@ jobs:
       operator_subnet_id: ${{ steps.set_outputs.outputs.operator_subnet_id }}
       vnet_suffix: ${{ steps.set_outputs.outputs.vnet_suffix }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

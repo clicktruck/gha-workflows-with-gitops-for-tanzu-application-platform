@@ -65,7 +65,7 @@ on:
 
 jobs:
   encode-tanzu-ingress-install-script:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
@@ -82,12 +82,12 @@ jobs:
 
   install:
     needs: encode-tanzu-ingress-install-script
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
       GITOPS_DIR: gitops/tanzu/ingress/${{ inputs.target-cloud }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

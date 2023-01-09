@@ -68,13 +68,13 @@ jobs:
       TF_VAR_master_ipv4_cidr_block_28: ${{ inputs.master_ipv4_cidr_block_28 }}
       TF_VAR_vpc_subnetwork_name: "pub-10-0-91-0"
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       cluster_name: ${{ steps.set_outputs.outputs.cluster_name }}
 
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

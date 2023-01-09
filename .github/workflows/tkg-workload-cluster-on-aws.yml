@@ -58,7 +58,7 @@ jobs:
 
   encode-tkg-workload-deploy-script:
     if: inputs.action == 'create'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
@@ -75,7 +75,7 @@ jobs:
 
   encode-tkg-workload-teardown-script:
     if: inputs.action == 'destroy'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
@@ -93,7 +93,7 @@ jobs:
   deploy:
     if: inputs.action == 'create'
     needs: encode-tkg-workload-deploy-script
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
       AWS_PAGER: ""
@@ -236,7 +236,7 @@ jobs:
   teardown:
     if: inputs.action == 'destroy'
     needs: encode-tkg-workload-teardown-script
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     defaults:
       run:

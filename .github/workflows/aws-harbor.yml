@@ -55,14 +55,14 @@ jobs:
       TF_VAR_kubeconfig_path: "/tmp/.kube/config"
       KUBECONFIG: "/tmp/.kube/config"
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       harbor_domain: ${{ steps.set_outputs.outputs.harbor_domain }}
       harbor_admin_username: ${{ steps.set_outputs.outputs.harbor_admin_username }}
       harbor_admin_password: ${{ steps.set_outputs.outputs.harbor_admin_password }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

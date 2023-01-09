@@ -53,7 +53,7 @@ To install, execute
 
 No worries.  You can [scp](https://linuxconfig.org/scp) a set of scripts to help you fetch and install all the tools you need.
 
-Note: we'll assume your bastion host operating system is Ubuntu Linux 20.04 or better.
+Note: we'll assume your bastion host operating system is Ubuntu Linux 22.04 or better.
 
 ```
 git clone https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform

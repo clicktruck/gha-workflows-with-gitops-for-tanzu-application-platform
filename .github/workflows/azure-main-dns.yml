@@ -45,9 +45,9 @@ jobs:
       TF_VAR_domain: ${{ inputs.domain }}
       TF_VAR_resource_group_name: ${{ inputs.resourceGroupName }}
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

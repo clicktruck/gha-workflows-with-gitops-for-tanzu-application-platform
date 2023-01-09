@@ -87,14 +87,14 @@ jobs:
       TF_VAR_aks_node_disk_size: "${{ inputs.aksNodeDiskSize }}"
       TF_VAR_k8s_version: "${{ inputs.k8sVersion }}"
       TF_VAR_suffix: "${{ inputs.suffix }}"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       aks_cluster_name: ${{ steps.set_outputs.outputs.aks_cluster_name }}
       base64_kubeconfig: ${{ steps.set_outputs.outputs.base64_kubeconfig }}
 
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

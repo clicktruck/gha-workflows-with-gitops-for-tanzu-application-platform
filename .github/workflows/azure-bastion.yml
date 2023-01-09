@@ -73,13 +73,13 @@ jobs:
       TF_VAR_sig_name: ${{ inputs.sharedGalleryName }}
       TF_VAR_suffix: ${{ inputs.suffix }}
       TF_VAR_sig_resource_group_name: ${{ inputs.sigRgName }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       bastion_vm_name: ${{ steps.set_outputs.outputs.bastion_vm_name }}
       b64_private_openssh_key: ${{ steps.set_outputs.outputs.b64_private_openssh_key }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

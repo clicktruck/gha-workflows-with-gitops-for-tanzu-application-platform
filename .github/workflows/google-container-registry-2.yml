@@ -36,14 +36,14 @@ jobs:
       GOOGLE_APPLICATION_CREDENTIALS: "/tmp/gcloud/sa.json"
       TF_VAR_project: ${{ secrets.GOOGLE_PROJECT_ID }}
       TF_VAR_location: "${{ inputs.region }}"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     outputs:
       endpoint: ${{ steps.set_outputs.outputs.endpoint }}
       admin_username: ${{ steps.set_outputs.outputs.admin_username }}
       admin_password: ${{ steps.set_outputs.outputs.admin_password }}
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
@@ -107,7 +107,7 @@ jobs:
 
   container-image-cloud-storage-cleanup:
     if: inputs.action == 'destroy'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
 

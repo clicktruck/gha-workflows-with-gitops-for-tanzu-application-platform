@@ -41,9 +41,9 @@ jobs:
       AWS_REGION: ${{ inputs.region }}
       TF_VAR_alias: ${{ inputs.alias }}
       TF_VAR_admin_username: ${{ inputs.adminUserName }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
@@ -85,7 +85,7 @@ jobs:
   add-github-secret:
     if: inputs.action == 'create'
     needs: terraform
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -97,7 +97,7 @@ jobs:
 
   aws-cli:
     if: inputs.action == 'destroy'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: "Destroy KMS key with aws CLI"
     env:
       AWS_PAGER: ""

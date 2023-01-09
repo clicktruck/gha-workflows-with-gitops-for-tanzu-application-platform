@@ -32,9 +32,9 @@ jobs:
       TF_VAR_project: ${{ secrets.GOOGLE_PROJECT_ID }}
       TF_VAR_vpc_network_name: ${{ inputs.vpc-network-name }}
       TF_VAR_vpc_subnetwork_region: ${{ inputs.region }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-20.04, macos-latest, or windows-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash

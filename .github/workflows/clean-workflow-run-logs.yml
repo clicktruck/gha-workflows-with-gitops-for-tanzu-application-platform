@@ -10,7 +10,7 @@ on:
 
 jobs:
   clean-logs:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: igorjs/gh-actions-clean-workflow@v3
         with:

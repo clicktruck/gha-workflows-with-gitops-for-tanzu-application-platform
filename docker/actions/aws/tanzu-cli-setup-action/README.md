@@ -90,7 +90,7 @@ on:
 
 jobs:
   run:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     # Checkout the repository to the GitHub Actions runner

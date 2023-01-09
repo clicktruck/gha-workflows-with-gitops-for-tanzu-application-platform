@@ -1,4 +1,4 @@
-# Ubuntu 20.04 on Oracle Cloud: Packer
+# Ubuntu 22.04 on Oracle Cloud: Packer
 
 ## Instructions
 
