@@ -144,3 +144,8 @@ Also be sure to checkout these guides:
 
 * [Getting Started with the Tanzu Application Platform](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/GUID-getting-started.html)
 * [Getting started with multi-cluster Tanzu Application Platform](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/GUID-multicluster-getting-started.html)
+
+Companion repositories:
+
+* [Accelerator samples](https://github.com/vmware-tanzu/application-accelerator-samples) use to bootstrap greenfield projects
+* [Curated sample applications](https://github.com/pacphi/tap-sample-apps) use to demonstrate deploying workloads with [kapp](https://carvel.dev/kapp/) and [ytt](https://carvel.dev/ytt/)
