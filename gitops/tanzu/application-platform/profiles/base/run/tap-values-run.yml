@@ -82,11 +82,6 @@ appliveview_connector:
     ingressEnabled: true
     host: #@ "appliveview.{}".format(data.values.tap.domains.main)
 
-package_overlays:
-- name: ootb-templates
-  secrets:
-  - name: honor-deliverable-subpath-overlay
-
 image_policy_webhook:
   allow_unmatched_images: true
 
