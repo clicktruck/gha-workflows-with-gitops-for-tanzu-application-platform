@@ -1,4 +1,4 @@
-# Terraform a Udpate/Rollback AWS EKS Storage Class default
+# Terraform for updating or resetting the AWS EKS Storage Class default
 
 Based on the following Terraform examples:
 
