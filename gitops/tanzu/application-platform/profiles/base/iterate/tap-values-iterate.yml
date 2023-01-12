@@ -8,7 +8,6 @@ profile: iterate
 excluded_packages:
   - cert-manager.tanzu.vmware.com
   - contour.tanzu.vmware.com
-  - policy.apps.tanzu.vmware.com
 
 #! installed_for_vmware_internal_use: "true"
 ceip_policy_disclosed: true

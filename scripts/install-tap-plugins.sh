@@ -40,16 +40,27 @@ mkdir -p $HOME/tanzu
 cd /tmp
 TAP_VERSION="1.4.0"
 
-pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --product-file-id="${TAP_PRODUCT_FILE_ID}"
-tar -xvf tanzu-framework-${OS}-amd64.tar -C $HOME/tanzu
-
+export TANZU_CLI_NO_INIT=true
 cd $HOME/tanzu
-tanzu plugin delete package || true
-tanzu plugin install apps --local ./cli
-tanzu plugin install insight --local ./cli
-tanzu plugin install secret --local ./cli
-tanzu plugin install services --local ./cli
-tanzu plugin install accelerator --local ./cli
-tanzu plugin install package --local ./cli
+export CORE_VERSION=v0.25.4
+
+pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --product-file-id="${TAP_PRODUCT_FILE_ID}"
+tar -xvf tanzu-framework-${OS}-amd64-${CORE_VERSION}*.tar -C $HOME/tanzu
+
+if [ -f "/usr/local/bin/tanzu" ]; then
+  cd $HOME/tanzu
+  tanzu plugin delete package || true
+  tanzu plugin install apps --local ./cli
+  tanzu plugin install insight --local ./cli
+  tanzu plugin install secret --local ./cli
+  tanzu plugin install services --local ./cli
+  tanzu plugin install accelerator --local ./cli
+  tanzu plugin install package --local ./cli
+  tanzu version
+else
+  sudo install cli/core/${CORE_VERSION}/tanzu-core-${OS}_amd64 /usr/local/bin/tanzu
+  tanzu version
+  tanzu plugin install --local cli all
+fi
+
 tanzu plugin list
-tanzu version

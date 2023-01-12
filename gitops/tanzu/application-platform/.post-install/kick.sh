@@ -10,10 +10,10 @@ set -x
 # * update secret named metadata-store-token, plumbing the token value
 # * employ kctrl app kick to make the Apps aware of new configuration (i.e., the token)
 
-# Only execute for TAP full profile!
+# Only execute for TAP full and view profiles!
 ACTIVE_PROFILE=$(yq '.spec.template.[].ytt.paths[0]' tap-post-install.yml | rev | cut -d/ -f1 | rev)
 
-if [ "$ACTIVE_PROFILE" == "full" ]; then
+if [ "$ACTIVE_PROFILE" == "full" ] || [ "$ACTIVE_PROFILE" == "view" ]; then
 
 # Aquire token for TAP GUI access to Metadata Store
 # Fetch from secret as described here https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/GUID-scst-store-create-service-account.html#readwrite-service-account-4
