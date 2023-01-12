@@ -2,7 +2,7 @@
 
 After you've completed installing Tanzu Application Platform you may wish to author and add workshops to one or more Learning Center training portals.
 
-Consult the [public documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/GUID-learning-center-workshop-content-about.html) for how to author and publish your own workshops.
+Consult the [public documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/learning-center-workshop-content-about.html) for how to author and publish your own workshops.
 
 We provide a few additional workshops that you may easily install by visiting the `gitops/tanzu/learningcenter/supplemental` [directory](../../gitops/tanzu/learningcenter/supplemental), then executing:
 

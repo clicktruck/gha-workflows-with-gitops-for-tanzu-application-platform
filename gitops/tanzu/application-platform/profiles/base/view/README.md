@@ -89,4 +89,4 @@ In `tap-values-view.yml` you would add another block like:
 ## Background
 
 * [Tanzu Application Platform Sample Configuration](https://gist.github.com/pacphi/72b1b7fd231714dbe24cb39298d17a48)
-* [Update Tanzu Application Platform GUI to view resources on multiple clusters](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/GUID-tap-gui-cluster-view-setup.html#update-tanzu-application-platform-gui-to-view-resources-on-multiple-clusters-1)
+* [Update Tanzu Application Platform GUI to view resources on multiple clusters](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/tap-gui-cluster-view-setup.html#update-tanzu-application-platform-gui-to-view-resources-on-multiple-clusters-1)

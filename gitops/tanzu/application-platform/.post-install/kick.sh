@@ -16,7 +16,7 @@ ACTIVE_PROFILE=$(yq '.spec.template.[].ytt.paths[0]' tap-post-install.yml | rev 
 if [ "$ACTIVE_PROFILE" == "full" ] || [ "$ACTIVE_PROFILE" == "view" ]; then
 
 # Aquire token for TAP GUI access to Metadata Store
-# Fetch from secret as described here https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/GUID-scst-store-create-service-account.html#readwrite-service-account-4
+# Fetch from secret as described here https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/scst-store-create-service-account.html#readwrite-service-account-4
 TOKEN=$(kubectl get secrets metadata-store-read-write-client -n metadata-store -o jsonpath="{.data.token}" | base64 -d)
 
 # This value is referenced in gitops/tanzu/application-platform/profiles/base/{profile}/tap-values-{profile}.yml
