@@ -1,4 +1,4 @@
-# Terraform a Install/Remove AWS EKS Blueprint Addons
+# Terraform for adding/removing AWS EKS Blueprint Addons
 
 Based on the following Terraform [example](https://github.com/aws-ia/terraform-aws-eks-blueprints/tree/main/examples/eks-cluster-with-new-vpc).
 
