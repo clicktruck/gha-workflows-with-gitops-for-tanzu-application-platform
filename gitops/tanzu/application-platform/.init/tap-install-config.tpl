@@ -8,8 +8,12 @@ tap:
 
   registry:
     repositories:
-      buildService: {{ or .container_image_registry_prefix "tanzu" }}/build-service
-      ootbSupplyChain: {{ or .container_image_registry_prefix "tanzu" }}/supply-chain
+      buildService: {{ .build_service_repo }}
+        aws:
+          iam:
+            role:
+              arn: {{ .build_service_repo_aws_iam_role_arn }}
+      ootbSupplyChain: {{ .ootb_supply_chain_repo }}
 
   domains:
     main: {{ .domain }}
@@ -26,6 +30,7 @@ tap:
       group: cert-manager.io
       kind: ClusterIssuer
       name: letsencrypt-contour-cluster-issuer
+    provider: {{ .cluster_provider}}
 
   supply_chain:
     gitops:

@@ -1,0 +1,92 @@
+name: "aws-iam-roles"
+
+on:
+  workflow_call:
+    inputs:
+      cluster-name:
+        description: "Name of the EKS cluster."
+        type: string
+        required: true
+      region:
+        description: "The AWS region where the EKS cluster will be created"
+        required: true
+        type: string
+      action:
+        required: true
+        type: string
+        description: "Create (new) or delete (existing)"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+
+jobs:
+  encode-create-tap-iam-roles-script:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+        result="$(cat "scripts/aws/create-tap-iam-roles.sh" | base64 -w 0)"
+        echo "result=${result}" >> $GITHUB_OUTPUT
+
+  encode-delete-tap-iam-roles-script:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+        result="$(cat "scripts/aws/delete-tap-iam-roles.sh" | base64 -w 0)"
+        echo "result=${result}" >> $GITHUB_OUTPUT
+
+  manage-roles:
+    runs-on: ubuntu-22.04
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: "Create IAM roles for use by EKS and ECR"
+      if: inputs.action == 'create'
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        script-contents: ${{ needs.encode-create-iam-roles-script.outputs.result }}
+        script-arguments: "${{ inputs.cluster-name }} ${{ inputs.region }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Delete IAM roles for use by EKS and ECR"
+      if: inputs.action == 'delete'
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        script-contents: ${{ needs.encode-delete-iam-roles-script.outputs.result }}
+        script-arguments: "${{ inputs.cluster-name }} ${{ inputs.region }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}

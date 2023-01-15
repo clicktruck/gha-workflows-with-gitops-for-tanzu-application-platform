@@ -334,6 +334,71 @@ jobs:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
       GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  create-additional-iam-roles-for-tap-cluster:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  create-additional-iam-roles-for-tap-build-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-build-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-build-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  create-additional-iam-roles-for-tap-iterate-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-iterate-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-iterate-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  create-additional-iam-roles-for-tap-run-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-run-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-run-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  create-additional-iam-roles-for-tap-view-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-view-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-view-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
   obtain-base64-encoded-kubeconfig-for-harbor-cluster:
     if: github.event.inputs.container-image-registry-provider == 'harbor'
     uses: ./.github/workflows/aws-obtain-base64-encoded-kubeconfig-for-cluster.yml
