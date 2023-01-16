@@ -134,8 +134,6 @@ Once you have successfully installed Tanzu Application Platform, you may wish to
 * [Working with the bastion host](docs/working-with-the-bastion-host/README.md)
   * Configuring the Remote SSH VS Code plugin and [connecting to bastion host](docs/vscode-remote-ssh/README.md)
   * Configuring [remote live reload]((https://github.com/warroyo/future-blog/tree/main/TAP/remote-ssh-live-update)) with Tanzu Developer Toolkit targeting a containerized app deployed on a Kubernetes cluster
-* [Working with AWS Elastic Container Registry](docs/working-with-ecr/README.md)
-  * Consult only if you've configured TAP to integrate with ECR. Credentials expire after 12 hours; so here we share how to pull new credentials and update TAP configuration.
 * Consider using Visual Studio Code as your IDE
   * Add [recommended extensions](https://code.visualstudio.com/docs/editor/extension-marketplace#_workspace-recommended-extensions) to your workspace
   * Setup [Remote development over SSH](https://code.visualstudio.com/docs/remote/ssh-tutorial)
