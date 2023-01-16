@@ -16,7 +16,7 @@ on:
         description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
         required: true
       dev-namespace:
-        description: "A pre-existing namespace that will accommodate Workloads"
+        description: "A namespace that will accommodate Workloads"
         required: true
         default: "default"
       backstage-catalog:

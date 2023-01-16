@@ -12,7 +12,7 @@ on:
         type: string
         required: true
       dev-namespace:
-        description: "A pre-existing namespace that will accommodate Workloads"
+        description: "A namespace that will accommodate Workloads"
         type: string
         required: true
       backstage-catalog:
@@ -23,8 +23,16 @@ on:
         description: "The container registry that will host the packages and images for the installation"
         type: string
         required: true
-      container-image-registry-prefix:
-        description: "In most cases this value will be tanzu."
+      ootb-supply-chain-repo:
+        description: "Out-of-the-box supply chain container image registry repository name"
+        type: string
+        required: true
+      build-service-repo:
+        description: "Tanzu Build Service container image registry repository name"
+        type: string
+        required: true
+      build-service-repo-aws-iam-role-arn:
+        description: "IAM role ARN for pull-push access to container image registry"
         type: string
         required: true
         default: ""
@@ -253,7 +261,6 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/git-secrets.yml
 
     - name: Render tap-install-config
-      if: contains(fromJson('["eks","tkg»aws"]'), inputs.cluster-provider) != true
       uses: chuhlomin/render-template@v1.6
       with:
         template: ${{ env.GITOPS_DIR }}/.init/tap-install-config.tpl
@@ -262,24 +269,9 @@ jobs:
           domain: ${{ inputs.domain }}
           dev_namespace: ${{ inputs.dev-namespace }}
           backstage_catalog: ${{ inputs.backstage-catalog }}
-          container_image_registry_prefix: ${{ inputs.container-image-registry-prefix }}
-          gitops_provider: "github.com"
-          gitops_username: ${{ github.actor }}
-          gitops_repo_name: "tap-gitops-depot"
-          gitops_repo_branch: "main"
-        result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-config.yml
-
-    - name: Render tap-install-config with contour addition
-      if: contains(fromJson('["eks","tkg»aws"]'), inputs.cluster-provider)
-      uses: chuhlomin/render-template@v1.6
-      with:
-        template: ${{ env.GITOPS_DIR }}/.init/tap-install-config-aws.tpl
-        vars: |
-          app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
-          domain: ${{ inputs.domain }}
-          dev_namespace: ${{ inputs.dev-namespace }}
-          backstage_catalog: ${{ inputs.backstage-catalog }}
-          container_image_registry_prefix: ${{ inputs.container-image-registry-prefix }}
+          ootb_supplychain_repo: ${{ inputs.ootb-supplychain-repo }}
+          build_service_repo: ${{ inputs.build-service-repo }}
+          build_service_repo_aws_iam_role_arn: ${{ inputs.build-service-repo-aws-iam-role-arn }}
           gitops_provider: "github.com"
           gitops_username: ${{ github.actor }}
           gitops_repo_name: "tap-gitops-depot"

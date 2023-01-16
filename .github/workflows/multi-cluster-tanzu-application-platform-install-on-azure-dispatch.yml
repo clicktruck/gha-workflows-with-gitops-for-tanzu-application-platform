@@ -13,7 +13,7 @@ on:
         description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
         required: true
       dev-namespace:
-        description: "A pre-existing namespace that will accommodate Workloads"
+        description: "A namespace that will accommodate Workloads"
         required: true
         default: "default"
       backstage-catalog:
@@ -25,6 +25,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     outputs:
+      container-image-registry-provider: ${{ steps.vars.outputs.container-image-registry-provider }}
+      acr-admin-username: ${{ steps.vars.outputs.acr-admin-username }}
+      acr-admin-password: ${{ steps.vars.outputs.acr-admin-password }}
+      acr-url: ${{ steps.vars.outputs.acr-url }}
       harbor-admin-username: ${{ steps.vars.outputs.harbor-admin-username }}
       harbor-admin-password: ${{ steps.vars.outputs.harbor-admin-password }}
       harbor-domain: ${{ steps.vars.outputs.harbor-domain }}
@@ -75,7 +79,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: "tanzu/supply-chain"
+      build_service_repo: "tanzu/build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"
@@ -107,7 +112,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: "tanzu/supply-chain"
+      build_service_repo: "tanzu/build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"
@@ -139,7 +145,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: "tanzu/supply-chain"
+      build_service_repo: "tanzu/build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"
@@ -185,7 +192,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: "tanzu/supply-chain"
+      build_service_repo: "tanzu/build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"

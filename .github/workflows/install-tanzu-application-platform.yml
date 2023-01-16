@@ -12,7 +12,7 @@ on:
         type: string
         required: true
       dev-namespace:
-        description: "A pre-existing namespace that will accommodate Workloads"
+        description: "A namespace that will accommodate Workloads"
         type: string
         required: true
       backstage-catalog:
