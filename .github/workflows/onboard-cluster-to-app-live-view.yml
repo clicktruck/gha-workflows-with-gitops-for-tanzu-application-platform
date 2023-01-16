@@ -165,7 +165,7 @@ jobs:
 
     - name: Fetch observed cluster details
       id: details
-      if: env.HAS_OBSERVED_CLUSTERS == 'true' && contains(fromJson('["eks","gke","tkg»aws"]'), inputs.cluster-provider) != true
+      if: env.HAS_OBSERVED_CLUSTERS == 'true' && contains(fromJson('["aks","tkg»azure"]'), inputs.cluster-provider)
       uses: ./docker/actions/tanzu-runsh-setup-action
       with:
         script-contents: ${{ needs.encode-observe-clusters-script.outputs.result }}

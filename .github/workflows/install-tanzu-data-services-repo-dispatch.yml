@@ -18,14 +18,13 @@ on:
           - gke
           - tkg»aws
           - tkg»azure
-          - other
       kubeconfig-contents:
         description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
         required: true
 
 jobs:
-  install-tanzu-data-services-repo:
-    if: contains(fromJson('["eks","gke"]'), inputs.cluster-provider) != true
+  install-tanzu-data-services-rep-on-azure:
+    if: contains(fromJson('["aks","tkg»azure"]'), github.event.inputs.cluster-provider)
     uses: ./.github/workflows/install-tanzu-data-services-repo.yml
     with:
       tds-version: ${{ github.event.inputs.tds-version }}
@@ -39,8 +38,8 @@ jobs:
       GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
       KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
 
-  install-tanzu-data-services-repo-on-eks:
-    if: github.event.inputs.cluster-provider == 'eks'
+  install-tanzu-data-services-repo-on-aws:
+    if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
     uses: ./.github/workflows/install-tanzu-data-services-repo.yml
     with:
       tds-version: ${{ github.event.inputs.tds-version }}
@@ -57,7 +56,7 @@ jobs:
       GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
       KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
 
-  install-tanzu-data-services-repo-on-gke:
+  install-tanzu-data-services-repo-on-google:
     if: github.event.inputs.cluster-provider == 'gke'
     uses: ./.github/workflows/install-tanzu-data-services-repo.yml
     with:

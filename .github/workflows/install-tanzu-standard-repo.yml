@@ -85,8 +85,8 @@ jobs:
           git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
         result_path: ${{ env.GITOPS_DIR }}/.init/standard-install-secrets.yml
 
-    - name: "Install Tanzu Standard Repo"
-      if: contains(fromJson('["aks","other"]'), inputs.cluster-provider)
+    - name: "Install Tanzu Standard Repo on AKS"
+      if: inputs.cluster-provider == 'aks'
       uses: ./docker/actions/tanzu-runsh-setup-action
       with:
         script-contents: ${{ needs.encode-tanzu-standard-repo-install-script.outputs.result }}

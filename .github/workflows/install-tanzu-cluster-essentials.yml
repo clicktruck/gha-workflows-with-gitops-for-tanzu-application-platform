@@ -55,8 +55,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: "Install Tanzu Cluster Essentials"
-      if: contains(fromJson('["eks","gke"]'), inputs.cluster-provider) != true
+    - name: "Install Tanzu Cluster Essentials on AKS"
+      if: inputs.cluster-provider == 'aks'
       uses: ./docker/actions/tanzu-runsh-setup-action
       with:
         script-contents: ${{ needs.encode-tanzu-cluster-essentials-install-script.outputs.result }}
