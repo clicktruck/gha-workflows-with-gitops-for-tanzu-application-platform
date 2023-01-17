@@ -11,10 +11,14 @@ module "eks_blueprints_kubernetes_addons" {
   enable_amazon_eks_kube_proxy         = true
   enable_amazon_eks_aws_ebs_csi_driver = true
 
-  # Add-ons
-  enable_aws_load_balancer_controller = true
-  enable_metrics_server               = true
+  # User managed Add-ons
   enable_aws_cloudwatch_metrics       = true
+  enable_aws_load_balancer_controller = true
+  enable_crossplane                   = true
+  enable_kyverno                      = true
+  enable_kyverno_policies             = true
+  enable_kyverno_policy_reporter      = true
+  enable_metrics_server               = true
 
   tags = local.tags
 }
