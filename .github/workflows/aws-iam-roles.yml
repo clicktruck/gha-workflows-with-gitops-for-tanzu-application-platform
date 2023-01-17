@@ -22,6 +22,8 @@ on:
         required: true
       AWS_SESSION_TOKEN:
         required: false
+      CSP_API_TOKEN:
+        required: true
 
 jobs:
   encode-create-tap-iam-roles-script:
