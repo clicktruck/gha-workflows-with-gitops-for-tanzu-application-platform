@@ -1,7 +1,7 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:yaml", "yaml")
 ---
-#! See https://docs.vmware.com/en/Application-Service-Adapter-for-VMware-Tanzu-Application-Platform/0.9/tas-adapter/GUID-install.html#configure-the-installation-settings
+#! See https://docs.vmware.com/en/Application-Service-Adapter-for-VMware-Tanzu-Application-Platform/1.0/tas-adapter/GUID-install.html#configure-the-installation-settings
 
 #@ def config():
 ceip_policy_disclosed: true
