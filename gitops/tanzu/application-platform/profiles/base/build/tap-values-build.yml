@@ -18,8 +18,12 @@ shared:
 
 buildservice:
   kp_default_repository: #@ "{}/{}".format(data.values.tap.credentials.registry.host, data.values.tap.registry.repositories.buildService)
+  #@ if (data.values.tap.cluster.provider == "eks" || data.values.tap.cluster.provider == "tkg»aws") && (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
+  kp_default_repository_aws_iam_role_arn: #@ data.values.tap.registry.repositories.buildService.aws.iam_role_arn
+  #@ else
   kp_default_repository_username: #@ data.values.tap.credentials.registry.username
   kp_default_repository_password: #@ base64.decode(data.values.tap.credentials.registry.password).rstrip()
+  #@ end
   tanzunet_username: #@ data.values.tap.credentials.tanzuNet.username
   tanzunet_password: #@ data.values.tap.credentials.tanzuNet.password
   exclude_dependencies: true
@@ -27,6 +31,13 @@ buildservice:
 
 #! supply_chain can be configured to be either [ basic, testing_scanning ]
 supply_chain: testing_scanning
+
+#@ if (data.values.tap.cluster.provider == "eks" || data.values.tap.cluster.provider == "tkg»aws") && (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
+#! Enable the config writer service to use cloud based iaas authentication
+#! which are retrieved from the developer namespace service account by default
+ootb_templates:
+  iaas_auth: true
+#@ end
 
 ootb_supply_chain_basic:
   cluster_builder: #@ data.values.tap.supply_chain.cluster_builder
