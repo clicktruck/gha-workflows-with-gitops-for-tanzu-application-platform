@@ -29,6 +29,7 @@ sed \
   -e "s/{{ .gitops_username }}/$GITOPS_USERNAME/g" \
   -e "s~{{ or .gitops_repo_name \"tap-gitops-depot\" }}~$GITOPS_REPO_NAME~g" \
   -e "s~{{ or .gitops_repo_branch \"main\" }}~$GITOPS_REPO_BRANCH~g" \
+  -e "s/{{ .cluster_provider }}/$CLUSTER_PROVIDER/g" \
   -e "s/{{ .domain }}/$DOMAIN/g" \
   .init/tap-install-config.tpl > .init/tap-install-config.yml
 

@@ -4,6 +4,7 @@
 ---
 buildService:
   version: "1.9.0"
+
 tap:
   version: "1.4.0"
   namespace: tap-install
