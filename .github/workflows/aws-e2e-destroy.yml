@@ -210,7 +210,7 @@ jobs:
       desired-nodes: 3
       node-pool-instance-type: ${{ github.event.inputs.instance-type }}
       k8s-version: "1.24"
-      ssh-key-name: ${{ needs.create-keypair.outputs.ssh_key_name }}
+      ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
       provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
       private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
       public-subnet-ids: ${{ needs.obtain-vnet-info.outputs.public_subnet_ids }}
@@ -231,7 +231,7 @@ jobs:
   destroy-tap-cluster:
     if: github.event.inputs.footprint == 'single-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
-    needs: obtain-vnet-info
+    needs: [ delete-additional-iam-roles-for-tap-cluster, obtain-vnet-info ]
     with:
       vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
       cluster-name: "tap"
@@ -259,7 +259,7 @@ jobs:
   destroy-tap-build-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
-    needs: obtain-vnet-info
+    needs: [ delete-additional-iam-roles-for-tap-build-cluster, obtain-vnet-info ]
     with:
       vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
       cluster-name: "tap-build"
@@ -287,7 +287,7 @@ jobs:
   destroy-tap-iterate-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
-    needs: obtain-vnet-info
+    needs: [ delete-additional-iam-roles-for-tap-iterate-cluster, obtain-vnet-info ]
     with:
       vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
       cluster-name: "tap-iterate"
@@ -315,7 +315,7 @@ jobs:
   destroy-tap-view-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
-    needs: obtain-vnet-info
+    needs: [ delete-additional-iam-roles-for-tap-view-cluster, obtain-vnet-info ]
     with:
       vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
       cluster-name: "tap-view"
@@ -343,7 +343,7 @@ jobs:
   destroy-tap-run-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
-    needs: obtain-vnet-info
+    needs: [ delete-additional-iam-roles-for-tap-run-cluster, obtain-vnet-info ]
     with:
       vpc-id: ${{ needs.obtain-vnet-info.outputs.vpc_id }}
       cluster-name: "tap-run"
@@ -368,6 +368,66 @@ jobs:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
       GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  delete-additional-iam-roles-for-tap-cluster:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    with:
+      cluster-name: "tap"
+      region: ${{ github.event.inputs.region }}
+      action: delete
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  delete-additional-iam-roles-for-tap-build-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    with:
+      cluster-name: "tap-build"
+      region: ${{ github.event.inputs.region }}
+      action: delete
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  delete-additional-iam-roles-for-tap-iterate-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    with:
+      cluster-name: "tap-iterate"
+      region: ${{ github.event.inputs.region }}
+      action: delete
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  delete-additional-iam-roles-for-tap-run-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    with:
+      cluster-name: "tap-run"
+      region: ${{ github.event.inputs.region }}
+      action: delete
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  delete-additional-iam-roles-for-tap-view-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    with:
+      cluster-name: "tap-view"
+      region: ${{ github.event.inputs.region }}
+      action: delete
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
   destroy-secrets-manager:
     uses: ./.github/workflows/aws-secrets-manager.yml
     with:

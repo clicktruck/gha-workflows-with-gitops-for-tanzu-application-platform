@@ -16,16 +16,13 @@ on:
           - eks
           - aks
           - gke
-          - tkg»aws
-          - tkg»azure
-          - other
       kubeconfig-contents:
         description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
         required: true
 
 jobs:
-  install-tanzu-standard-repo:
-    if: contains(fromJson('["eks","gke"]'), inputs.cluster-provider) != true
+  install-tanzu-standard-repo-on-aks:
+    if: github.event.inputs.cluster-provider == 'aks'
     uses: ./.github/workflows/install-tanzu-standard-repo.yml
     with:
       tkg-version: ${{ github.event.inputs.tkg-version }}

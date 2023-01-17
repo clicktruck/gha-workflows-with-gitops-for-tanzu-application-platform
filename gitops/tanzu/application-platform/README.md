@@ -49,9 +49,6 @@ You'll want to `export APP_NAME`, `export DOMAIN`, and `export IAAS`.
 The values assigned to environment variables below should match what was previously defined in `.env`.
 
 ```bash
-if [ "$IAAS" == "oracle" ]; then
-  ../../../scripts/install-smallstep.sh $DOMAIN
-fi
 kubectl apply -f .prereq
 kapp deploy --app $APP_NAME-ns-rbac --file <(ytt --file .init) --diff-changes --yes
 kapp deploy --app $APP_NAME --file .install --diff-changes --yes
@@ -70,9 +67,6 @@ kubectl get packageinstall -A
 ## Removal
 
 ```bash
-if [ "$IAAS" == "oracle" ]; then
-  ../../../scripts/uninstall-smallstep.sh 0
-fi
 kapp delete --app $APP_NAME-ancillary --diff-changes --yes
 kapp delete --app $APP_NAME --diff-changes --yes
 kapp delete --app $APP_NAME-ns-rbac --diff-changes --yes

@@ -16,7 +16,7 @@ on:
         description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
         required: true
       dev-namespace:
-        description: "A pre-existing namespace that will accommodate Workloads"
+        description: "A namespace that will accommodate Workloads"
         required: true
         default: "default"
       backstage-catalog:
@@ -28,9 +28,18 @@ jobs:
     runs-on: ubuntu-22.04
 
     outputs:
+      container-image-registry-provider: ${{ steps.vars.outputs.container-image-registry-provider }}
+      google-container-registry-admin-username: ${{ steps.vars.outputs.google-container-registry-admin-username }}
+      google-container-registry-admin-password: ${{ steps.vars.outputs.google-container-registry-admin-password }}
+      google-container-registry-endpoint: ${{ steps.vars.outputs.google-container-registry-endpoint }}
+      google-artifact-registry-admin-username: ${{ steps.vars.outputs.google-artifact-registry-admin-username }}
+      google-artifact-registry-admin-password: ${{ steps.vars.outputs.google-artifact-registry-admin-password }}
+      google-artifact-registry-endpoint: ${{ steps.vars.outputs.google-artifact-registry-endpoint }}
       harbor-admin-username: ${{ steps.vars.outputs.harbor-admin-username }}
       harbor-admin-password: ${{ steps.vars.outputs.harbor-admin-password }}
       harbor-domain: ${{ steps.vars.outputs.harbor-domain }}
+      build-service-repo: ${{ steps.vars.outputs.build-service-repo }}
+      ootb-supply-chain-repo: ${{ steps.vars.outputs.ootb-supply-chain-repo }}
       b64-harbor-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-harbor-cluster-kubeconfig-contents }}
       b64-tap-build-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-build-cluster-kubeconfig-contents }}
       b64-tap-iterate-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-iterate-cluster-kubeconfig-contents }}
@@ -71,12 +80,34 @@ jobs:
       id: vars
       run: |
         KVMAP=$(echo ${{ steps.obtain-secret-valuemap.outputs.result }} | base64 -d)
+        CONTAINER_IMAGE_REGISTRY_PROVIDER=$(echo $KVMAP | yq -p=json -M '.container-image-registry-provider')
+        echo "container-image-registry-provider=$CONTAINER_IMAGE_REGISTRY_PROVIDER" >> $GITHUB_OUTPUT
+        GAR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.google-artifact-registry-admin-username')
+        echo "google-container-registry-admin-username=$GCR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
+        GAR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.google-artifact-registry-admin-password')
+        echo "google-container-registry-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
+        GAR_ENDPOINT=$(echo $KVMAP | yq -p=json -M '.google-artifact-registry-endpoint')
+        echo "google-artifact-registry-endpoint=$GAR_ENDPOINT" >> $GITHUB_OUTPUT
+        GCR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.google-container-registry-admin-username')
+        echo "google-container-registry-admin-username=$GCR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
+        GCR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.google-container-registry-admin-password')
+        echo "google-container-registry-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
+        GCR_ENDPOINT=$(echo $KVMAP | yq -p=json -M '.google-container-registry-endpoint')
+        echo "google-container-registry-endpoint=$GCR_ENDPOINT" >> $GITHUB_OUTPUT
         HARBOR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.harbor-admin-username')
         echo "harbor-admin-username=$HARBOR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
         HARBOR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.harbor-admin-password')
         echo "harbor-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
         HARBOR_DOMAIN=$(echo $KVMAP | yq -p=json -M '.harbor-domain')
         echo "harbor-domain=$HARBOR_DOMAIN" >> $GITHUB_OUTPUT
+        if [[ "google-artifact-registry" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" || "google-container-registry" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]]; then
+          echo "build-service-repo=${{ github.event.inputs.google-project-id }}/build-service" >> $GITHUB_OUTPUT
+          echo "ootb-supply-chain-repo=${{ github.event.inputs.google-project-id }}/supply-chain" >> $GITHUB_OUTPUT
+        fi
+        if [ "harbor" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]; then
+          echo "build-service-repo=tanzu/build-service" >> $GITHUB_OUTPUT
+          echo "ootb-supply-chain-repo=tanzu/supply-chain" >> $GITHUB_OUTPUT
+        fi
         HARBOR_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-harbor-cluster-kubeconfig')
         echo "b64-harbor-cluster-kubeconfig-contents=$HARBOR_KCONFIG" >> $GITHUB_OUTPUT
         TAP_BUILD_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-build-cluster-kubeconfig')
@@ -98,7 +129,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "gke"
       deployment-name: "tap"
@@ -128,7 +160,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "gke"
       deployment-name: "tap"
@@ -158,7 +191,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "gke"
       deployment-name: "tap"
@@ -200,7 +234,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "gke"
       deployment-name: "tap"

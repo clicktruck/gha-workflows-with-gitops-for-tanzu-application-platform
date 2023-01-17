@@ -13,7 +13,7 @@ on:
         description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
         required: true
       dev-namespace:
-        description: "A pre-existing namespace that will accommodate Workloads"
+        description: "A namespace that will accommodate Workloads"
         required: true
         default: "default"
       backstage-catalog:
@@ -25,6 +25,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     outputs:
+      container-image-registry-provider: ${{ steps.vars.outputs.container-image-registry-provider }}
+      acr-admin-username: ${{ steps.vars.outputs.acr-admin-username }}
+      acr-admin-password: ${{ steps.vars.outputs.acr-admin-password }}
+      acr-url: ${{ steps.vars.outputs.acr-url }}
       harbor-admin-username: ${{ steps.vars.outputs.harbor-admin-username }}
       harbor-admin-password: ${{ steps.vars.outputs.harbor-admin-password }}
       harbor-domain: ${{ steps.vars.outputs.harbor-domain }}
@@ -48,7 +52,13 @@ jobs:
         azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         azure-ad-tenant-id: ${{ secrets.AZURE_AD_TENANT_ID }}
         command: |
-          HARBOR_ADMIN_USERNAME=$(az keyvault secret show --name harbor-admin-username --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          ACR_ADMIN_USERNAME=$(az keyvault secret show --name acr-admin-username --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "harbor-admin-username=$ACR_ADMIN_USERNAME" >> $GITHUB_OUTPUT \
+          && ACR_ADMIN_PASSWORD=$(az keyvault secret show --name acr-admin-password --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "acr-admin-password=$ACR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT \
+          && ACR_URL=$(az keyvault secret show --name acr-url --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
+          && echo "acr-url=$ACR_URL" >> $GITHUB_OUTPUT \
+          && HARBOR_ADMIN_USERNAME=$(az keyvault secret show --name harbor-admin-username --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
           && echo "harbor-admin-username=$HARBOR_ADMIN_USERNAME" >> $GITHUB_OUTPUT \
           && HARBOR_ADMIN_PASSWORD=$(az keyvault secret show --name harbor-admin-password --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
           && echo "harbor-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT \
@@ -65,8 +75,34 @@ jobs:
           && TAP_RUN_KCONFIG=$(az keyvault secret show --name b64-tap-run-cluster-kubeconfig --vault-name ${{ github.event.inputs.secrets-manager-instance-name }} | jq -r .value) \
           && echo "b64-tap-run-cluster-kubeconfig-contents=$TAP_RUN_KCONFIG" >> $GITHUB_OUTPUT
 
+  obtain-repo-names:
+    needs: obtain-secrets-from-secrets-manager
+    runs-on: ubuntu-22.04
+
+    outputs:
+      ootb-supply-chain-repo: ${{ steps.vars.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ steps.vars.outputs.build-service-repo }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: "Fetch secrets from secret manager instance"
+      id: vars
+      env:
+        CONTAINER_IMAGE_REGISTRY_PROVIDER: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-provider }}
+      run: |
+        if [ "acr" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]; then
+          echo "build-service-repo=tap-build-service" >> $GITHUB_OUTPUT
+          echo "ootb-supply-chain-repo=tanzu-application-platform" >> $GITHUB_OUTPUT
+        fi
+        if [ "harbor" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]; then
+          echo "build-service-repo=tanzu/build-service" >> $GITHUB_OUTPUT
+          echo "ootb-supply-chain-repo=tanzu/supply-chain" >> $GITHUB_OUTPUT
+        fi
+
   install-tap-build-on-azure:
-    needs: [obtain-secrets-from-secrets-manager,prepare-metadata-store-secrets]
+    needs: [obtain-secrets-from-secrets-manager,obtain-repo-names,prepare-metadata-store-secrets]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       domain: ${{ github.event.inputs.domain }}
@@ -75,7 +111,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"
@@ -98,7 +135,7 @@ jobs:
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   install-tap-iterate-on-azure:
-    needs: obtain-secrets-from-secrets-manager
+    needs: [obtain-secrets-from-secrets-manager,obtain-repo-names]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       domain: ${{ github.event.inputs.domain }}
@@ -107,7 +144,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"
@@ -130,7 +168,7 @@ jobs:
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   install-tap-view-on-azure:
-    needs: obtain-secrets-from-secrets-manager
+    needs: [obtain-secrets-from-secrets-manager,obtain-repo-names]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       domain: ${{ github.event.inputs.domain }}
@@ -139,7 +177,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"
@@ -176,7 +215,7 @@ jobs:
       TAP_VIEW_KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
 
   install-tap-run-on-azure:
-    needs: obtain-secrets-from-secrets-manager
+    needs: [obtain-secrets-from-secrets-manager,obtain-repo-names]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       domain: ${{ github.event.inputs.domain }}
@@ -185,7 +224,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu"
+      ootb_supplychain_repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"

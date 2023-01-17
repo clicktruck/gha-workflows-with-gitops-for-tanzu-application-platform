@@ -24,7 +24,6 @@ on:
           - gke
           - tkg»aws
           - tkg»azure
-          - other
       dev-namespaces:
         description: "Pre-existing namespaces that will be removed (ie., workloads and deliverables deleted first)"
         required: false
@@ -34,8 +33,8 @@ on:
         required: true
 
 jobs:
-  uninstall-tap:
-    if: contains(fromJson('["eks","gke","tkg»aws"]'), github.event.inputs.cluster-provider) != true
+  uninstall-tap-on-azure:
+    if: contains(fromJson('["aks","tkg»azure"]'), github.event.inputs.cluster-provider)
     uses: ./.github/workflows/uninstall-tanzu-application-platform.yml
     with:
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
@@ -45,7 +44,7 @@ jobs:
       KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
 
-  uninstall-tap-on-eks:
+  uninstall-tap-on-aws:
     if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
     uses: ./.github/workflows/uninstall-tanzu-application-platform.yml
     with:

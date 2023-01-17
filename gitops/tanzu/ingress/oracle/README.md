@@ -45,12 +45,16 @@ kapp deploy --app $APP_NAME-ns-rbac --file <(ytt --file .init) --diff-changes --
 kapp deploy --app $APP_NAME --file .install --diff-changes --yes
 ```
 
+## Post-installation
+
+Follow the steps as described in [pacphi/cert-manager-webhook-oci](https://github.com/pacphi/cert-manager-webhook-oci) to install both `cert-manager` and the `webhook`.  You will also install the `ClusterIssuer`.  Do not install the `Certificate`.
 
 ## Verification
 
 ```bash
 kubectl get app -A
 kubectl get packageinstall -A
+kubectl get clusterissuer -A
 ```
 
 

@@ -334,6 +334,71 @@ jobs:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
       GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+  create-additional-iam-roles-for-tap-cluster:
+    if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  create-additional-iam-roles-for-tap-build-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-build-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-build-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  create-additional-iam-roles-for-tap-iterate-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-iterate-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-iterate-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  create-additional-iam-roles-for-tap-run-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-run-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-run-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+  create-additional-iam-roles-for-tap-view-cluster:
+    if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/aws-iam-roles.yml
+    needs: create-tap-view-cluster
+    with:
+      cluster-name: ${{ needs.create-tap-view-cluster.outputs.eks_cluster_id }}
+      region: ${{ github.event.inputs.region }}
+      action: create
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
   obtain-base64-encoded-kubeconfig-for-harbor-cluster:
     if: github.event.inputs.container-image-registry-provider == 'harbor'
     uses: ./.github/workflows/aws-obtain-base64-encoded-kubeconfig-for-cluster.yml
@@ -420,7 +485,7 @@ jobs:
       region: ${{ github.event.inputs.region }}
       action: create
     secrets:
-      secretsMap: '{ "ecr-admin-username" : "${{ needs.create-ecr.outputs.ecr_admin_username }}", "ecr-admin-password" : "${{ needs.create-ecr.outputs.ecr_admin_password }}", "ecr-endpoint" : "${{ needs.create-ecr.outputs.ecr_endpoint }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-tap-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-cluster.outputs.b64kubeconfig }}" }'
+      secretsMap: '{ "container-image-registry-provider": "${{ github.event.inputs.container-image-registry-provider }}", "ecr-admin-username" : "${{ needs.create-ecr.outputs.ecr_admin_username }}", "ecr-admin-password" : "${{ needs.create-ecr.outputs.ecr_admin_password }}", "ecr-endpoint" : "${{ needs.create-ecr.outputs.ecr_endpoint }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-tap-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-cluster.outputs.b64kubeconfig }}" }'
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
@@ -435,7 +500,7 @@ jobs:
       region: ${{ github.event.inputs.region }}
       action: create
     secrets:
-      secretsMap: '{ "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "b64-harbor-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-harbor-cluster.outputs.b64kubeconfig }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-tap-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-cluster.outputs.b64kubeconfig }}" }'
+      secretsMap: '{ "container-image-registry-provider": "${{ github.event.inputs.container-image-registry-provider }}", "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "b64-harbor-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-harbor-cluster.outputs.b64kubeconfig }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-tap-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-cluster.outputs.b64kubeconfig }}" }'
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
@@ -450,7 +515,7 @@ jobs:
       region: ${{ github.event.inputs.region }}
       action: create
     secrets:
-      secretsMap: '{ "ecr-admin-username" : "${{ needs.create-ecr.outputs.ecr_admin_username }}", "ecr-admin-password" : "${{ needs.create-ecr.outputs.ecr_admin_password }}", "ecr-endpoint" : "${{ needs.create-ecr.outputs.ecr_endpoint }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-tap-build-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-build-cluster.outputs.b64kubeconfig }}", "b64-tap-iterate-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster.outputs.b64kubeconfig }}", "b64-tap-view-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-view-cluster.outputs.b64kubeconfig }}", "b64-tap-run-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-run-cluster.outputs.b64kubeconfig }}" }'
+      secretsMap: '{ "container-image-registry-provider": "${{ github.event.inputs.container-image-registry-provider }}", "ecr-admin-username" : "${{ needs.create-ecr.outputs.ecr_admin_username }}", "ecr-admin-password" : "${{ needs.create-ecr.outputs.ecr_admin_password }}", "ecr-endpoint" : "${{ needs.create-ecr.outputs.ecr_endpoint }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-tap-build-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-build-cluster.outputs.b64kubeconfig }}", "b64-tap-iterate-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster.outputs.b64kubeconfig }}", "b64-tap-view-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-view-cluster.outputs.b64kubeconfig }}", "b64-tap-run-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-run-cluster.outputs.b64kubeconfig }}" }'
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
@@ -465,7 +530,7 @@ jobs:
       region: ${{ github.event.inputs.region }}
       action: create
     secrets:
-      secretsMap: '{ "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "b64-harbor-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-harbor-cluster.outputs.b64kubeconfig }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-tap-build-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-build-cluster.outputs.b64kubeconfig }}", "b64-tap-iterate-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster.outputs.b64kubeconfig }}", "b64-tap-view-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-view-cluster.outputs.b64kubeconfig }}", "b64-tap-run-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-run-cluster.outputs.b64kubeconfig }}" }'
+      secretsMap: '{ "container-image-registry-provider": "${{ github.event.inputs.container-image-registry-provider }}", "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "b64-harbor-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-harbor-cluster.outputs.b64kubeconfig }}", "bastion-b64-ssh-private-key" : "${{ needs.create-keypair.outputs.b64_ssh_private_key }}", "b64-tap-build-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-build-cluster.outputs.b64kubeconfig }}", "b64-tap-iterate-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-iterate-cluster.outputs.b64kubeconfig }}", "b64-tap-view-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-view-cluster.outputs.b64kubeconfig }}", "b64-tap-run-cluster-kubeconfig" : "${{ needs.obtain-base64-encoded-kubeconfig-for-tap-run-cluster.outputs.b64kubeconfig }}" }'
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}

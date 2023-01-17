@@ -404,7 +404,7 @@ jobs:
       stateName: e2e
       action: create
     secrets:
-      secretMap: '{ "acr-user": "${{ needs.create-acr.outputs.acr_admin_username }}", "acr-password": "${{ needs.create-acr.outputs.acr_admin_password }}", "bastion-b64-private-key": "${{ needs.create-bastion.outputs.b64_private_openssh_key}}", "tap-base64-kubeconfig": "${{ needs.create-tap-cluster.outputs.base64_kubeconfig }}" }'
+      secretMap: '{ "container-image-registry-provider": "${{ github.event.inputs.container-image-registry-provider }}", "acr-user": "${{ needs.create-acr.outputs.acr_admin_username }}", "acr-password": "${{ needs.create-acr.outputs.acr_admin_password }}", "acr-url": "${{ needs.create-acr.outputs.acr_url }}", "bastion-b64-private-key": "${{ needs.create-bastion.outputs.b64_private_openssh_key}}", "tap-base64-kubeconfig": "${{ needs.create-tap-cluster.outputs.base64_kubeconfig }}" }'
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -424,7 +424,7 @@ jobs:
       stateName: e2e
       action: create
     secrets:
-      secretMap: '{ "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "bastion-b64-private-key": "${{ needs.create-bastion.outputs.b64_private_openssh_key}}", "tap-base64-kubeconfig": "${{ needs.create-tap-cluster.outputs.base64_kubeconfig }}" }'
+      secretMap: '{ "container-image-registry-provider": "${{ github.event.inputs.container-image-registry-provider }}", "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "bastion-b64-private-key": "${{ needs.create-bastion.outputs.b64_private_openssh_key}}", "tap-base64-kubeconfig": "${{ needs.create-tap-cluster.outputs.base64_kubeconfig }}" }'
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -444,7 +444,7 @@ jobs:
       stateName: e2e
       action: create
     secrets:
-      secretMap: '{ "acr-user": "${{ needs.create-acr.outputs.acr_admin_username }}", "acr-password": "${{ needs.create-acr.outputs.acr_admin_password }}", "bastion-b64-private-key": "${{ needs.create-bastion.outputs.b64_private_openssh_key}}", "tap-build-base64-kubeconfig": "${{ needs.create-tap-build-cluster.outputs.base64_kubeconfig }}", "tap-iterate-base64-kubeconfig": "${{ needs.create-tap-iterate-cluster.outputs.base64_kubeconfig }}", "tap-run-base64-kubeconfig": "${{ needs.create-tap-run-cluster.outputs.base64_kubeconfig }}", "tap-view-base64-kubeconfig": "${{ needs.create-tap-view-cluster.outputs.base64_kubeconfig }}" }'
+      secretMap: '{ "container-image-registry-provider": "${{ github.event.inputs.container-image-registry-provider }}", "acr-user": "${{ needs.create-acr.outputs.acr_admin_username }}", "acr-password": "${{ needs.create-acr.outputs.acr_admin_password }}", "acr-url": "${{ needs.create-acr.outputs.acr_url }}", "bastion-b64-private-key": "${{ needs.create-bastion.outputs.b64_private_openssh_key}}", "tap-build-base64-kubeconfig": "${{ needs.create-tap-build-cluster.outputs.base64_kubeconfig }}", "tap-iterate-base64-kubeconfig": "${{ needs.create-tap-iterate-cluster.outputs.base64_kubeconfig }}", "tap-run-base64-kubeconfig": "${{ needs.create-tap-run-cluster.outputs.base64_kubeconfig }}", "tap-view-base64-kubeconfig": "${{ needs.create-tap-view-cluster.outputs.base64_kubeconfig }}" }'
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -464,7 +464,7 @@ jobs:
       stateName: e2e
       action: create
     secrets:
-      secretMap: '{ "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "bastion-b64-private-key": "${{ needs.create-bastion.outputs.b64_private_openssh_key}}", "tap-build-base64-kubeconfig": "${{ needs.create-tap-build-cluster.outputs.base64_kubeconfig }}", "tap-iterate-base64-kubeconfig": "${{ needs.create-tap-iterate-cluster.outputs.base64_kubeconfig }}", "tap-run-base64-kubeconfig": "${{ needs.create-tap-run-cluster.outputs.base64_kubeconfig }}", "tap-view-base64-kubeconfig": "${{ needs.create-tap-view-cluster.outputs.base64_kubeconfig }}" }'
+      secretMap: '{ "container-image-registry-provider": "${{ github.event.inputs.container-image-registry-provider }}", "harbor-admin-username" : "${{ needs.install-harbor.outputs.harbor_admin_username }}", "harbor-admin-password" : "${{ needs.install-harbor.outputs.harbor_admin_password }}", "harbor-domain" : "${{ needs.install-harbor.outputs.harbor_domain }}", "bastion-b64-private-key": "${{ needs.create-bastion.outputs.b64_private_openssh_key}}", "tap-build-base64-kubeconfig": "${{ needs.create-tap-build-cluster.outputs.base64_kubeconfig }}", "tap-iterate-base64-kubeconfig": "${{ needs.create-tap-iterate-cluster.outputs.base64_kubeconfig }}", "tap-run-base64-kubeconfig": "${{ needs.create-tap-run-cluster.outputs.base64_kubeconfig }}", "tap-view-base64-kubeconfig": "${{ needs.create-tap-view-cluster.outputs.base64_kubeconfig }}" }'
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

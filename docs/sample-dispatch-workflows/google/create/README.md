@@ -204,7 +204,7 @@ Single-cluster
 <p>
 
 ```bash
-echo '{ "domain": "apps.ironleg.me", "email-address": "admin@ironleg.me", "dev-namespace": "default", "backstage-catalog": "https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml", "container-image-registry-url": "harbor.ironleg.me", "container-image-registry-connection-details": "harbor.ironleg.me;admin;cEBzc3cwcmQlCg==;tanzu/", "cluster-provider": "gke", "active-profile": "full", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run install-tanzu-application-platform-dispatch.yml --json
+echo '{ "domain": "apps.ironleg.me", "email-address": "admin@ironleg.me", "dev-namespace": "default", "backstage-catalog": "https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml", "container-image-registry-connection-details": "harbor.ironleg.me;admin;cEBzc3cwcmQlCg==;tanzu/", "cluster-provider": "gke", "active-profile": "full", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run install-tanzu-application-platform-dispatch.yml --json
 ```
 > Note, this dispatch workflow supports variant configuration for targeting Amazon GKE, Azure AKS and Google GKE clusters.  To-date only the following `cluster-provider`s are supported: [ "aks", "gke", "gke", "tkg»aws", "tkg»azure" ].  Other optional options may apply depending on choice of provider.  Remember to base64-encode the `password` for the container image registry in the `container-image-registry-connection-details`!
 

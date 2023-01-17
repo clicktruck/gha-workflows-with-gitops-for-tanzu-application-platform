@@ -10,7 +10,7 @@ on:
         description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
         required: true
       dev-namespace:
-        description: "A pre-existing namespace that will accommodate Workloads"
+        description: "A namespace that will accommodate Workloads"
         required: true
         default: "default"
       backstage-catalog:
@@ -59,7 +59,6 @@ on:
           - gke
           - tkg»aws
           - tkg»azure
-          - other
       # We cannot have more than 10 input variables in a Github action dispatch workflow
       # The trade-off for convenience here is that we assume deployment-name is "tap" in the call workflows below
       # deployment-name:
@@ -81,7 +80,9 @@ jobs:
       url: ${{ steps.vars.outputs.container_image_registry_url }}
       username: ${{ steps.vars.outputs.container_image_registry_username }}
       password: ${{ steps.vars.outputs.container_image_registry_password }}
-      prefix: ${{ steps.vars.outputs.container_image_registry_prefix }}
+      ootb-supplychain-repo: ${{ steps.vars.outputs.ootb_supplychain_repo }}
+      build-service-repo: ${{ steps.vars.outputs.build_service_repo }}
+      build-service-repo-aws-iam-role-arn: ${{ steps.vars.outputs.build_service_repo_aws_iam_role_arn }}
 
     steps:
       - uses: jungwinter/split@v2
@@ -94,45 +95,14 @@ jobs:
         id: vars
         run: |
           array_length=${{ steps.split.outputs.length }}
-          echo "container_image_registry_url=${{ steps.split.outputs._0}}" >> $GITHUB_OUTPUT
-          echo "container_image_registry_username=${{ steps.split.outputs._1}}" >> $GITHUB_OUTPUT
-          echo "container_image_registry_password=${{ steps.split.outputs._2}}" >> $GITHUB_OUTPUT
-          if [ "$array_length" == "3" ]; then
-            result=""
-            echo "container_image_registry_prefix=${result}" >> $GITHUB_OUTPUT
-          else
-            echo "container_image_registry_prefix=${{ steps.split.outputs._3}}" >> $GITHUB_OUTPUT
+          echo "container_image_registry_url=${{ steps.split.outputs._0 }}" >> $GITHUB_OUTPUT
+          echo "container_image_registry_username=${{ steps.split.outputs._1 }}" >> $GITHUB_OUTPUT
+          echo "container_image_registry_password=${{ steps.split.outputs._2 }}" >> $GITHUB_OUTPUT
+          echo "ootb_supplychain_repo=${{ steps.split.outputs._3 }}" >> $GITHUB_OUTPUT
+          echo "build_service_repo=${{ steps.split.outputs._4 }}" >> $GITHUB_OUTPUT
+          if [[ "$array_length" == "6" && ("eks" == "${{ github.event.inputs.cluster-provider }}" ] || [ "tkg»aws" == "${{ github.event.inputs.cluster-provider }}") ]]; then
+            echo "build_service_repo_aws_iam_role_arn=${{ steps.split.outputs._5 }}" >> $GITHUB_OUTPUT
           fi
-
-  onboard:
-    if: contains(fromJson('["other"]'), github.event.inputs.cluster-provider)
-    needs: container-image-registry-connection-details
-    uses: ./.github/workflows/onboard-cluster-to-app-live-view.yml
-    with:
-      domain: ${{ github.event.inputs.domain }}
-      email-address: ${{ github.event.inputs.email-address }}
-      dev-namespace: ${{ github.event.inputs.dev-namespace }}
-      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
-      container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
-      container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
-      container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
-      container-image-registry-prefix: ${{ needs.container-image-registry-connection-details.outputs.prefix }}
-      cluster-provider: ${{ github.event.inputs.cluster-provider }}
-      deployment-name: "tap"
-      active-profile: "view"
-    secrets:
-      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
-      KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
-      OBSERVED_CLUSTERS: ${{ github.event.inputs.observed-clusters }}
-      OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
-      OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
-      OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
-      PA_TOKEN: ${{ secrets.PA_TOKEN }}
-      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
-      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   onboard-on-aws:
     if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
@@ -146,7 +116,9 @@ jobs:
       container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
       container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
       container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
-      container-image-registry-prefix: ${{ needs.container-image-registry-connection-details.outputs.prefix }}
+      ootb-supplychain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb_supplychain_repo }}
+      build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build_service_repo }}
+      build-service-repo-aws-iam-role-arn: ${{ needs.container-image-registry-connection-details.outputs.build_service_repo_aws_iam_role_arn }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
       active-profile: "view"
@@ -180,7 +152,8 @@ jobs:
       container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
       container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
       container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
-      container-image-registry-prefix: ${{ needs.container-image-registry-connection-details.outputs.prefix }}
+      ootb-supplychain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb_supplychain_repo }}
+      build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build_service_repo }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
       active-profile: "view"
@@ -215,7 +188,8 @@ jobs:
       container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
       container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
       container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
-      container-image-registry-prefix: ${{ needs.container-image-registry-connection-details.outputs.prefix }}
+      ootb-supplychain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb_supplychain_repo }}
+      build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build_service_repo }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
       active-profile: "view"

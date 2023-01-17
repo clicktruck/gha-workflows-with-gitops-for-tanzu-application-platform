@@ -31,7 +31,6 @@ on:
           - gke
           - tkg»aws
           - tkg»azure
-          - other
       kubeconfig-contents:
         description: "The base64 encoded contents of a .kube/config file that already has the current Kubernetes cluster context set"
         required: true

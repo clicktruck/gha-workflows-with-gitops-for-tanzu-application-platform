@@ -85,8 +85,8 @@ jobs:
           git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
         result_path: ${{ env.GITOPS_DIR }}/.init/data-services-install-secrets.yml
 
-    - name: "Install Tanzu Data Services Repo"
-      if: contains(fromJson('["aks","other"]'), inputs.cluster-provider)
+    - name: "Install Tanzu Data Services Repo on Azure"
+      if: inputs.cluster-provider == 'aks'
       uses: ./docker/actions/tanzu-runsh-setup-action
       with:
         script-contents: ${{ needs.encode-tanzu-data-services-repo-install-script.outputs.result }}
@@ -94,7 +94,7 @@ jobs:
         kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
         csp-api-token: ${{ secrets.CSP_API_TOKEN }}
 
-    - name: "Install Tanzu Data Services Repo on EKS"
+    - name: "Install Tanzu Data Services Repo on AWS"
       if: inputs.cluster-provider == 'eks'
       uses: ./docker/actions/aws/tanzu-runsh-setup-action
       with:

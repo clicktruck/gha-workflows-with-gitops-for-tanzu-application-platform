@@ -19,19 +19,12 @@ on:
         description: "AWS secret access key for an account with write permissions to a Route53 hosted zone"
         required: true
       dev-namespace:
-        description: "A pre-existing namespace that will accommodate Workloads"
+        description: "A namespace that will accommodate Workloads"
         required: true
         default: "default"
       backstage-catalog:
         description: "A Git repository and path to a Backstage catalog file"
         required: true
-      cluster-provider:
-        description: "The Kubernetes service provider"
-        type: choice
-        required: true
-        options:
-          - eks
-          - tkg»aws
       region:
         description: "The AWS region where the Secrets Manager instance is available"
         required: true
@@ -59,15 +52,43 @@ on:
         default: "us-west-2"
 
 jobs:
-
-  obtain-secrets-from-secrets-manager:
-    if: contains(fromJson('["eks","tkg»aws"]'), inputs.cluster-provider)
+  obtain-aws-account-id:
     runs-on: ubuntu-22.04
 
     outputs:
+     account-id: ${{ steps.vars.outputs.account_id }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+
+    - name: Ask for account id
+      id: vars
+      run: |
+        account_id=$(aws sts get-caller-identity --query "Account" --output text)
+        echo "account_id=${account_id}" >> $GITHUB_OUTPUT
+
+  obtain-secrets-from-secrets-manager:
+    runs-on: ubuntu-22.04
+
+    outputs:
+      container-image-registry-provider: ${{ steps.vars.outputs.container-image-registry-provider }}
+      ecr-admin-username: ${{ steps.vars.outputs.ecr-admin-username }}
+      ecr-admin-password: ${{ steps.vars.outputs.ecr-admin-password }}
+      ecr-endpoint: ${{ steps.vars.outputs.ecr-endpoint }}
       harbor-admin-username: ${{ steps.vars.outputs.harbor-admin-username }}
       harbor-admin-password: ${{ steps.vars.outputs.harbor-admin-password }}
       harbor-domain: ${{ steps.vars.outputs.harbor-domain }}
+      build-service-repo: ${{ steps.vars.outputs.build-service-repo }}
+      ootb-supply-chain-repo: ${{ steps.vars.outputs.ootb-supply-chain-repo }}
       b64-harbor-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-harbor-cluster-kubeconfig-contents }}
       b64-tap-build-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-build-cluster-kubeconfig-contents }}
       b64-tap-iterate-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-iterate-cluster-kubeconfig-contents }}
@@ -95,12 +116,28 @@ jobs:
       id: vars
       run: |
         KVMAP=$(echo ${{ steps.obtain-secret-valuemap.outputs.result }} | base64 -d)
+        CONTAINER_IMAGE_REGISTRY_PROVIDER=$(echo $KVMAP | yq -p=json -M '.container-image-registry-provider')
+        echo "container-image-registry-provider=$CONTAINER_IMAGE_REGISTRY_PROVIDER" >> $GITHUB_OUTPUT
+        ECR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.ecr-admin-username')
+        echo "ecr-admin-username=$ECR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
+        ECR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.ecr-admin-password')
+        echo "ecr-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
+        ECR_ENDPOINT=$(echo $KVMAP | yq -p=json -M '.ecr-endpoint')
+        echo "ecr-endpoint=$ECR_ENDPOINT" >> $GITHUB_OUTPUT
         HARBOR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.harbor-admin-username')
         echo "harbor-admin-username=$HARBOR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
         HARBOR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.harbor-admin-password')
         echo "harbor-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
         HARBOR_DOMAIN=$(echo $KVMAP | yq -p=json -M '.harbor-domain')
         echo "harbor-domain=$HARBOR_DOMAIN" >> $GITHUB_OUTPUT
+        if [ "ecr" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]; then
+          echo "build-service-repo=tap-build-service" >> $GITHUB_OUTPUT
+          echo "ootb-supply-chain-repo=tanzu-application-platform" >> $GITHUB_OUTPUT
+        fi
+        if [ "harbor" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]; then
+          echo "build-service-repo=tanzu/build-service" >> $GITHUB_OUTPUT
+          echo "ootb-supply-chain-repo=tanzu/supply-chain" >> $GITHUB_OUTPUT
+        fi
         HARBOR_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-harbor-cluster-kubeconfig')
         echo "b64-harbor-cluster-kubeconfig-contents=$HARBOR_KCONFIG" >> $GITHUB_OUTPUT
         TAP_BUILD_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-build-cluster-kubeconfig')
@@ -113,8 +150,7 @@ jobs:
         echo "b64-tap-run-cluster-kubeconfig-contents=$TAP_RUN_KCONFIG" >> $GITHUB_OUTPUT
 
   install-tap-build-on-aws:
-    if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
-    needs: [obtain-secrets-from-secrets-manager,prepare-metadata-store-secrets]
+    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager,prepare-metadata-store-secrets]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       aws-region: ${{ github.event.inputs.region }}
@@ -124,7 +160,9 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu/"
+      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
+      build_service_repo_aws_iam_role_arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
@@ -148,8 +186,7 @@ jobs:
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   install-tap-iterate-on-aws:
-    if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
-    needs: obtain-secrets-from-secrets-manager
+    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       aws-region: ${{ github.event.inputs.region }}
@@ -159,7 +196,9 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu/"
+      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
+      build_service_repo_aws_iam_role_arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
@@ -183,8 +222,7 @@ jobs:
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   install-tap-view-on-aws:
-    if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
-    needs: obtain-secrets-from-secrets-manager
+    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       aws-region: ${{ github.event.inputs.region }}
@@ -194,7 +232,9 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu/"
+      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
+      build_service_repo_aws_iam_role_arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
@@ -218,7 +258,6 @@ jobs:
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   prepare-metadata-store-secrets:
-    if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
     needs: [obtain-secrets-from-secrets-manager,install-tap-view-on-aws]
     uses: ./.github/workflows/prepare-metadata-store-secrets.yml
     with:
@@ -232,8 +271,7 @@ jobs:
       TAP_VIEW_KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
 
   install-tap-run-on-aws:
-    if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
-    needs: obtain-secrets-from-secrets-manager
+    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       aws-region: ${{ github.event.inputs.region }}
@@ -243,7 +281,9 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      container-image-registry-prefix: "tanzu/"
+      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
+      build_service_repo_aws_iam_role_arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"

@@ -16,50 +16,22 @@ sed \
   -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
   .init/git-secrets.tpl > .init/git-secrets.yml
 
-if [ "$IAAS" == "aws" ] || [ "$IAAS" == "tkg-on-aws" ]; then
-  # Convert .init/tap-install-config-aws.tpl to .init/tap-install-config-aws.yml
-  sed \
-    -e "s/{{ .app_name }}/$APP_NAME/g" \
-    -e "s/{{ .dev_namespace }}/$DEV_NAMESPACE/g" \
-    -e "s~{{ .backstage_catalog }}~$BACKSTAGE_CATALOG~g" \
-    -e "s~{{ or .container_image_registry_prefix \"tanzu\" }}~$CONTAINER_IMAGE_REGISTRY_PREFIX~g" \
-    -e "s~{{ or .gitops_provider \"github.com\" }}~$GITOPS_PROVIDER~g" \
-    -e "s/{{ .gitops_username }}/$GITOPS_USERNAME/g" \
-    -e "s~{{ or .gitops_repo_name \"tap-gitops-depot\" }}~$GITOPS_REPO_NAME~g" \
-    -e "s~{{ or .gitops_repo_branch \"main\" }}~$GITOPS_REPO_BRANCH~g" \
-    -e "s/{{ .domain }}/$DOMAIN/g" \
-    .init/tap-install-config-aws.tpl > .init/tap-install-config-aws.yml
-fi
 
-if [ "$IAAS" == "oracle" ]; then
-  # Convert .init/tap-install-config-oracle.tpl to .init/tap-install-config-oracle.yml
-  sed \
-    -e "s/{{ .app_name }}/$APP_NAME/g" \
-    -e "s/{{ .dev_namespace }}/$DEV_NAMESPACE/g" \
-    -e "s~{{ .backstage_catalog }}~$BACKSTAGE_CATALOG~g" \
-    -e "s~{{ or .container_image_registry_prefix \"\" }}~$CONTAINER_IMAGE_REGISTRY_PREFIX~g" \
-    -e "s~{{ or .gitops_provider \"github.com\" }}~$GITOPS_PROVIDER~g" \
-    -e "s/{{ .gitops_username }}/$GITOPS_USERNAME/g" \
-    -e "s~{{ or .gitops_repo_name \"tap-gitops-depot\" }}~$GITOPS_REPO_NAME~g" \
-    -e "s~{{ or .gitops_repo_branch \"main\" }}~$GITOPS_REPO_BRANCH~g" \
-    -e "s/{{ .domain }}/$DOMAIN/g" \
-    .init/tap-install-config-oracle.tpl > .init/tap-install-config-oracle.yml
-fi
+# Convert .init/tap-install-config.tpl to .init/tap-install-config.yml
+sed \
+  -e "s/{{ .app_name }}/$APP_NAME/g" \
+  -e "s/{{ .dev_namespace }}/$DEV_NAMESPACE/g" \
+  -e "s~{{ .backstage_catalog }}~$BACKSTAGE_CATALOG~g" \
+  -e "s~{{ .build_service_repo }}~$BUILD_SERVICE_REPO_NAME~g" \
+  -e "s~{{ .build_service_repo_aws_iam_role_arn }}~$BUILD_SERVICE_REPO_AWS_IAM_ROLE_ARN~g" \
+  -e "s~{{ .ootb_supply_chain_repo }}~$OOTB_SUPPLY_CHAIN_REPO_NAME~g" \
+  -e "s~{{ or .gitops_provider \"github.com\" }}~$GITOPS_PROVIDER~g" \
+  -e "s/{{ .gitops_username }}/$GITOPS_USERNAME/g" \
+  -e "s~{{ or .gitops_repo_name \"tap-gitops-depot\" }}~$GITOPS_REPO_NAME~g" \
+  -e "s~{{ or .gitops_repo_branch \"main\" }}~$GITOPS_REPO_BRANCH~g" \
+  -e "s/{{ .domain }}/$DOMAIN/g" \
+  .init/tap-install-config.tpl > .init/tap-install-config.yml
 
-if [ "$IAAS" != "aws" ] && [ "$IAAS" != "oracle" ]; then
-  # Convert .init/tap-install-config.tpl to .init/tap-install-config.yml
-  sed \
-    -e "s/{{ .app_name }}/$APP_NAME/g" \
-    -e "s/{{ .dev_namespace }}/$DEV_NAMESPACE/g" \
-    -e "s~{{ .backstage_catalog }}~$BACKSTAGE_CATALOG~g" \
-    -e "s~{{ or .container_image_registry_prefix \"tanzu\" }}~$CONTAINER_IMAGE_REGISTRY_PREFIX~g" \
-    -e "s~{{ or .gitops_provider \"github.com\" }}~$GITOPS_PROVIDER~g" \
-    -e "s/{{ .gitops_username }}/$GITOPS_USERNAME/g" \
-    -e "s~{{ or .gitops_repo_name \"tap-gitops-depot\" }}~$GITOPS_REPO_NAME~g" \
-    -e "s~{{ or .gitops_repo_branch \"main\" }}~$GITOPS_REPO_BRANCH~g" \
-    -e "s/{{ .domain }}/$DOMAIN/g" \
-    .init/tap-install-config.tpl > .init/tap-install-config.yml
-fi
 
 # Convert .init/tap-install-secrets.tpl to .init/tap-install-secrets.yml
 sed \

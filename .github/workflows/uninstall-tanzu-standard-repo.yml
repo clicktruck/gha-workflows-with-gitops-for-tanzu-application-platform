@@ -57,8 +57,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: "Uninstall Tanzu Standard Repo"
-      if: contains(fromJson('["aks","gke","other"]'), inputs.cluster-provider)
+    - name: "Uninstall Tanzu Standard Repo on AKS"
+      if: inputs.cluster-provider == 'aks'
       uses: ./docker/actions/tanzu-runsh-setup-action
       with:
         script-contents: ${{ needs.encode-tanzu-standard-repo-uninstall-script.outputs.result }}
