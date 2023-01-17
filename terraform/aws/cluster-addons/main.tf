@@ -15,6 +15,7 @@ module "eks_blueprints_kubernetes_addons" {
   enable_aws_cloudwatch_metrics       = true
   enable_aws_load_balancer_controller = true
   enable_crossplane                   = true
+  crossplane_aws_provider             = local.crossplane_aws_provider
   enable_kyverno                      = true
   enable_kyverno_policies             = true
   enable_kyverno_policy_reporter      = true
