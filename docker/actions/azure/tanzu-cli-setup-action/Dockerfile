@@ -16,7 +16,7 @@ ENV HELM_VERSION=3.10.3 \
     MKPCLI_VERSION=0.15.0 \
     LEFTOVERS_VERSION=0.62.0 \
     VENDIR_VERSION=0.32.2 \
-    YQ_VERSION=4.30.6 \
+    YQ_VERSION=4.30.8 \
     YTT_VERSION=0.44.1
 
 RUN apk add --update --no-cache bash coreutils ca-certificates curl docker gcompat jq openrc python3 py3-pip wget \
