@@ -1,0 +1,37 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
+---
+#@ if (data.values.tap.cluster.provider == "eks" || data.values.tap.cluster.provider == "tkg»aws") && (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: create-workload-ecr-repos
+spec:
+  background: false
+  rules:
+  - name: create-workload-ecr-repos
+    match:
+      any:
+      - resources:
+          kinds:
+          - Workload
+    generate:
+      kind: WorkloadECRRepo
+      apiVersion: tap.vrabbi.cloud/v1alpha1
+      name: "{{request.object.metadata.name}}-ecr-repos"
+      namespace: "{{request.namespace}}"
+      synchronize: false
+      data:
+        metadata:
+          ownerReferences:
+          - apiVersion: carto.run/v1alpha1
+            kind: Workload
+            name: "{{request.object.metadata.name}}"
+            uid: "{{request.object.metadata.uid}}"
+        spec:
+          parameters:
+            workloadName: "{{request.object.metadata.name}}"
+            region: eu-west-2
+            repoPrefix: xxxxxxx.dkr.ecr.eu-west-2.amazonaws.com/tap/workloads
+            providerName: aws-provider
+#@ end
