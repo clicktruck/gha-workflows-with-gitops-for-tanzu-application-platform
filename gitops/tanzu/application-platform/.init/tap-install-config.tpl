@@ -28,7 +28,7 @@ tap:
       group: cert-manager.io
       kind: ClusterIssuer
       name: letsencrypt-contour-cluster-issuer
-    provider: {{ .cluster_provider}}
+    provider: {{ .cluster_provider }}
 
   supply_chain:
     gitops:

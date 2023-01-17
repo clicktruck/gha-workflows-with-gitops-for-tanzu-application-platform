@@ -1,0 +1,19 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
+---
+#@ if (data.values.tap.cluster.provider == "eks" || data.values.tap.cluster.provider == "tkg»aws") && (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/instance: kyverno
+    app.kubernetes.io/name: kyverno
+  name: kyverno:tap-helpers
+rules:
+- apiGroups:
+  - tap.vrabbi.cloud
+  resources:
+  - workloadecrrepos
+  verbs:
+  - create
+#@ end
