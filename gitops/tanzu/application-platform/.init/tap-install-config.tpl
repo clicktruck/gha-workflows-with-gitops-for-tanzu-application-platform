@@ -8,9 +8,9 @@ tap:
 
   registry:
     repositories:
+      aws:
+        iam_role_arn: {{ .build_service_repo_aws_iam_role_arn }}
       buildService: {{ .build_service_repo }}
-        aws:
-          iam_role_arn: {{ .build_service_repo_aws_iam_role_arn }}
       ootbSupplyChain: {{ .ootb_supply_chain_repo }}
 
   domains:
