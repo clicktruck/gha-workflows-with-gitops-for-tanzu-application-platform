@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 # Create IAM roles required for installing Tanzu Application Platform on AWS EKS integrating with ECR
 
 # This script is based off policy documents described in https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/aws-resources.html#create-iam-roles-5.
@@ -189,8 +191,8 @@ cat << EOF > workload-trust-policy-for-$EKS_CLUSTER_NAME.json
             },
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": {
-                "StringEquals": {
-                    "${OIDCPROVIDER}:sub": "system:serviceaccount:default:default",
+                "StringLike": {
+                    "${OIDCPROVIDER}:sub": "system:serviceaccount:*:default",
                     "${OIDCPROVIDER}:aud": "sts.amazonaws.com"
                 }
             }
