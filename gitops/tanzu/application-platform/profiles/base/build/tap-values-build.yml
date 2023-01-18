@@ -18,7 +18,7 @@ shared:
 
 buildservice:
   kp_default_repository: #@ "{}/{}".format(data.values.tap.credentials.registry.host, data.values.tap.registry.repositories.buildService)
-  #@ if (data.values.tap.cluster.provider == "eks" || data.values.tap.cluster.provider == "tkg»aws") && (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
+  #@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
   kp_default_repository_aws_iam_role_arn: #@ data.values.tap.registry.repositories.aws.iam_role_arn
   #@ else
   kp_default_repository_username: #@ data.values.tap.credentials.registry.username
@@ -32,7 +32,7 @@ buildservice:
 #! supply_chain can be configured to be either [ basic, testing_scanning ]
 supply_chain: testing_scanning
 
-#@ if (data.values.tap.cluster.provider == "eks" || data.values.tap.cluster.provider == "tkg»aws") && (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
+#@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
 #! Enable the config writer service to use cloud based iaas authentication
 #! which are retrieved from the developer namespace service account by default
 ootb_templates:

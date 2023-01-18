@@ -1,7 +1,7 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:yaml", "yaml")
 ---
-#@ if (data.values.tap.cluster.provider == "eks" || data.values.tap.cluster.provider == "tkg»aws") && (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
+#@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
