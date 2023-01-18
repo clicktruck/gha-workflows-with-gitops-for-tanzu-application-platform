@@ -111,8 +111,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      ootb_supplychain_repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
-      build_service_repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
+      ootb-supplychain-repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"
@@ -144,8 +144,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      ootb_supplychain_repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
-      build_service_repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
+      ootb-supplychain-repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"
@@ -177,8 +177,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      ootb_supplychain_repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
-      build_service_repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
+      ootb-supplychain-repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"
@@ -224,8 +224,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      ootb_supplychain_repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
-      build_service_repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
+      ootb-supplychain-repo: ${{ needs.obtain-repo-names.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.obtain-repo-names.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: "azure"
       deployment-name: "tap"

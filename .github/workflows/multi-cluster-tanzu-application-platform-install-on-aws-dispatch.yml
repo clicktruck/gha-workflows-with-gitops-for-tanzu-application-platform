@@ -160,8 +160,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
-      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
+      ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       build_service_repo_aws_iam_role_arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
@@ -196,8 +196,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
-      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
+      ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       build_service_repo_aws_iam_role_arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
@@ -232,9 +232,9 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
-      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
-      build_service_repo_aws_iam_role_arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
+      ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
+      build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
@@ -281,8 +281,8 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
       container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
-      ootb_supplychain_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
-      build_service_repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
+      ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       build_service_repo_aws_iam_role_arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
