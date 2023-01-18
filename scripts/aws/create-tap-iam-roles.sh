@@ -13,6 +13,8 @@ fi
 
 export EKS_CLUSTER_NAME="$1"
 export AWS_REGION="$2"
+
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 export OIDCPROVIDER=$(aws eks describe-cluster --name $EKS_CLUSTER_NAME --region $AWS_REGION --output json | jq '.cluster.identity.oidc.issuer' | tr -d '"' | sed 's/https:\/\///')
 
 cat << EOF > build-service-trust-policy-for-$EKS_CLUSTER_NAME.json
