@@ -3,6 +3,14 @@ name: "multi-cluster-tanzu-application-platform-install-on-aws-dispatch"
 on:
   workflow_dispatch:
     inputs:
+      cluster-provider:
+        description: "The Kubernetes service provider"
+        type: choice
+        required: true
+        options:
+          - eks
+          - tkg»aws
+        default: "eks"
       secrets-manager-arn:
         description: "The ARN of an AWS Secrets Manager instance"
         required: true
@@ -69,6 +77,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
         aws-region: ${{ inputs.region }}
+        mask-aws-account-id: false
 
     - name: Ask for account id
       id: vars
@@ -81,12 +90,9 @@ jobs:
 
     outputs:
       container-image-registry-provider: ${{ steps.vars.outputs.container-image-registry-provider }}
-      ecr-admin-username: ${{ steps.vars.outputs.ecr-admin-username }}
-      ecr-admin-password: ${{ steps.vars.outputs.ecr-admin-password }}
-      ecr-endpoint: ${{ steps.vars.outputs.ecr-endpoint }}
-      harbor-admin-username: ${{ steps.vars.outputs.harbor-admin-username }}
-      harbor-admin-password: ${{ steps.vars.outputs.harbor-admin-password }}
-      harbor-domain: ${{ steps.vars.outputs.harbor-domain }}
+      container-image-registry-username: ${{ steps.vars.outputs.container-image-registry-username }}
+      container-image-registry-password: ${{ steps.vars.outputs.container-image-registry-password }}
+      container-image-registry-url: ${{ steps.vars.outputs.container-image-registry-url }}
       build-service-repo: ${{ steps.vars.outputs.build-service-repo }}
       ootb-supply-chain-repo: ${{ steps.vars.outputs.ootb-supply-chain-repo }}
       b64-harbor-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-harbor-cluster-kubeconfig-contents }}
@@ -98,6 +104,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+
     - name: "Fetch secrets from secret manager instance"
       id: obtain-secret-valuemap
       uses: ./docker/actions/aws/tanzu-cli-setup-action
@@ -118,23 +125,23 @@ jobs:
         KVMAP=$(echo ${{ steps.obtain-secret-valuemap.outputs.result }} | base64 -d)
         CONTAINER_IMAGE_REGISTRY_PROVIDER=$(echo $KVMAP | yq -p=json -M '.container-image-registry-provider')
         echo "container-image-registry-provider=$CONTAINER_IMAGE_REGISTRY_PROVIDER" >> $GITHUB_OUTPUT
-        ECR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.ecr-admin-username')
-        echo "ecr-admin-username=$ECR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
-        ECR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.ecr-admin-password')
-        echo "ecr-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
-        ECR_ENDPOINT=$(echo $KVMAP | yq -p=json -M '.ecr-endpoint')
-        echo "ecr-endpoint=$ECR_ENDPOINT" >> $GITHUB_OUTPUT
-        HARBOR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.harbor-admin-username')
-        echo "harbor-admin-username=$HARBOR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
-        HARBOR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.harbor-admin-password')
-        echo "harbor-admin-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
-        HARBOR_DOMAIN=$(echo $KVMAP | yq -p=json -M '.harbor-domain')
-        echo "harbor-domain=$HARBOR_DOMAIN" >> $GITHUB_OUTPUT
         if [ "ecr" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]; then
+          ECR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.ecr-admin-username')
+          echo "container-image-registry-username=$ECR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
+          ECR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.ecr-admin-password')
+          echo "container-image-registry-password=$ECR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
+          ECR_ENDPOINT=$(echo $KVMAP | yq -p=json -M '.ecr-endpoint')
+          echo "container-image-registry-url=$ECR_ENDPOINT" >> $GITHUB_OUTPUT
           echo "build-service-repo=tap-build-service" >> $GITHUB_OUTPUT
           echo "ootb-supply-chain-repo=tanzu-application-platform" >> $GITHUB_OUTPUT
         fi
         if [ "harbor" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]; then
+          HARBOR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.harbor-admin-username')
+          echo "container-image-registry-username=$HARBOR_ADMIN_USERNAME" >> $GITHUB_OUTPUT
+          HARBOR_ADMIN_PASSWORD=$(echo $KVMAP | yq -p=json -M '.harbor-admin-password')
+          echo "container-image-registry-password=$HARBOR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
+          HARBOR_DOMAIN=$(echo $KVMAP | yq -p=json -M '.harbor-domain')
+          echo "container-image-registry-url=$HARBOR_DOMAIN" >> $GITHUB_OUTPUT
           echo "build-service-repo=tanzu/build-service" >> $GITHUB_OUTPUT
           echo "ootb-supply-chain-repo=tanzu/supply-chain" >> $GITHUB_OUTPUT
         fi
@@ -157,9 +164,9 @@ jobs:
       domain: ${{ github.event.inputs.domain }}
       dev-namespace: ${{ github.event.inputs.dev-namespace }}
       backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
-      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
-      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
-      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-url }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-password }}
       ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
@@ -193,9 +200,9 @@ jobs:
       domain: ${{ github.event.inputs.domain }}
       dev-namespace: ${{ github.event.inputs.dev-namespace }}
       backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
-      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
-      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
-      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-url }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-password }}
       ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
@@ -229,9 +236,9 @@ jobs:
       domain: ${{ github.event.inputs.domain }}
       dev-namespace: ${{ github.event.inputs.dev-namespace }}
       backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
-      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
-      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
-      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-url }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-password }}
       ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
@@ -278,9 +285,9 @@ jobs:
       domain: ${{ github.event.inputs.domain }}
       dev-namespace: ${{ github.event.inputs.dev-namespace }}
       backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
-      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-domain }}
-      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}
-      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-password }}
+      container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-url }}
+      container-image-registry-username: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-username }}
+      container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-password }}
       ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
