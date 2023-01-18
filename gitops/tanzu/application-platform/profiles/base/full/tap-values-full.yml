@@ -35,7 +35,7 @@ buildservice:
   kp_default_repository: #@ "{}/{}".format(data.values.tap.credentials.registry.host, data.values.tap.registry.repositories.buildService)
   #@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
   kp_default_repository_aws_iam_role_arn: #@ data.values.tap.registry.repositories.aws.iam_role_arn
-  #@ else
+  #@ else:
   kp_default_repository_username: #@ data.values.tap.credentials.registry.username
   kp_default_repository_password: #@ base64.decode(data.values.tap.credentials.registry.password).rstrip()
   #@ end
@@ -187,7 +187,7 @@ contour:
       #@ if data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws"
       aws:
         LBType: nlb
-      #@ else
+      #@ else:
       type: LoadBalancer
       #@ end
 
