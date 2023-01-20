@@ -100,6 +100,10 @@ jobs:
       b64-tap-iterate-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-iterate-cluster-kubeconfig-contents }}
       b64-tap-view-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-view-cluster-kubeconfig-contents }}
       b64-tap-run-cluster-kubeconfig-contents: ${{ steps.vars.outputs.b64-tap-run-cluster-kubeconfig-contents }}
+      tap-build-cluster-name: ${{ steps.vars.outputs.tap-build-cluster-name }}
+      tap-iterate-cluster-name: ${{ steps.vars.outputs.tap-iterate-cluster-name }}
+      tap-view-cluster-name: ${{ steps.vars.outputs.tap-view-cluster-name }}
+      tap-run-cluster-name: ${{ steps.vars.outputs.tap-run-cluster-name }}
 
     steps:
     - name: Checkout
@@ -149,12 +153,20 @@ jobs:
         echo "b64-harbor-cluster-kubeconfig-contents=$HARBOR_KCONFIG" >> $GITHUB_OUTPUT
         TAP_BUILD_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-build-cluster-kubeconfig')
         echo "b64-tap-build-cluster-kubeconfig-contents=$TAP_BUILD_KCONFIG" >> $GITHUB_OUTPUT
+        TAP_BUILD_CLUSTER_NAME=$(echo "$TAP_BUILD_KCONFIG" | base64 -d > build_config && kubectl config current-context --kubeconfig build_config | cut -d "/" -f2)
+        echo "tap-build-cluster-name=$TAP_BUILD_CLUSTER_NAME" >> $GITHUB_OUTPUT
         TAP_ITERATE_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-iterate-cluster-kubeconfig')
         echo "b64-tap-iterate-cluster-kubeconfig-contents=$TAP_ITERATE_KCONFIG" >> $GITHUB_OUTPUT
+        TAP_ITERATE_CLUSTER_NAME=$(echo "$TAP_ITERATE_KCONFIG" | base64 -d > iterate_config && kubectl config current-context --kubeconfig iterate_config | cut -d "/" -f2)
+        echo "tap-iterate-cluster-name=$TAP_ITERATE_CLUSTER_NAME" >> $GITHUB_OUTPUT
         TAP_VIEW_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-view-cluster-kubeconfig')
         echo "b64-tap-view-cluster-kubeconfig-contents=$TAP_VIEW_KCONFIG" >> $GITHUB_OUTPUT
+        TAP_VIEW_CLUSTER_NAME=$(echo "$TAP_VIEW_KCONFIG" | base64 -d > view_config && kubectl config current-context --kubeconfig view_config | cut -d "/" -f2)
+        echo "tap-view-cluster-name=$TAP_VIEW_CLUSTER_NAME" >> $GITHUB_OUTPUT
         TAP_RUN_KCONFIG=$(echo $KVMAP | yq -p=json -M '.b64-tap-run-cluster-kubeconfig')
         echo "b64-tap-run-cluster-kubeconfig-contents=$TAP_RUN_KCONFIG" >> $GITHUB_OUTPUT
+        TAP_RUN_CLUSTER_NAME=$(echo "$TAP_RUN_KCONFIG" | base64 -d > run_config && kubectl config current-context --kubeconfig run_config | cut -d "/" -f2)
+        echo "tap-run-cluster-name=$TAP_RUN_CLUSTER_NAME" >> $GITHUB_OUTPUT
 
   install-tap-build-on-aws:
     needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager,prepare-metadata-store-secrets]
@@ -169,8 +181,8 @@ jobs:
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-password }}
       ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
-      build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
-      workload-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-workload"
+      build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service-for-${{ needs.obtain-secrets-from-secrets-manager.outputs.tap-build-cluster-name }}"
+      workload-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-workload-for-${{ needs.obtain-secrets-from-secrets-manager.outputs.tap-build-cluster-name }}"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
@@ -206,8 +218,8 @@ jobs:
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-password }}
       ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
-      build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
-      workload-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-workload"
+      build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service-for-${{ needs.obtain-secrets-from-secrets-manager.outputs.tap-iterate-cluster-name }}"
+      workload-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-workload-for-${{ needs.obtain-secrets-from-secrets-manager.outputs.tap-iterate-cluster-name }}"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
@@ -243,8 +255,8 @@ jobs:
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-password }}
       ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
-      build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
-      workload-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-workload"
+      build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service-for-${{ needs.obtain-secrets-from-secrets-manager.outputs.tap-view-cluster-name }}"
+      workload-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-workload-for-${{ needs.obtain-secrets-from-secrets-manager.outputs.tap-view-cluster-name }}"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
@@ -293,8 +305,8 @@ jobs:
       container-image-registry-password: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-password }}
       ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
-      build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
-      workload-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-workload"
+      build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service-for-${{ needs.obtain-secrets-from-secrets-manager.outputs.tap-run-cluster-name }}"
+      workload-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-workload-for-${{ needs.obtain-secrets-from-secrets-manager.outputs.tap-run-cluster-name }}"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
