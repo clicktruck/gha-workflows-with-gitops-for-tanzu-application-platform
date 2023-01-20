@@ -36,6 +36,11 @@ on:
         type: string
         required: true
         default: ""
+      workload-repo-aws-iam-role-arn:
+        description: "IAM role ARN for pull-push access to container image registry"
+        type: string
+        required: true
+        default: ""
       container-image-registry-username:
         description: "The container registry's admin account username"
         type: string
@@ -259,6 +264,7 @@ jobs:
           ootb_supply_chain_repo: ${{ inputs.ootb-supply-chain-repo }}
           build_service_repo: ${{ inputs.build-service-repo }}
           build_service_repo_aws_iam_role_arn: ${{ inputs.build-service-repo-aws-iam-role-arn }}
+          workload_repo_aws_iam_role_arn: ${{ inputs.workload-repo-aws-iam-role-arn }}
           gitops_provider: "github.com"
           gitops_username: ${{ github.actor }}
           gitops_repo_name: "tap-gitops-depot"

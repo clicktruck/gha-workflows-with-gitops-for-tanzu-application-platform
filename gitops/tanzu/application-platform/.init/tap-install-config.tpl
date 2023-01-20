@@ -31,6 +31,8 @@ tap:
     provider: {{ .cluster_provider }}
 
   supply_chain:
+    aws:
+      iam_role_arn: {{ .workload_repo_aws_iam_role_arn }}
     gitops:
       provider: {{ or .gitops_provider "github.com" }}
       repository:

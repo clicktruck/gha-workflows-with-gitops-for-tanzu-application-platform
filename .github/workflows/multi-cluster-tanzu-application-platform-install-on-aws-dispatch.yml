@@ -170,6 +170,7 @@ jobs:
       ootb-supply-chain-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-secrets-from-secrets-manager.outputs.build-service-repo }}
       build-service-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-build-service"
+      workload-repo-aws-iam-role-arn: "arn:aws:iam::${{ needs.obtain-aws-account-id.outputs.account-id }}:role/tap-workload"
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
