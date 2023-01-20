@@ -7,3 +7,4 @@ tap:
 
   domains:
     knative: apps.tap.tanzu.corp
+    suffix: iterate

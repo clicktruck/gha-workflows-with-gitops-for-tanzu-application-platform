@@ -6,5 +6,5 @@ tap:
   devNamespace: dev-tap
 
   domains:
-    appliveview: appliveview.apps.tap.tanzu.corp
     knative: apps.tap.tanzu.corp
+    suffix: production
