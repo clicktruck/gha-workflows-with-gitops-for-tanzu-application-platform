@@ -90,5 +90,5 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
         script-contents: ${{ needs.encode-delete-iam-roles-script.outputs.result }}
-        script-arguments: "${{ inputs.cluster-name }} ${{ inputs.region }}"
+        script-arguments: "${{ inputs.cluster-name }}"
         csp-api-token: ${{ secrets.CSP_API_TOKEN }}
