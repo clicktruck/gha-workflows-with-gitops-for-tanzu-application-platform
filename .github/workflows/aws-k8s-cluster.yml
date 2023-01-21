@@ -74,13 +74,14 @@ on:
     outputs:
       eks_cluster_id:
         description: "The name of the Elastic Kubernetes Service cluster"
-        value: ${{ jobs.manage-cluster.outputs.eks_cluster_id }}
+        value: ${{ jobs.create-cluster.outputs.eks_cluster_id }}
       eks_cluster_security_group_id:
         description: "EKS created security group ID applied to ENI that is attached to EKS Control Plane master nodes, as well as any managed workloads"
-        value: ${{ jobs.manage-cluster.outputs.eks_cluster_security_group_id }}
+        value: ${{ jobs.create-cluster.outputs.eks_cluster_security_group_id }}
 
 jobs:
-  manage-cluster:
+  create-cluster:
+    if: inputs.action == 'create'
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -119,8 +120,118 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    # Install the latest version of Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+        terraform_version: 1.3.7
+
+    - name: Generate backend configuration
+      run: |
+          cp ../backend/backend.tf .
+          echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
+          echo "key = \"cluster/${{ inputs.cluster-name }}/terraform.tfstate\"" >> config.aws.tfbackend
+          echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
+          echo "encrypt = true" >> config.aws.tfbackend
+          echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
+          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+
+    - name: Copy provider variant into place
+      run: |
+        cp ${{ inputs.action}}/providers.tf .
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init -upgrade -backend-config=./config.aws.tfbackend
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+
+    - name: Set Outputs
+      id: set_outputs
+      run: |
+        eks_cluster_id=$(terraform output --raw eks_cluster_id)
+        echo "eks_cluster_id=${eks_cluster_id}" >> $GITHUB_OUTPUT
+        eks_cluster_endpoint=$(terraform output --raw eks_cluster_endpoint)
+        echo "eks_cluster_endpoint=${eks_cluster_endpoint}" >> $GITHUB_OUTPUT
+        eks_cluster_security_group_id=$(terraform output --raw eks_cluster_security_group_id)
+        echo "eks_cluster_security_group_id=${eks_cluster_security_group_id}" >> $GITHUB_OUTPUT
+        oidc_provider=$(terraform output --raw oidc_provider)
+        echo "oidc_provider=${oidc_provider}" >> $GITHUB_OUTPUT
+
+  obtain-existing-cluster-details:
+    if: inputs.action == 'destroy'
+    uses: ./.github/workflows/aws-obtain-existing-cluster-details.yml
+    with:
+      cluster-name: ${{ inputs.cluster-name }}
+      region: ${{ inputs.region }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+
+  remove-eks-cluster-addons:
+    needs: obtain-existing-cluster-details
+    uses: ./.github/workflows/aws-k8s-cluster-addons.yml
+    with:
+      cluster-id: ${{ needs.obtain-existing-cluster-details.outputs.eks_cluster_id }}
+      cluster-name: ${{ inputs.cluster-name }}
+      cluster-endpoint: ${{ needs.obtain-existing-cluster-details.outputs.eks_cluster_endpoint }}
+      k8s-version: ${{ inputs.k8s-version }}
+      oidc-provider: ${{ needs.obtain-existing-cluster-details.outputs.oidc_provider }}
+      region: ${{ inputs.region }}
+      action: "remove"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
+      KUBECONFIG_CONTENTS: ${{ needs.obtain-existing-cluster-details.outputs.b64_kubeconfig }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+
+  destroy-cluster:
+    needs: remove-eks-cluster-addons
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ inputs.region }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_PAGER: ""
+      TF_VAR_vpc_id: ${{ inputs.vpc-id }}
+      TF_VAR_eks_cluster_id: ${{ inputs.cluster-name }}
+      TF_VAR_desired_nodes: "${{ inputs.desired-nodes }}"
+      TF_VAR_node_pool_instance_type: "${{ inputs.node-pool-instance-type }}"
+      TF_VAR_kubernetes_version: "${{ inputs.k8s-version }}"
+      TF_VAR_ssh_key_name: "${{ inputs.ssh-key-name }}"
+      TF_VAR_provisioner_security_group_id: "${{ inputs.provisioner-security-group-id }}"
+      TF_VAR_private_subnet_ids: "${{ inputs.private-subnet-ids }}"
+      TF_VAR_public_subnet_ids: "${{ inputs.public-subnet-ids }}"
+      TF_VAR_kubeconfig_path: "/tmp/.kube/config"
+      KUBECONFIG: "/tmp/.kube/config"
+
+    runs-on: ubuntu-22.04
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/aws/cluster
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
     - name: Configure AWS credentials
-      if: inputs.action == 'destroy'
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -130,7 +241,6 @@ jobs:
         mask-aws-account-id: false
 
     - name: Fetch base64-encoded kubeconfig by cluster name
-      if: inputs.action == 'destroy'
       id: cluster_credentials
       run: |
         cluster_name=$(aws eks list-clusters --region ${{ inputs.region }} --query 'clusters[?contains(@, `${{ inputs.cluster-name }}`)]' | sed -n '2p' | tr -d '"' | awk '{gsub(/^ +| +$/,"")} {print $0}')
@@ -167,42 +277,18 @@ jobs:
     - name: Terraform Format
       run: terraform fmt -check
 
-    # Generates an execution plan for Terraform
-    - name: Terraform Plan
-      if: inputs.action == 'create'
-      run: terraform plan
-
-    - name: Terraform Apply
-      if: inputs.action == 'create'
-      run: terraform apply -auto-approve
-
     - name: Terraform Destroy
-      if: inputs.action == 'destroy'
       run: |
         mkdir -p /tmp/.kube
         echo "${{ steps.cluster_credentials.outputs.b64_kubeconfig }}" | base64 -d > $KUBECONFIG
         chmod 600 $KUBECONFIG
         terraform destroy -auto-approve
 
-    - name: Set Outputs
-      if: inputs.action == 'create'
-      id: set_outputs
-      run: |
-        eks_cluster_id=$(terraform output --raw eks_cluster_id)
-        echo "eks_cluster_id=${eks_cluster_id}" >> $GITHUB_OUTPUT
-        eks_cluster_endpoint=$(terraform output --raw eks_cluster_endpoint)
-        echo "eks_cluster_endpoint=${eks_cluster_endpoint}" >> $GITHUB_OUTPUT
-        eks_cluster_security_group_id=$(terraform output --raw eks_cluster_security_group_id)
-        echo "eks_cluster_security_group_id=${eks_cluster_security_group_id}" >> $GITHUB_OUTPUT
-        oidc_provider=$(terraform output --raw oidc_provider)
-        echo "oidc_provider=${oidc_provider}" >> $GITHUB_OUTPUT
-
   obtain-base64-encoded-kubeconfig-from-cluster:
-    if: inputs.action == 'create'
-    needs: manage-cluster
+    needs: create-cluster
     uses: ./.github/workflows/aws-obtain-base64-encoded-kubeconfig-for-cluster.yml
     with:
-      cluster-name: ${{ needs.manage-cluster.outputs.eks_cluster_id }}
+      cluster-name: ${{ inputs.cluster-name }}
       region: ${{ inputs.region }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -211,14 +297,14 @@ jobs:
 
   install-eks-cluster-addons:
     if: inputs.action == 'create'
-    needs: [manage-cluster,obtain-base64-encoded-kubeconfig-from-cluster]
+    needs: [create-cluster,obtain-base64-encoded-kubeconfig-from-cluster]
     uses: ./.github/workflows/aws-k8s-cluster-addons.yml
     with:
-      cluster-id: ${{ needs.manage-cluster.outputs.eks_cluster_id }}
+      cluster-id: ${{ needs.create-cluster.outputs.eks_cluster_id }}
       cluster-name: ${{ inputs.cluster-name }}
-      cluster-endpoint: ${{ needs.manage-cluster.outputs.eks_cluster_endpoint }}
+      cluster-endpoint: ${{ needs.create-cluster.outputs.eks_cluster_endpoint }}
       k8s-version: ${{ inputs.k8s-version }}
-      oidc-provider: ${{ needs.manage-cluster.outputs.oidc_provider }}
+      oidc-provider: ${{ needs.create-cluster.outputs.oidc_provider }}
       region: ${{ inputs.region }}
       action: "install"
     secrets:

@@ -1,0 +1,59 @@
+name: "aws-obtain-existing-cluster-details"
+
+on:
+  workflow_call:
+    inputs:
+      cluster-name:
+        description: "Name of an existing EKS cluster"
+        required: true
+        type: string
+      region:
+        description: "The AWS region where region where the cluster is deployed"
+        type: string
+        required: true
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_SESSION_TOKEN:
+        required: false
+    outputs:
+      b64kubeconfig:
+        description: "Base64 encoded contents of .kube/config for named cluster"
+        value: ${{ jobs.aws-cli.outputs.b64kubeconfig }}
+
+jobs:
+  aws-cli:
+    runs-on: ubuntu-22.04
+    env:
+      AWS_PAGER: ""
+
+    outputs:
+      b64_kubeconfig: ${{ steps.vars.outputs.b64_kubeconfig }}
+      eks_cluster_id: ${{ steps.vars.outputs.eks_cluster_id }}
+      eks_cluster_endpoint: ${{ steps.vars.outputs.eks_cluster_endpoint }}
+      oidc_provider: ${{ steps.vars.outputs.oidc_provider }}
+
+    steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ inputs.region }}
+        mask-aws-account-id: false
+
+    - name: Obtain cluster details
+      id: vars
+      run: |
+        cluster_name=$(aws eks list-clusters --region ${{ inputs.region }} --query 'clusters[?contains(@, `${{ inputs.cluster-name }}`)]' | sed -n '2p' | tr -d '"' | awk '{gsub(/^ +| +$/,"")} {print $0}')
+        echo "eks_cluster_id=$cluster_name" >> $GITHUB_OUTPUT
+        aws eks update-kubeconfig --name $cluster_name --region "${{ inputs.region }}" --kubeconfig eks-config
+        b64_kubeconfig=$(cat eks-config | base64 -w 0)
+        echo "b64_kubeconfig=${b64_kubeconfig}" >> $GITHUB_OUTPUT
+        eks_cluster_endpoint=$(aws eks describe-cluster --name ${cluster_name} --region ${{ inputs.region }} --query 'cluster.endpoint' --output text)
+        echo "eks_cluster_endpoint=${eks_cluster_endpoint}" >> $GITHUB_OUTPUT
+        oidc_provider=$(aws eks describe-cluster --name ${cluster_name} --region ${{ inputs.region }} --query "cluster.identity.oidc.issuer" --output text | sed 's/https:\/\///')
+        echo "oidc_provider=${oidc_provider}" >> $GITHUB_OUTPUT
