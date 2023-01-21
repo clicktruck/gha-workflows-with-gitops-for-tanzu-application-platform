@@ -90,7 +90,6 @@ jobs:
       k8s-version: ${{ github.event.inputs.k8s-version }}
       ssh-key-name: ${{ github.event.inputs.ssh-key-name }}
       provisioner-security-group-id: ${{ github.event.inputs.provisioner-security-group-id }}
-      vpc-endpoint-security-group-id: ${{ github.event.inputs.vpc-endpoint-security-group-id }}
       private-subnet-ids: ${{ github.event.inputs.private-subnet-ids }}
       public-subnet-ids: ${{ github.event.inputs.public-subnet-ids }}
       region: ${{ github.event.inputs.region }}
