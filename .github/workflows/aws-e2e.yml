@@ -16,10 +16,10 @@ on:
         - "multi-cluster"
         default: "single-cluster"
       aws-access-key-id:
-        description: "AWS access key identifier for an account with write permissions to a Route53 hosted zone. (Only required when container-image-provider is set to [ harbor ])."
+        description: "AWS access key identifier for an account with write permissions to a Route53 hosted zone. (Only required when container-image-registry-provider is set to [ harbor ])."
         required: false
       aws-secret-access-key:
-        description: "AWS secret access key for an account with write permissions to a Route53 hosted zone. (Only required when container-image-provider is set to [ harbor ])."
+        description: "AWS secret access key for an account with write permissions to a Route53 hosted zone. (Only required when container-image-registry-provider is set to [ harbor ])."
         required: false
       instance-type:
         description: "The instance type of each node in cluster pool"
@@ -63,10 +63,10 @@ on:
         - sa-east-1
         default: "us-west-2"
       email-address:
-        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt. (Only required when container-image-provider is set to [ harbor ])."
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt. (Only required when container-image-registry-provider is set to [ harbor ])."
         required: false
       domain:
-        description: "Domain under management by an existing Route53 Hosted Zone. (Only required when container-image-provider is set to [ harbor ])."
+        description: "Domain under management by an existing Route53 Hosted Zone. (Only required when container-image-registry-provider is set to [ harbor ])."
         required: false
       container-image-registry-provider:
         description: "A choice of provider for a container image registry"
