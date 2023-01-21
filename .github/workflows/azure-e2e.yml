@@ -16,11 +16,11 @@ on:
         type: boolean
         default: true
       baseDomain:
-        description: "New DNS zone name to create (e.g., example.com)"
-        required: true
+        description: "New DNS zone name to create (e.g., example.com). Only required if either azure-dns-zone-created was set to [ true ] or container-image-registry-provider was set to [ harbor ]."
+        required: false
       domainPrefix:
-        description: "The subdomain name to create on the base domain, (e.g., tap-workshop)"
-        required: true
+        description: "The subdomain name to create on the base domain, (e.g., tap-workshop). Only required if either azure-dns-zone-created was set to [ true ] or container-image-registry-provider was set to [ harbor ]."
+        required: false
       participantNumber:
         description: "Participant ID (any positive integer)"
         required: true
@@ -35,8 +35,8 @@ on:
         description: "The name of the resource group the shared image gallery is in"
         required: true
       email-address:
-        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
-        required: true
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt. Only required if container-image-registry-provider was set to [ harbor ]."
+        required: false
       container-image-registry-provider:
         description: "A choice of provider for a container image registry"
         required: true
