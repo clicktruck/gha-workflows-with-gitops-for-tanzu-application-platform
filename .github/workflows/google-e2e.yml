@@ -67,11 +67,11 @@ on:
         - us-west4
         default: "us-west2"
       email-address:
-        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
-        required: true
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt. (Only required when container-image-registry-provider is set to [ harbor ])."
+        required: false
       domain:
-        description: "Domain under management by an existing Cloud DNS Zone"
-        required: true
+        description: "Domain under management by an existing Cloud DNS Zone. (Only required when container-image-registry-provider is set to [ harbor ])."
+        required: false
       container-image-registry-provider:
         description: "A choice of provider for a container image registry"
         required: true
@@ -183,6 +183,7 @@ jobs:
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
   fetch-google-cloud-dns-zone-name:
+    if: github.event.inputs.container-image-registry-provider == 'harbor'
     uses: ./.github/workflows/google-get-clouddns-zone-for-domain.yml
     with:
       domain: ${{ github.event.inputs.domain }}
