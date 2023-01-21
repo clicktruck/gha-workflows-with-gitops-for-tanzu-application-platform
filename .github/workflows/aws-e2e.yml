@@ -16,11 +16,11 @@ on:
         - "multi-cluster"
         default: "single-cluster"
       aws-access-key-id:
-        description: "AWS access key identifier for an account with write permissions to a Route53 hosted zone"
-        required: true
+        description: "AWS access key identifier for an account with write permissions to a Route53 hosted zone. (Only required when container-image-provider is set to [ harbor ])."
+        required: false
       aws-secret-access-key:
-        description: "AWS secret access key for an account with write permissions to a Route53 hosted zone"
-        required: true
+        description: "AWS secret access key for an account with write permissions to a Route53 hosted zone. (Only required when container-image-provider is set to [ harbor ])."
+        required: false
       instance-type:
         description: "The instance type of each node in cluster pool"
         required: true
@@ -63,11 +63,11 @@ on:
         - sa-east-1
         default: "us-west-2"
       email-address:
-        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
-        required: true
+        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt. (Only required when container-image-provider is set to [ harbor ])."
+        required: false
       domain:
-        description: "Domain under management by an existing Route53 Hosted Zone"
-        required: true
+        description: "Domain under management by an existing Route53 Hosted Zone. (Only required when container-image-provider is set to [ harbor ])."
+        required: false
       container-image-registry-provider:
         description: "A choice of provider for a container image registry"
         required: true
@@ -144,6 +144,7 @@ jobs:
       GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
       GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
   fetch-route53-hosted-zone-id:
+    if: github.event.inputs.container-image-registry-provider == 'harbor'
     uses: ./.github/workflows/aws-get-route53-hosted-zone-id-for-domain.yml
     with:
       domain: ${{ github.event.inputs.domain }}
