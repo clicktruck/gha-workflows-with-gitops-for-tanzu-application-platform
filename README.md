@@ -39,6 +39,7 @@
 * Useful for setup and delivery of workshops or PoCs in client environments by field engineering
   * Delivers a consistent experience for everyone involved
 
+[Overview video (3:30)](https://studio.d-id.com/share?id=c821bcec6f9838f289f0fb73fca6237e&utm_source=copy)
 
 ## Prerequisites
 
