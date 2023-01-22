@@ -267,7 +267,7 @@ jobs:
 
     - name: Copy provider variant into place
       run: |
-        cp ${{ inputs.action}}/providers.tf .
+        cp ${{ inputs.action }}/providers.tf .
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init

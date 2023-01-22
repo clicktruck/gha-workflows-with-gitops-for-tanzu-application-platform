@@ -19,9 +19,18 @@ on:
       AWS_SESSION_TOKEN:
         required: false
     outputs:
-      b64kubeconfig:
+      b64_kubeconfig:
         description: "Base64 encoded contents of .kube/config for named cluster"
-        value: ${{ jobs.aws-cli.outputs.b64kubeconfig }}
+        value: ${{ jobs.aws-cli.outputs.b64_kubeconfig }}
+      eks_cluster_id:
+        description: "EKS cluster identifier"
+        value: ${{ jobs.aws-cli.outputs.eks_cluster_id }}
+      eks_cluster_endpoint:
+        description: "EKS cluster endpoint"
+        value: ${{ jobs.aws-cli.outputs.eks_cluster_endpoint }}
+      oidc_provider:
+        description: "OIDC provider for EKS cluster"
+        value: ${{ jobs.aws-cli.outputs.oidc_provider }}
 
 jobs:
   aws-cli:
