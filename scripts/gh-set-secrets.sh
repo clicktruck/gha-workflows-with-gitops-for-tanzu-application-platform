@@ -2,6 +2,14 @@
 
 set -eo pipefail
 
+# This script conveniently sets Github Secrets required in order to utilize Github Action workflows in this repo against target clouds.
+
+# Warning - in order to use this script successfully on MacOS, you must install GNU coreutils!
+# @see
+# * https://github.com/gardener/gardener/issues/7019
+# * https://github.com/gardener/gardener/blob/release-v1.60/docs/development/local_setup.md#macos-only-install-gnu-core-utilities
+
+
 # Sets Github Secrets using environment variables
 
 set_azure_secrets() {

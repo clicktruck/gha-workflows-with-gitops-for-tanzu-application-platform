@@ -32,3 +32,22 @@ brew install oci-cli
 
 # Install VSCode
 brew install --cask visual-studio-code
+
+# Install GNU coreutils
+brew install coreutils gnu-sed gnu-tar grep
+
+## Add required exports to end of shell inits
+declare -a shell_inits=( "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.config/fish/config.fish" )
+mkdir -p $HOME/.config/fish
+for si in "${shell_inits[@]}"
+do
+if [ ! -f "$si" ];then
+  touch $si
+fi
+cat >> $si << EOF
+export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
+export PATH=/usr/local/opt/gnu-sed/libexec/gnubin:$PATH
+export PATH=/usr/local/opt/gnu-tar/libexec/gnubin:$PATH
+export PATH=/usr/local/opt/grep/libexec/gnubin:$PATH
+EOF
+done
