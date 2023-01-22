@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -x
+set -eo pipefail
+
 
 # Create IAM roles required for installing Tanzu Application Platform on AWS EKS integrating with ECR
 
@@ -13,11 +14,13 @@ if [ -z "$1" ] && [ -z "$2" ]; then
 	exit 1
 fi
 
+set -x
 export EKS_CLUSTER_NAME="$1"
 export AWS_REGION="$2"
 
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 export OIDCPROVIDER=$(aws eks describe-cluster --name $EKS_CLUSTER_NAME --region $AWS_REGION --output json | jq '.cluster.identity.oidc.issuer' | tr -d '"' | sed 's/https:\/\///')
+set +x
 
 cat << EOF > build-service-trust-policy-for-$EKS_CLUSTER_NAME.json
 {
