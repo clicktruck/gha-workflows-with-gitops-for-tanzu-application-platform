@@ -103,14 +103,16 @@ case $TARGET_CLOUD in
     ;;
 esac
 
-if [[ "--include-oidc-credentials" =~ "$OPTIONS" ]];then
-  set_oidc_credentials
-fi
+if [ ! -z "$OPTIONS" ];then
+  if [[ "--include-oidc-credentials" =~ "$OPTIONS" ]];then
+    set_oidc_credentials
+  fi
 
-if [[ "--include-tanzu-secrets" =~ "$OPTIONS" ]]; then
-  set_tanzu_secrets
-fi
+  if [[ "--include-tanzu-secrets" =~ "$OPTIONS" ]]; then
+    set_tanzu_secrets
+  fi
 
-if [[ "--include-git-ssh-private-key" =~ "$OPTIONS" ]]; then
-  set_git_ssh_private_key
+  if [[ "--include-git-ssh-private-key" =~ "$OPTIONS" ]]; then
+    set_git_ssh_private_key
+  fi
 fi
