@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# A script based upon: https://docs.vmware.com/en/Services-Toolkit-for-VMware-Tanzu-Application-Platform/0.7/svc-tlk/GUID-usecases-consuming_aws_rds_with_crossplane.html
+# A script based upon: https://docs.vmware.com/en/Services-Toolkit-for-VMware-Tanzu-Application-Platform/0.9/svc-tlk/usecases-consuming_aws_rds_with_crossplane.html
 
 # Requirements:
 
@@ -24,7 +24,7 @@ AWS_REGION="us-west-2"
 SERVICE_INSTANCE_NAMESPACE="service-instances"
 CROSSPLANE_NAMESPACE="crossplane-system"
 CROSSPLANE_PROVIDER_NAME="crossplane-provider-aws"
-CROSSPLANE_PROVIDER_VERSION=v0.31.0 # @see https://github.com/crossplane-contrib/provider-aws/releases for latest available version
+CROSSPLANE_PROVIDER_VERSION=v0.36.1 # @see https://github.com/crossplane-contrib/provider-aws/releases for latest available version
 CROSSPLANE_PROVIDER_SECRET_NAME="aws-provider-creds"
 WORKLOAD_NAMESPACE="workloads"
 

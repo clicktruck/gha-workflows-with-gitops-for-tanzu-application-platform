@@ -121,7 +121,7 @@ Provision the minimum set of cloud resources required for an installation
 
 Want some TAP do you? There are a few pathways to achieve dial-tone, some more expedient than others.
 
-* Consult the public Tanzu Application Platform [installation documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/GUID-install-intro.html)
+* Consult the public Tanzu Application Platform [installation documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/install-intro.html)
 * Initiate [install automation](docs/TAP.md) employing Github Action workflows targeting a cluster (or clusters)
 * Adopt a [Gitops approach](gitops/README.md)
 * Trigger a sample [set of dispatch workflows](docs/WORKFLOWS.md) from the command-line
@@ -141,8 +141,8 @@ Once you have successfully installed Tanzu Application Platform, you may wish to
 
 Also be sure to checkout these guides:
 
-* [Getting Started with the Tanzu Application Platform](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/GUID-getting-started.html)
-* [Getting started with multi-cluster Tanzu Application Platform](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/GUID-multicluster-getting-started.html)
+* [Getting Started with the Tanzu Application Platform](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/getting-started.html)
+* [Getting started with multi-cluster Tanzu Application Platform](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/multicluster-getting-started.html)
 
 Companion repositories:
 
