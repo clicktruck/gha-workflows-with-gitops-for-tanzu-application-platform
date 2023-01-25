@@ -18,7 +18,7 @@ output "acr_admin_username" {
 }
 
 output "acr_admin_password" {
-  description = "The base64-encoded password associated with the Container Registry admin account"
-  value       = base64encode(azurerm_container_registry.acr.admin_password)
+  description = "The password associated with the Container Registry admin account"
+  value       = azurerm_container_registry.acr.admin_password
   sensitive   = true
 }

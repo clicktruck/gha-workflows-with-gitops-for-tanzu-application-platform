@@ -8,8 +8,8 @@ output "ecr_admin_username" {
 }
 
 output "ecr_admin_password" {
-  description = "The base64-encoded password associated with the Container Registry admin account"
-  value       = base64encode(data.aws_ecr_authorization_token.token.password)
+  description = "The password associated with the Container Registry admin account"
+  value       = data.aws_ecr_authorization_token.token.password
   sensitive   = true
 }
 

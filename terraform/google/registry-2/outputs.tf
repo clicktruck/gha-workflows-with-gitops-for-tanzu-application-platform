@@ -9,7 +9,7 @@ output "gcr_repository_url" {
 }
 
 output "admin_username" {
-  value = "_json_key"
+  value = "_json_key_base64"
 }
 
 output "admin_password" {

@@ -7,7 +7,7 @@ output "harbor_admin_username" {
 }
 
 output "harbor_admin_password" {
-  description = "The base64-encoded password associated with the Container Registry admin account"
-  value       = base64encode(random_password.admin_password.result)
+  description = "The password associated with the Container Registry admin account"
+  value       = random_password.admin_password.result
   sensitive   = true
 }

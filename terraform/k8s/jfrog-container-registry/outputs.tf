@@ -7,8 +7,8 @@ output "jcr_admin_username" {
 }
 
 output "jcr_admin_password" {
-  description = "The base64-encoded password associated with the Container Registry admin account"
-  value       = base64encode("password")
+  description = "The password associated with the Container Registry admin account"
+  value       = "password"
   sensitive   = true
 }
 

@@ -5,8 +5,8 @@ output "admin_username" {
 }
 
 output "admin_password" {
-  description = "The base64-encoded password associated with the Container Registry admin account"
-  value       = base64encode(oci_identity_auth_token.auth_token.token)
+  description = "The password associated with the Container Registry admin account"
+  value       = oci_identity_auth_token.auth_token.token
   sensitive   = true
 }
 
