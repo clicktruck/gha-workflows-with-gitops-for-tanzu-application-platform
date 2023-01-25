@@ -128,7 +128,7 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-registry-creds.outputs.container-image-registry-url }}
       container-image-registry-username: ${{ needs.obtain-registry-creds.outputs.container-image-registry-username }}
       container-image-registry-password: ${{ needs.obtain-registry-creds.outputs.container-image-registry-password }}
-      ootb-supplychain-repo: ${{ needs.obtain-registry-creds.outputs.ootb-supply-chain-repo }}
+      ootb-supply-chain-repo: ${{ needs.obtain-registry-creds.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-registry-creds.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
@@ -161,7 +161,7 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-registry-creds.outputs.container-image-registry-url }}
       container-image-registry-username: ${{ needs.obtain-registry-creds.outputs.container-image-registry-username }}
       container-image-registry-password: ${{ needs.obtain-registry-creds.outputs.container-image-registry-password }}
-      ootb-supplychain-repo: ${{ needs.obtain-registry-creds.outputs.ootb-supply-chain-repo }}
+      ootb-supply-chain-repo: ${{ needs.obtain-registry-creds.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-registry-creds.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
@@ -194,7 +194,7 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-registry-creds.outputs.container-image-registry-url }}
       container-image-registry-username: ${{ needs.obtain-registry-creds.outputs.container-image-registry-username }}
       container-image-registry-password: ${{ needs.obtain-registry-creds.outputs.container-image-registry-password }}
-      ootb-supplychain-repo: ${{ needs.obtain-registry-creds.outputs.ootb-supply-chain-repo }}
+      ootb-supply-chain-repo: ${{ needs.obtain-registry-creds.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-registry-creds.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
@@ -241,7 +241,7 @@ jobs:
       container-image-registry-url: ${{ needs.obtain-registry-creds.outputs.container-image-registry-url }}
       container-image-registry-username: ${{ needs.obtain-registry-creds.outputs.container-image-registry-username }}
       container-image-registry-password: ${{ needs.obtain-registry-creds.outputs.container-image-registry-password }}
-      ootb-supplychain-repo: ${{ needs.obtain-registry-creds.outputs.ootb-supply-chain-repo }}
+      ootb-supply-chain-repo: ${{ needs.obtain-registry-creds.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.obtain-registry-creds.outputs.build-service-repo }}
       email-address: ${{ github.event.inputs.email-address }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}

@@ -34,12 +34,12 @@ on:
       build-service-repo-aws-iam-role-arn:
         description: "IAM role ARN for pull-push access to container image registry"
         type: string
-        required: true
+        required: false
         default: ""
       workload-repo-aws-iam-role-arn:
         description: "IAM role ARN for pull-push access to container image registry"
         type: string
-        required: true
+        required: false
         default: ""
       container-image-registry-username:
         description: "The container registry's admin account username"
