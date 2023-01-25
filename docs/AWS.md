@@ -103,7 +103,7 @@ A PAT is required so that workflows can add secrets to the repository in order t
 
 ### Configure Github Secrets
 
-Setup some Github secrets with the SP credentials.  Documentation can be found [here](https://docs.github.com/en/actions/security-guides/encrypted-secrets).  You might also consider using [gh secret set](https://cli.github.com/manual/gh_secret_set) command to set these individually.
+Setup some Github secrets with the SP credentials.  Documentation can be found [here](https://docs.github.com/en/actions/security-guides/encrypted-secrets).  You might also consider using [gh secret set](https://cli.github.com/manual/gh_secret_set) command to set these individually.  Or, after exporting all environment variables below, execute [gh-secrets-setup.sh](../scripts/gh-set-secrets.sh) at the command-line passing `aws` as an execution argument.
 
 ```bash
 # This is a personal access token that was created in an above step that allows for the workflows to write secrets
