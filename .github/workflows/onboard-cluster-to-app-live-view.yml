@@ -229,7 +229,7 @@ jobs:
 
     - name: Render observed tap-install-secrets
       id: rendered-cluster-config
-      if: steps.observed-clusters-config.outputs.hasResult == 'true'
+      if: inputs.cluster-provider != 'gke' && steps.observed-clusters-config.outputs.hasResult == 'true'
       uses: chuhlomin/render-template@v1.6
       env:
         OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
@@ -245,6 +245,35 @@ jobs:
           container_image_registry_url: ${{ inputs.container-image-registry-url }}
           container_image_registry_username: ${{ inputs.container-image-registry-username }}
           container_image_registry_password: ${{ inputs.container-image-registry-password }}
+          git_host: github.com
+          git_username: ${{ github.actor }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
+          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
+          oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
+          oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""
+        result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.yml
+
+    - name: Render observed tap-install-secrets on GKE
+      id: rendered-cluster-config
+      if: inputs.cluster-provider == 'gke' && steps.observed-clusters-config.outputs.hasResult == 'true'
+      uses: chuhlomin/render-template@v1.6
+      env:
+        OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+        OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+        OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/observed-tap-install-secrets.tpl
+        vars: |
+          app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
+          email_address: ${{ inputs.email-address }}
+          tanzu_network_username: ${{ secrets.TANZU_NETWORK_USERNAME }}
+          tanzu_network_password: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+          container_image_registry_url: ${{ inputs.container-image-registry-url }}
+          container_image_registry_username: ${{ inputs.container-image-registry-username }}
+          container_image_registry_password: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
           git_host: github.com
           git_username: ${{ github.actor }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
@@ -285,7 +314,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-config.yml
 
     - name: Render tap-install-secrets
-      if: steps.observed-clusters-config.outputs.hasResult == 'false'
+      if: inputs.cluster-provider != 'gke' && steps.observed-clusters-config.outputs.hasResult == 'false'
       uses: chuhlomin/render-template@v1.6
       env:
         OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
@@ -301,6 +330,34 @@ jobs:
           container_image_registry_url: ${{ inputs.container-image-registry-url }}
           container_image_registry_username: ${{ inputs.container-image-registry-username }}
           container_image_registry_password: ${{ inputs.container-image-registry-password }}
+          git_host: github.com
+          git_username: ${{ github.actor }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
+          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
+          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
+          oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
+          oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""
+        result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.yml
+
+    - name: Render tap-install-secrets on GKE
+      if: inputs.cluster-provider == 'gke' && steps.observed-clusters-config.outputs.hasResult == 'false'
+      uses: chuhlomin/render-template@v1.6
+      env:
+        OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
+        OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
+        OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.tpl
+        vars: |
+          app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
+          email_address: ${{ inputs.email-address }}
+          tanzu_network_username: ${{ secrets.TANZU_NETWORK_USERNAME }}
+          tanzu_network_password: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+          container_image_registry_url: ${{ inputs.container-image-registry-url }}
+          container_image_registry_username: ${{ inputs.container-image-registry-username }}
+          container_image_registry_password: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
           git_host: github.com
           git_username: ${{ github.actor }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
