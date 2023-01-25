@@ -17,7 +17,7 @@ on:
         description: "A Git repository and path to a Backstage catalog file"
         required: true
       container-image-registry-connection-details:
-        description: "An ordered, semi-colon separated, list of connection details for a container image registry. The registry will host the packages and images for the installation as well as application OCI artifacts. Sample: {url}; {username}; {password}; {build-service-repo}; {ootb-supply-chain-repo}; {build-service-repo-aws-iam-role-arn}; {workload-repo-aws-iam-role-arn}.  Single line base64-encoded passwords only!"
+        description: "An ordered, semi-colon separated, list of connection details for a container image registry. The registry will host the packages and images for the installation as well as application OCI artifacts. Sample: {url}; {username}; {password}; {build-service-repo}; {ootb-supply-chain-repo}; {build-service-repo-aws-iam-role-arn}; {workload-repo-aws-iam-role-arn}.  Single line passwords only!"
         required: true
       aws-region:
         description: "[Optional: AWS-only] existing region consumed by ClusterIssuer DNS solver configuration"
