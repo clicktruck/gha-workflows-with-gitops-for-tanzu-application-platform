@@ -83,8 +83,8 @@ jobs:
           echo "container-image-registry-password=$GAR_ADMIN_PASSWORD" >> $GITHUB_OUTPUT
           GAR_ENDPOINT=$(echo $KVMAP | yq -p=json -M '.google-artifact-registry-endpoint')
           echo "container-image-registry-url=$GAR_ENDPOINT" >> $GITHUB_OUTPUT
-          echo "build-service-repo=${{ github.event.inputs.google-project-id }}/build-service" >> $GITHUB_OUTPUT
-          echo "ootb-supply-chain-repo=${{ github.event.inputs.google-project-id }}/supply-chain" >> $GITHUB_OUTPUT
+          echo "build-service-repo=${{ github.event.inputs.google-project-id }}/tanzu/build-service" >> $GITHUB_OUTPUT
+          echo "ootb-supply-chain-repo=${{ github.event.inputs.google-project-id }}/tanzu/supply-chain" >> $GITHUB_OUTPUT
         fi
         if [ "google-container-registry" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]; then
           GCR_ADMIN_USERNAME=$(echo $KVMAP | yq -p=json -M '.google-container-registry-admin-username')

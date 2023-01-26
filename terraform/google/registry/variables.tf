@@ -5,7 +5,7 @@ variable "project" {
 variable "repository_names" {
   type        = list(string)
   description = "Specifies the names of repositories that will be created within Google Cloud Artifact Registry"
-  default     = ["build-service", "supply-chain"]
+  default     = ["tanzu"]
 }
 
 variable "location" {
