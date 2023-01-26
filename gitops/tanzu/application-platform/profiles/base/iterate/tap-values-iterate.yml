@@ -1,6 +1,5 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:yaml", "yaml")
-#@ load("@ytt:base64", "base64")
 ---
 #@ def config():
 profile: iterate
@@ -22,7 +21,7 @@ buildservice:
   kp_default_repository_aws_iam_role_arn: #@ data.values.tap.registry.repositories.aws.iam_role_arn
   #@ else:
   kp_default_repository_username: #@ data.values.tap.credentials.registry.username
-  kp_default_repository_password: #@ base64.decode(data.values.tap.credentials.registry.password).rstrip()
+  kp_default_repository_password: #@ data.values.tap.credentials.registry.password
   #@ end
   tanzunet_username: #@ data.values.tap.credentials.tanzuNet.username
   tanzunet_password: #@ data.values.tap.credentials.tanzuNet.password
