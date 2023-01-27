@@ -9,15 +9,15 @@ LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
 ENV HELM_VERSION=3.11.0 \
     IMGPKG_VERSION=0.34.1 \
-    KAPP_VERSION=0.54.0 \
-    KBLD_VERSION=0.36.1 \
+    KAPP_VERSION=0.54.2 \
+    KBLD_VERSION=0.36.3 \
     KCTRL_VERSION=0.44.1 \
     KUBECTL_VERSION=1.24.9 \
     MKPCLI_VERSION=0.15.0 \
     LEFTOVERS_VERSION=0.62.0 \
-    VENDIR_VERSION=0.32.2 \
+    VENDIR_VERSION=0.32.4 \
     YQ_VERSION=4.30.8 \
-    YTT_VERSION=0.44.1
+    YTT_VERSION=0.44.3
 
 RUN apk add --update --no-cache bash coreutils ca-certificates curl docker gcompat jq openrc python3 py3-pip wget \
     && rc-update add docker boot \
