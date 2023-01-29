@@ -141,6 +141,7 @@ For each non TKG cluster
 
 For each cluster that will host a TAP profile
 
+* [install-tanzu-data-services-repo-dispatch](../../../actions/workflows/install-tanzu-data-services-repo-dispatch.yml)
 * [install-tanzu-ingress-dispatch](../../../actions/workflows/install-tanzu-ingress-dispatch.yml)
 
 > If you used any of the provisioning automation (i.e., cloud -cluster or -e2e flows) the above requisite packages get installed.
@@ -149,7 +150,6 @@ For each cluster that will host a TAP profile
 
 For each cluster
 
-* [install-tanzu-data-services-repo-dispatch](../../../actions/workflows/install-tanzu-data-services-repo-dispatch.yml)
 * [install-tanzu-application-platform-dispatch](../../../actions/workflows/install-tanzu-application-platform-dispatch.yml)
 
 ### Uninstall
@@ -157,17 +157,17 @@ For each cluster
 For each cluster
 
 * [uninstall-tanzu-application-platform-dispatch](../../../actions/workflows/uninstall-tanzu-application-platform-dispatch.yml)
-* [uninstall-tanzu-data-services-repo-dispatch](../../../actions/workflows/uninstall-tanzu-data-services-repo-dispatch.yml)
 
 For each cluster hosting a TAP profile
 
 * [uninstall-tanzu-ingress-dispatch](../../../actions/workflows/uninstall-tanzu-ingress-dispatch.yml)
+* [uninstall-tanzu-data-services-repo-dispatch](../../../actions/workflows/uninstall-tanzu-data-services-repo-dispatch.yml)
 
 For each non TKG cluster
 
-* [uninstall-tanzu-data-services-repo-dispatch](../../../actions/workflows/uninstall-tanzu-data-services-repo-dispatch.yml)
 * [uninstall-tanzu-standard-repo-dispatch](../../../actions/workflows/uninstall-tanzu-standard-repo-dispatch.yml)
-* [uninstall-tanzu-cluster-essentials-dispatch](../../../actions/workflows/uninstall-tanzu-cluster-essentials-dispatch.yml)
+
+> If you used any of the provisioning automation (i.e., cloud -cluster or -e2e flows) the above requisite packages get uninstalled; however, Cluster Essentials for VMware Tanzu will remain installed.
 
 ### Multi-cluster
 

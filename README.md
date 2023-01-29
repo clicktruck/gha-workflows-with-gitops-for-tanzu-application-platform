@@ -121,10 +121,18 @@ Provision the minimum set of cloud resources required for an installation
 
 Want some TAP do you? There are a few pathways to achieve dial-tone, some more expedient than others.
 
-* Consult the public Tanzu Application Platform [installation documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/install-intro.html)
+### Preferred
+
 * Initiate [install automation](docs/TAP.md) employing Github Action workflows targeting a cluster (or clusters)
+  * Trigger a sample [set of dispatch workflows](docs/WORKFLOWS.md) from the command-line
+
+### Manual
+
+* Consult the public Tanzu Application Platform [installation documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/install-intro.html)
+
+### Alternative
+
 * Adopt a [Gitops approach](gitops/README.md)
-* Trigger a sample [set of dispatch workflows](docs/WORKFLOWS.md) from the command-line
 
 
 ## Usage
