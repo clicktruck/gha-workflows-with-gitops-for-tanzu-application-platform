@@ -27,6 +27,7 @@ CROSSPLANE_PROVIDER_NAME="crossplane-provider-gcp"
 CROSSPLANE_PROVIDER_VERSION=v0.21.0 # @see https://github.com/crossplane-contrib/provider-gcp/releases for latest available version
 CROSSPLANE_PROVIDER_SECRET_NAME="gcp-provider-creds"
 WORKLOAD_NAMESPACE="workloads"
+DEPLOY_WORKLOAD="false"
 
 set -x
 
@@ -89,6 +90,10 @@ spec:
       name: ${CROSSPLANE_PROVIDER_SECRET_NAME}
       key: creds
 EOF
+
+# Wait for the provider to become healthy
+kubectl -n ${CROSSPLANE_NAMESPACE} wait provider/${CROSSPLANE_PROVIDER_NAME} \
+  --for=condition=Healthy=True --timeout=3m
 
 # Define composite resource type w/ custom CompositeResourceDefinition (XRD)
 kubectl apply --wait=true -f -<<EOF
@@ -197,24 +202,6 @@ spec:
       type: FromCompositeFieldPath
 EOF
 
-# Create a ClusterInstanceClass
-kubectl apply --wait=true -f -<<EOF
----
-apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-kind: ClusterInstanceClass
-metadata:
-  name: cloudsql-postgres
-spec:
-  description:
-    short: GCP CloudSQL Postgresql database instances
-  pool:
-    kind: Secret
-    labelSelector:
-      matchLabels:
-        services.apps.tanzu.vmware.com/class: cloudsql-postgres
-    fieldSelector: type=connection.crossplane.io/v1alpha1
-EOF
-
 # Grant RBAC permissions to the Services Toolkit to enable reading the secrets specified by the class
 kubectl apply --wait=true -f -<<EOF
 ---
@@ -271,37 +258,58 @@ kubectl wait --for=condition=Ready=true postgresqlinstances.bindable.database.ex
 kubectl create clusterrole crossplane-cleaner --verb=delete --resource=secrets
 kubectl create clusterrolebinding crossplane-cleaner --clusterrole=crossplane-cleaner --serviceaccount=${CROSSPLANE_NAMESPACE}:crossplane
 
-# Show available classes of service instances
-tanzu service classes list
+if [ "$DEPLOY_WORKLOAD" == "true" ]; then
 
-# Show claimable instances  belonging to the CloudSQL PostgreSQL class
-tanzu services claimable list --class cloudsql-postgres
+# Create a ClusterInstanceClass
+kubectl apply --wait=true -f -<<EOF
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterInstanceClass
+metadata:
+  name: cloudsql-postgres
+spec:
+  description:
+    short: GCP CloudSQL Postgresql database instances
+  pool:
+    kind: Secret
+    labelSelector:
+      matchLabels:
+        services.apps.tanzu.vmware.com/class: cloudsql-postgres
+    fieldSelector: type=connection.crossplane.io/v1alpha1
+EOF
 
-# Create a claim
-tanzu service claim create cloudsql-claim \
-  --resource-name ${GCP_INSTANCE_NAME} \
-  --resource-kind Secret \
-  --resource-api-version v1
+  # Show available classes of service instances
+  tanzu service classes list
 
-# Obtain the claim reference
-tanzu service claim list -o wide
+  # Show claimable instances  belonging to the CloudSQL PostgreSQL class
+  tanzu services claimable list --class cloudsql-postgres
 
-# Create an application workload that consumes the claimed RDS PostgreSQL database. In this example, --service-ref is set to the claim reference obtained earlier.
-tanzu apps workload create ${APP_NAME} \
-  --namespace ${WORKLOAD_NAMESPACE}
-  --git-repo https://github.com/sample-accelerators/spring-petclinic \
-  --git-branch main \
-  --git-tag tap-1.2 \
-  --type web \
-  --label app.kubernetes.io/part-of=spring-petclinic \
-  --annotation autoscaling.knative.dev/minScale=1 \
-  --env SPRING_PROFILES_ACTIVE=postgres \
-  --service-ref db=services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:cloudsql-claim
+  # Create a claim
+  tanzu service claim create cloudsql-claim \
+    --resource-name ${GCP_INSTANCE_NAME} \
+    --resource-kind Secret \
+    --resource-api-version v1
 
-set +x
+  # Obtain the claim reference
+  tanzu service claim list -o wide
 
-# Follow the build
-echo "❯ To check in on status of the deployment, execute: \n\ttanzu apps workloads tail ${APP_NAME} -n ${WORKLOAD_NAMESPACE} --since 10m --timestamp"
+  # Create an application workload that consumes the claimed RDS PostgreSQL database. In this example, --service-ref is set to the claim reference obtained earlier.
+  tanzu apps workload create ${APP_NAME} \
+    --namespace ${WORKLOAD_NAMESPACE}
+    --git-repo https://github.com/sample-accelerators/spring-petclinic \
+    --git-branch main \
+    --git-tag tap-1.2 \
+    --type web \
+    --label app.kubernetes.io/part-of=spring-petclinic \
+    --annotation autoscaling.knative.dev/minScale=1 \
+    --env SPRING_PROFILES_ACTIVE=postgres \
+    --service-ref db=services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:cloudsql-claim
 
-# Learn how to engage with app once deployed
-echo "❯ To verify that the application has successfully deployed and is running, execute: \n\ttanzu apps workloads get ${APP_NAME} -n ${WORKLOAD_NAMESPACE}"
+  set +x
+
+  # Follow the build
+  echo "❯ To check in on status of the deployment, execute: \n\ttanzu apps workloads tail ${APP_NAME} -n ${WORKLOAD_NAMESPACE} --since 10m --timestamp"
+
+  # Learn how to engage with app once deployed
+  echo "❯ To verify that the application has successfully deployed and is running, execute: \n\ttanzu apps workloads get ${APP_NAME} -n ${WORKLOAD_NAMESPACE}"
+fi

@@ -20,6 +20,7 @@ OPERATOR_NAME="redis-enterprise-operator"
 SERVICE_INSTANCE_NAMESPACE="service-instances"
 WORKLOAD_NAMESPACE="workloads"
 REDIS_ENTERPRISE_OPERATOR_VERSION="6.2.10-45"
+DEPLOY_WORKLOAD="false"
 
 set -x
 
@@ -49,40 +50,43 @@ kubectl get secret ${INSTANCE_NAME}-redis-secret -n ${SERVICE_INSTANCE_NAMESPACE
 # Inspect the aforementioned secret
 kubectl describe secret ${INSTANCE_NAME}-redis-secret -n ${SERVICE_INSTANCE_NAMESPACE}
 
-# With the Redis instance running and the service binding compliant secret in place,
-# you can view your Redis instance(s) using the tanzu cli “service” plugin. The first step is
-# to create a “ClusterInstanceClass” (referred to from this point on as a “service class”)
-# which is used to identify and categorize service offerings on a TAP cluster. If you are
-# familiar with service “plans” in Cloud Foundry, a service class is a very similar concept.
-# Service class definitions are generally created by the service operator role and use
-# Kubernetes selectors to find all instances of a given service class on a cluster.
-# To create the Redis service class, run
-kubectl apply -f https://raw.githubusercontent.com/gm2552/redis-secret-template/main/templates/redisEnterpriseClusterOperator/redisInstanceClasses.yaml --wait=true
+if [ "$DEPLOY_WORKLOAD" == "true" ]; then
 
-# Validate that you can see your new Redis Enterprise Cluster service class
-tanzu service class list
+  # With the Redis instance running and the service binding compliant secret in place,
+  # you can view your Redis instance(s) using the tanzu cli “service” plugin. The first step is
+  # to create a “ClusterInstanceClass” (referred to from this point on as a “service class”)
+  # which is used to identify and categorize service offerings on a TAP cluster. If you are
+  # familiar with service “plans” in Cloud Foundry, a service class is a very similar concept.
+  # Service class definitions are generally created by the service operator role and use
+  # Kubernetes selectors to find all instances of a given service class on a cluster.
+  # To create the Redis service class, run
+  kubectl apply -f https://raw.githubusercontent.com/gm2552/redis-secret-template/main/templates/redisEnterpriseClusterOperator/redisInstanceClasses.yaml --wait=true
 
-# In order for an application on TAP to bind to an instance of a service residing in
-# a different namespace, you are required to create “resource claims” (it is recommended even
-# if both are in the same namespace). At this point, your Redis instance has not been claimed,
-# and you can view the list of all unclaimed service instances in your cluster. Viewing unclaimed
-# service instances requires that you specify a service class. To view all the unclaimed instances
-# of the Redis service class, run
-tanzu service claimable list --class redis-enterprise-cluster -n ${SERVICE_INSTANCE_NAMESPACE}
+  # Validate that you can see your new Redis Enterprise Cluster service class
+  tanzu service class list
 
-# Create a claim for your Redis instance and make it available for use by applications
-ytt -f https://raw.githubusercontent.com/gm2552/redis-secret-template/main/templates/redisResourceClaimTemplate.yaml -v service_namespace=${SERVICE_INSTANCE_NAMESPACE} -v instance_name=${INSTANCE_NAME} -v workload_namespace=${WORKLOAD_NAMESPACE} | kubectl apply --wait=true -f-
+  # In order for an application on TAP to bind to an instance of a service residing in
+  # a different namespace, you are required to create “resource claims” (it is recommended even
+  # if both are in the same namespace). At this point, your Redis instance has not been claimed,
+  # and you can view the list of all unclaimed service instances in your cluster. Viewing unclaimed
+  # service instances requires that you specify a service class. To view all the unclaimed instances
+  # of the Redis service class, run
+  tanzu service claimable list --class redis-enterprise-cluster -n ${SERVICE_INSTANCE_NAMESPACE}
 
-# Verify that your Redis instance has now been claimed
-tanzu service claims list -n ${WORKLOAD_NAMESPACE}
+  # Create a claim for your Redis instance and make it available for use by applications
+  ytt -f https://raw.githubusercontent.com/gm2552/redis-secret-template/main/templates/redisResourceClaimTemplate.yaml -v service_namespace=${SERVICE_INSTANCE_NAMESPACE} -v instance_name=${INSTANCE_NAME} -v workload_namespace=${WORKLOAD_NAMESPACE} | kubectl apply --wait=true -f-
 
-# Deploy sample application
-ytt -f https://raw.githubusercontent.com/gm2552/redis-secret-template/main/templates/workloadTemplate.yaml -v instance_name=${INSTANCE_NAME} -v workload_namespace=${WORKLOAD_NAMESPACE} | kubectl --wait=true apply -f-
+  # Verify that your Redis instance has now been claimed
+  tanzu service claims list -n ${WORKLOAD_NAMESPACE}
 
-set +x
+  # Deploy sample application
+  ytt -f https://raw.githubusercontent.com/gm2552/redis-secret-template/main/templates/workloadTemplate.yaml -v instance_name=${INSTANCE_NAME} -v workload_namespace=${WORKLOAD_NAMESPACE} | kubectl --wait=true apply -f-
 
-# Follow the build
-echo "❯ To check in on status of the deployment, execute: \n\ttanzu apps workloads tail ${APP_NAME} -n ${WORKLOAD_NAMESPACE} --since 10m --timestamp"
+  set +x
 
-# Learn how to engage with app once deployed
-echo "❯ To verify that the application has successfully deployed and is running, execute: \n\ttanzu apps workloads get ${APP_NAME} -n ${WORKLOAD_NAMESPACE}"
+  # Follow the build
+  echo "❯ To check in on status of the deployment, execute: \n\ttanzu apps workloads tail ${APP_NAME} -n ${WORKLOAD_NAMESPACE} --since 10m --timestamp"
+
+  # Learn how to engage with app once deployed
+  echo "❯ To verify that the application has successfully deployed and is running, execute: \n\ttanzu apps workloads get ${APP_NAME} -n ${WORKLOAD_NAMESPACE}"
+fi

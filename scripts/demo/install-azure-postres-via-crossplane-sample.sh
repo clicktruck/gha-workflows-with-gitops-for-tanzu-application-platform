@@ -28,6 +28,7 @@ CROSSPLANE_PROVIDER_NAME="provider-jet-azure"
 CROSSPLANE_PROVIDER_VERSION=v0.12.0 # @see https://github.com/crossplane-contrib/provider-jet-azure/releases for latest available version
 CROSSPLANE_PROVIDER_SECRET_NAME="jet-azure-creds"
 WORKLOAD_NAMESPACE="workloads"
+DEPLOY_WORKLOAD="false"
 
 set -x
 
@@ -267,25 +268,6 @@ spec:
       toFieldPath: spec.forProvider.manifest.metadata.name
 EOF
 
-
-# Create a ClusterInstanceClass
-kubectl apply --wait=true -f -<<EOF
----
-apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-kind: ClusterInstanceClass
-metadata:
-  name: azure-postgres
-spec:
-  description:
-    short: Azure Postgresql database instances
-  pool:
-    kind: Secret
-    labelSelector:
-      matchLabels:
-        services.apps.tanzu.vmware.com/class: azure-postgres
-    fieldSelector: type=connection.crossplane.io/v1alpha1
-EOF
-
 # Grant RBAC permissions to the Services Toolkit to enable reading the secrets specified by the class
 kubectl apply --wait=true -f -<<EOF
 ---
@@ -342,38 +324,58 @@ kubectl wait postgresqlinstances.bindable.database.example.org/${AZURE_INSTANCE_
 kubectl create clusterrole crossplane-cleaner --verb=delete --resource=secrets
 kubectl create clusterrolebinding crossplane-cleaner --clusterrole=crossplane-cleaner --serviceaccount=${CROSSPLANE_NAMESPACE}:crossplane
 
+if [ "$DEPLOY_WORKLOAD" == "true" ]; then
 
-# Show available classes of service instances
-tanzu service classes list
+# Create a ClusterInstanceClass
+kubectl apply --wait=true -f -<<EOF
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterInstanceClass
+metadata:
+  name: azure-postgres
+spec:
+  description:
+    short: Azure Postgresql database instances
+  pool:
+    kind: Secret
+    labelSelector:
+      matchLabels:
+        services.apps.tanzu.vmware.com/class: azure-postgres
+    fieldSelector: type=connection.crossplane.io/v1alpha1
+EOF
 
-# Show claimable instances  belonging to the Azure PostgreSQL class
-tanzu services claimable list --class azure-postgres
+  # Show available classes of service instances
+  tanzu service classes list
 
-# Create a claim
-tanzu service claim create azure-postgres-claim \
-  --resource-name ${AWS_RDS_INSTANCE_NAME} \
-  --resource-kind Secret \
-  --resource-api-version v1
+  # Show claimable instances  belonging to the Azure PostgreSQL class
+  tanzu services claimable list --class azure-postgres
 
-# Obtain the claim reference
-tanzu service claim list -o wide
+  # Create a claim
+  tanzu service claim create azure-postgres-claim \
+    --resource-name ${AWS_RDS_INSTANCE_NAME} \
+    --resource-kind Secret \
+    --resource-api-version v1
 
-# Create an application workload that consumes the claimed Azure PostgreSQL database. In this example, --service-ref is set to the claim reference obtained earlier.
-tanzu apps workload create ${APP_NAME} \
-  --namespace ${WORKLOAD_NAMESPACE}
-  --git-repo https://github.com/sample-accelerators/spring-petclinic \
-  --git-branch main \
-  --git-tag tap-1.2 \
-  --type web \
-  --label app.kubernetes.io/part-of=spring-petclinic \
-  --annotation autoscaling.knative.dev/minScale=1 \
-  --env SPRING_PROFILES_ACTIVE=postgres \
-  --service-ref db=services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:azure-postgres-claim
+  # Obtain the claim reference
+  tanzu service claim list -o wide
 
-set +x
+  # Create an application workload that consumes the claimed Azure PostgreSQL database. In this example, --service-ref is set to the claim reference obtained earlier.
+  tanzu apps workload create ${APP_NAME} \
+    --namespace ${WORKLOAD_NAMESPACE}
+    --git-repo https://github.com/sample-accelerators/spring-petclinic \
+    --git-branch main \
+    --git-tag tap-1.2 \
+    --type web \
+    --label app.kubernetes.io/part-of=spring-petclinic \
+    --annotation autoscaling.knative.dev/minScale=1 \
+    --env SPRING_PROFILES_ACTIVE=postgres \
+    --service-ref db=services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:azure-postgres-claim
 
-# Follow the build
-echo "❯ To check in on status of the deployment, execute: \n\ttanzu apps workloads tail ${APP_NAME} -n ${WORKLOAD_NAMESPACE} --since 10m --timestamp"
+  set +x
 
-# Learn how to engage with app once deployed
-echo "❯ To verify that the application has successfully deployed and is running, execute: \n\ttanzu apps workloads get ${APP_NAME} -n ${WORKLOAD_NAMESPACE}"
+  # Follow the build
+  echo "❯ To check in on status of the deployment, execute: \n\ttanzu apps workloads tail ${APP_NAME} -n ${WORKLOAD_NAMESPACE} --since 10m --timestamp"
+
+  # Learn how to engage with app once deployed
+  echo "❯ To verify that the application has successfully deployed and is running, execute: \n\ttanzu apps workloads get ${APP_NAME} -n ${WORKLOAD_NAMESPACE}"
+fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# A script based upon: https://docs.vmware.com/en/Services-Toolkit-for-VMware-Tanzu-Application-Platform/0.9/svc-tlk/usecases-consuming_aws_rds_with_crossplane.html
+# A script adapted from: https://docs.vmware.com/en/Services-Toolkit-for-VMware-Tanzu-Application-Platform/0.9/svc-tlk/usecases-consuming_aws_rds_with_crossplane.html
 
 # Requirements:
 
@@ -17,10 +17,10 @@ APP_NAME="spring-petclinic"
 AWS_PROFILE="${1:-default}"
 AWS_VPC_NAME="service-instances"
 SERVICE_INSTANCE_NAMESPACE=${AWS_VPC_NAME}
-AWS_RDS_INSTANCE_NAME="rds-postres-db-1"
+AWS_RDS_INSTANCE_NAME="rds-mysql-db-1"
 DB_NAME=$(echo ${AWS_RDS_INSTANCE_NAME} | tr "-" "")
 AWS_RDS_INSTANCE_TYPE="db.t2.micro"
-AWS_RDS_POSTGRES_VERSION="12"
+AWS_RDS_MYSQL_VERSION="8.0.31"
 AWS_REGION="us-west-2"
 SERVICE_INSTANCE_NAMESPACE="service-instances"
 CROSSPLANE_NAMESPACE="crossplane-system"
@@ -97,11 +97,11 @@ kubectl apply --wait=true -f -<<EOF
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: xpostgresqlinstances.bindable.database.example.org
+  name: xmysqlinstances.bindable.database.example.org
 spec:
   claimNames:
-    kind: PostgreSQLInstance
-    plural: postgresqlinstances
+    kind: MySQLInstance
+    plural: mysqlinstances
   connectionSecretKeys:
     - type
     - provider
@@ -112,8 +112,8 @@ spec:
     - password
   group: bindable.database.example.org
   names:
-    kind: XPostgreSQLInstance
-    plural: xpostgresqlinstances
+    kind: XMySQLInstance
+    plural: xmysqlinstances
   versions:
     - name: v1alpha1
       referenceable: true
@@ -146,11 +146,11 @@ metadata:
   labels:
     provider: "aws"
     vpc: "${AWS_VPC_NAME}"
-  name: xpostgresqlinstances.bindable.aws.database.example.org
+  name: xmysqlinstances.bindable.aws.database.example.org
 spec:
   compositeTypeRef:
     apiVersion: bindable.database.example.org/v1alpha1
-    kind: XPostgreSQLInstance
+    kind: XMySQLInstance
   publishConnectionDetailsWithStoreConfigRef:
     name: default
   resources:
@@ -254,15 +254,15 @@ spec:
         kind: SecurityGroup
         spec:
           forProvider:
-            description: Allow access to PostgreSQL
+            description: Allow access to MySQL
             groupName: crossplane-getting-started
             ingress:
-              - fromPort: 5432
+              - fromPort: 3306
                 ipProtocol: tcp
                 ipRanges:
                   - cidrIp: 0.0.0.0/0
                     description: Everywhere
-                toPort: 5432
+                toPort: 3306
             region: ${AWS_REGION}
             vpcIdSelector:
               matchControllerRef: true
@@ -272,9 +272,9 @@ spec:
         spec:
           forProvider:
             dbInstanceClass: ${AWS_RDS_INSTANCE_TYPE}
-            engine: postgres
+            engine: mysql
             dbName: ${DB_NAME}
-            engineVersion: "${AWS_RDS_POSTGRES_VERSION}"
+            engineVersion: "${AWS_RDS_MYSQL_VERSION}"
             masterUsername: masteruser
             publiclyAccessible: true
             region: ${AWS_REGION}
@@ -283,11 +283,11 @@ spec:
             namespace: ${CROSSPLANE_NAMESPACE}
       connectionDetails:
         - name: type
-          value: postgresql
+          value: mysql
         - name: provider
           value: aws
         - name: database
-          value: postgres
+          value: mysql
         - fromConnectionSecretKey: username
         - fromConnectionSecretKey: password
         - name: host
@@ -299,7 +299,7 @@ spec:
           toFieldPath: spec.writeConnectionSecretToRef.name
           transforms:
             - string:
-                fmt: '%s-postgresql'
+                fmt: '%s-mysql'
                 type: Format
               type: string
           type: FromCompositeFieldPath
@@ -328,11 +328,11 @@ rules:
   - watch
 EOF
 
-# Provision RDS PostgreSQL instance
+# Provision RDS MySQL instance
 kubectl apply --wait=true -f -<<EOF
 ---
 apiVersion: bindable.database.example.org/v1alpha1
-kind: PostgreSQLInstance
+kind: MySQLInstance
 metadata:
   name: ${AWS_RDS_INSTANCE_NAME}
   namespace: ${SERVICE_INSTANCE_NAMESPACE}
@@ -347,14 +347,14 @@ spec:
     name: ${AWS_RDS_INSTANCE_NAME}
     metadata:
       labels:
-        services.apps.tanzu.vmware.com/class: rds-postgres
+        services.apps.tanzu.vmware.com/class: rds-mysql
 EOF
 
 # Verify the RDS database instance was created
 aws rds describe-db-instances --region ${AWS_REGION} --profile ${AWS_PROFILE}
 
 # Wait for database to be ready for connections
-kubectl wait --for=condition=Ready=true postgresqlinstances.bindable.database.example.org ${AWS_RDS_INSTANCE_NAME} \
+kubectl wait --for=condition=Ready=true mysqlinstances.bindable.database.example.org ${AWS_RDS_INSTANCE_NAME} \
   --timeout=10m
 
 # Address a bug in Crossplane 1.7.2 onwards with the --enable-external-secret-stores feature gate enabled
@@ -372,23 +372,23 @@ kubectl apply --wait=true -f -<<EOF
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ClusterInstanceClass
 metadata:
-  name: rds-postgres
+  name: rds-mysql
 spec:
   description:
-    short: AWS RDS Postgresql database instances
+    short: AWS RDS MySQL database instances
   pool:
     kind: Secret
     labelSelector:
       matchLabels:
-        services.apps.tanzu.vmware.com/class: rds-postgres
+        services.apps.tanzu.vmware.com/class: rds-mysql
     fieldSelector: type=connection.crossplane.io/v1alpha1
 EOF
 
   # Show available classes of service instances
   tanzu service classes list
 
-  # Show claimable instances  belonging to the RDS PostgreSQL class
-  tanzu services claimable list --class rds-postgres
+  # Show claimable instances  belonging to the RDS MySQL class
+  tanzu services claimable list --class rds-mysql
 
   # Create a claim
   tanzu service claim create rds-claim \
@@ -399,7 +399,7 @@ EOF
   # Obtain the claim reference
   tanzu service claim list -o wide
 
-  # Create an application workload that consumes the claimed RDS PostgreSQL database. In this example, --service-ref is set to the claim reference obtained earlier.
+  # Create an application workload that consumes the claimed RDS MySQL database. In this example, --service-ref is set to the claim reference obtained earlier.
   tanzu apps workload create ${APP_NAME} \
     --namespace ${WORKLOAD_NAMESPACE}
     --git-repo https://github.com/sample-accelerators/spring-petclinic \
@@ -408,7 +408,7 @@ EOF
     --type web \
     --label app.kubernetes.io/part-of=spring-petclinic \
     --annotation autoscaling.knative.dev/minScale=1 \
-    --env SPRING_PROFILES_ACTIVE=postgres \
+    --env SPRING_PROFILES_ACTIVE=mysql \
     --service-ref db=services.apps.tanzu.vmware.com/v1alpha1:ResourceClaim:rds-claim
 
   set +x
