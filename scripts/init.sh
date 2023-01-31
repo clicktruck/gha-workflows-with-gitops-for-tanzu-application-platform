@@ -24,7 +24,7 @@ main() {
   KUBECTL_VERSION=1.24.9
   KNATIVE_VERSION=1.8.1
   LEFTOVERS_VERSION=0.62.0
-  OCI_CLI_VERSION=3.22.2
+  OCI_CLI_VERSION=3.22.4
   OM_VERSION=7.5.0
   MKPCLI_VERSION=0.15.1
   PIVNET_VERSION=3.0.1
@@ -33,7 +33,7 @@ main() {
   TERRAFORM_DOCS_VERSION=0.16.0
   TMC_VERSION=0.5.2-5b1552f5
   VELERO_VERSION=1.9.5
-  VENDIR_VERSION=0.32.4
+  VENDIR_VERSION=0.32.5
   YTT_VERSION=0.44.3
 
   # Place ourselves in a temporary directory; don't clutter user.home directory w/ downloaded artifacts
