@@ -29,6 +29,7 @@ Amend the values for
 ```
 export AWS_ACCESS_KEY_ID="xxx"
 export AWS_SECRET_ACCESS_KEY="xxx"
+export AWS_SESSION_TOKEN="xxx"
 export AWS_DEFAULT_REGION="xxx"
 ```
 > Replace occurrences of `xxx` above with appropriate values
@@ -54,8 +55,8 @@ You will need to set up authentication. There several ways to do this, but here'
   ```bash
   cat >> $HOME/.gitconfig << EOF
   [credential]
-      helper = !aws --profile cloudgate codecommit credential-helper $@
-      UseHttpPath = true
+    helper = !aws --profile cloudgate codecommit credential-helper $@
+    UseHttpPath = true
   EOF
   ```
 
@@ -76,10 +77,11 @@ You will need to set up authentication. There several ways to do this, but here'
   output=json
   EOF
   ```
+  > Be sure to replace the values of `aws_*` properties above with valid credentials
 
 ### Usage
 
-Just use the [git](https://git-scm.com/downloads) CLI and [clone](https://git-scm.com/docs/git-clone) the repository you just created with
+Use the [git](https://git-scm.com/downloads) CLI and [clone](https://git-scm.com/docs/git-clone) the repository you just created with
 
 ```bash
 git clone $(terraform output -raw code_commit_clone_url_http)
