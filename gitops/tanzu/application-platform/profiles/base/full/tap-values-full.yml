@@ -149,10 +149,10 @@ tap_gui:
           X-Custom-Source: project-star
     #@ if data.values.tap.credentials.oidc.provider == "github" and data.values.tap.credentials.oidc.client_id != "" and data.values.tap.credentials.oidc.client_secret != "":
     auth:
-      environment: tap
+      environment: development
       providers:
         github:
-          tap:
+          development:
             clientId: #@ data.values.tap.credentials.oidc.client_id
             clientSecret: #@ data.values.tap.credentials.oidc.client_secret
       loginPage:
