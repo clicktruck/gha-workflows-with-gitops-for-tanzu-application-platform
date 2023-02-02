@@ -288,7 +288,7 @@ jobs:
     needs: create-cluster
     uses: ./.github/workflows/aws-obtain-base64-encoded-kubeconfig-for-cluster.yml
     with:
-      cluster-name: ${{ inputs.cluster-name }}
+      cluster-name: ${{ needs.create-cluster.outputs.eks_cluster_id }}
       region: ${{ inputs.region }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
