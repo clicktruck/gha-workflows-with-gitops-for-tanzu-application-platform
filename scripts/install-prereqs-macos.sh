@@ -45,9 +45,6 @@ if [ ! -f "$si" ];then
   touch $si
 fi
 cat >> $si << EOF
-export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
-export PATH=/usr/local/opt/gnu-sed/libexec/gnubin:$PATH
-export PATH=/usr/local/opt/gnu-tar/libexec/gnubin:$PATH
-export PATH=/usr/local/opt/grep/libexec/gnubin:$PATH
+export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/gnu-tar/libexec/gnubin:/opt/homebrew/opt/grep/libexec/gnubin:$PATH"
 EOF
 done
