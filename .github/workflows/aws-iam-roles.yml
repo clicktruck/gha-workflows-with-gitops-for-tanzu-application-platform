@@ -39,7 +39,7 @@ jobs:
     - name: Encode
       id: encode
       run: |
-        result="$(cat "scripts/aws/create-tap-iam-roles.sh" | base64 -w 0)"
+        result="$(cat scripts/aws/create-tap-iam-roles.sh | base64 -w 0)"
         echo "result=${result}" >> $GITHUB_OUTPUT
 
   encode-delete-tap-iam-roles-script:
@@ -55,7 +55,7 @@ jobs:
     - name: Encode
       id: encode
       run: |
-        result="$(cat "scripts/aws/delete-tap-iam-roles.sh" | base64 -w 0)"
+        result="$(cat scripts/aws/delete-tap-iam-roles.sh | base64 -w 0)"
         echo "result=${result}" >> $GITHUB_OUTPUT
 
   create-roles:
