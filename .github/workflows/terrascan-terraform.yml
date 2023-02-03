@@ -1,0 +1,35 @@
+name: 'Use tenable/terrascan to scan for vulnerabilities in terraform modules'
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  terrascan_job:
+    runs-on: ubuntu-latest
+    name: terrascan-action
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Run Terrascan on Terraform
+      id: terrascan-terraform
+      uses: tenable/terrascan-action@main
+      with:
+        iac_type: 'terraform'
+        iac_version: 'v14'
+        only_warn: true
+        scm_token: ${{ secrets.PA_TOKEN }}
+        verbose: true
+        sarif_upload: true
+        find_vulnerabilities: true
+
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: terrascan.sarif

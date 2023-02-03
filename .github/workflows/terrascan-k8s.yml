@@ -1,0 +1,29 @@
+name: 'Use tenable/terrascan to scan for vulnerabilities in K8s manifests'
+
+on: workflow_dispatch
+
+jobs:
+  terrascan_job:
+    runs-on: ubuntu-latest
+    name: terrascan-action
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Run Terrascan on K8s manifests
+      id: terrascan-k8s
+      uses: tenable/terrascan-action@main
+      with:
+        iac_type: 'k8s'
+        iac_version: 'v1'
+        only_warn: true
+        scm_token: ${{ secrets.PA_TOKEN }}
+        verbose: true
+        sarif_upload: true
+        find_vulnerabilities: true
+
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: terrascan.sarif
