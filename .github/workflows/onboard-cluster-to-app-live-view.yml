@@ -228,7 +228,6 @@ jobs:
         cat oc1.tpl oc2.tpl oc3.tpl > observed-tap-install-secrets.tpl
 
     - name: Render observed tap-install-secrets
-      id: rendered-cluster-config
       if: inputs.cluster-provider != 'gke' && steps.observed-clusters-config.outputs.hasResult == 'true'
       uses: chuhlomin/render-template@v1.6
       env:
@@ -257,7 +256,6 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.yml
 
     - name: Render observed tap-install-secrets on GKE
-      id: rendered-cluster-config
       if: inputs.cluster-provider == 'gke' && steps.observed-clusters-config.outputs.hasResult == 'true'
       uses: chuhlomin/render-template@v1.6
       env:
