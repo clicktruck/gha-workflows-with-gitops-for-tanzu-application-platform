@@ -42,7 +42,7 @@ on:
 
 jobs:
   manage-iam-roles:
-    uses: ./.github/workflows/aws-ima-roles.yml
+    uses: ./.github/workflows/aws-iam-roles.yml
     with:
       cluster-name: ${{ github.event.inputs.cluster-name }}
       region: ${{ github.event.inputs.region }}
