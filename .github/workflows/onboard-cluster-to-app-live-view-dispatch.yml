@@ -120,10 +120,10 @@ jobs:
       container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
       container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
       container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
-      ootb-supply-chain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb_supplychain_repo }}
-      build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build_service_repo }}
-      build-service-repo-aws-iam-role-arn: ${{ needs.container-image-registry-connection-details.outputs.build_service_repo_aws_iam_role_arn }}
-      workload-repo-aws-iam-role-arn: ${{ needs.container-image-registry-connection-details.outputs.workload_repo_aws_iam_role_arn }}
+      ootb-supply-chain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build-service-repo }}
+      build-service-repo-aws-iam-role-arn: ${{ needs.container-image-registry-connection-details.outputs.build-service-repo-aws-iam-role-arn }}
+      workload-repo-aws-iam-role-arn: ${{ needs.container-image-registry-connection-details.outputs.workload-repo-aws-iam-role-arn }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
       active-profile: "view"
@@ -157,8 +157,8 @@ jobs:
       container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
       container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
       container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
-      ootb-supply-chain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb_supplychain_repo }}
-      build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build_service_repo }}
+      ootb-supply-chain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build-service-repo }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
       active-profile: "view"
@@ -193,8 +193,8 @@ jobs:
       container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
       container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
       container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
-      ootb-supply-chain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb_supplychain_repo }}
-      build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build_service_repo }}
+      ootb-supply-chain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb-supply-chain-repo }}
+      build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build-service-repo }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
       deployment-name: "tap"
       active-profile: "view"
