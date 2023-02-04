@@ -30,8 +30,8 @@ chmod 600 /tmp/.kube/tap-*-config
 
 export KUBECONFIG=/tmp/.kube/tap-view-config
 
-$ CA_CERT=$(kubectl get secret -n metadata-store ingress-cert -o json | jq -r ".data.\"ca.crt\"")
-$ cat <<EOF > store_ca.yaml
+CA_CERT=$(kubectl get secret -n metadata-store ingress-cert -o json | jq -r ".data.\"ca.crt\"")
+cat <<EOF > store_ca.yaml
 ---
 apiVersion: v1
 kind: Secret
