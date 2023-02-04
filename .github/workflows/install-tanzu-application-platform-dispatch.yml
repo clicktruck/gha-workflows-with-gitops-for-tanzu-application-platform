@@ -94,7 +94,7 @@ jobs:
           msg: '${{ github.event.inputs.container-image-registry-connection-details }}'
           separator: ';'
 
-      - name: Set URL, username, password and prefix
+      - name: Unpack container image registry credentials and IAM roles
         id: vars
         run: |
           array_length=${{ steps.split.outputs.length }}
@@ -103,10 +103,10 @@ jobs:
           echo "container_image_registry_password=${{ steps.split.outputs._2 }}" >> $GITHUB_OUTPUT
           echo "ootb_supplychain_repo=${{ steps.split.outputs._3 }}" >> $GITHUB_OUTPUT
           echo "build_service_repo=${{ steps.split.outputs._4 }}" >> $GITHUB_OUTPUT
-          if [[ "$array_length" == "6" && ("eks" == "${{ github.event.inputs.cluster-provider }}" ] || [ "tkg»aws" == "${{ github.event.inputs.cluster-provider }}") ]]; then
+          if [[ "$array_length" == "6" && ("eks" == "${{ github.event.inputs.cluster-provider }}" || "tkg»aws" == "${{ github.event.inputs.cluster-provider }}") ]]; then
             echo "build_service_repo_aws_iam_role_arn=${{ steps.split.outputs._5 }}" >> $GITHUB_OUTPUT
           fi
-          if [[ "$array_length" == "7" && ("eks" == "${{ github.event.inputs.cluster-provider }}" ] || [ "tkg»aws" == "${{ github.event.inputs.cluster-provider }}") ]]; then
+          if [[ "$array_length" == "7" && ("eks" == "${{ github.event.inputs.cluster-provider }}" || "tkg»aws" == "${{ github.event.inputs.cluster-provider }}") ]]; then
             echo "workload_repo_aws_iam_role_arn=${{ steps.split.outputs._6 }}" >> $GITHUB_OUTPUT
           fi
 
