@@ -301,7 +301,7 @@ jobs:
           domain: ${{ inputs.domain }}
           dev_namespace: ${{ inputs.dev-namespace }}
           backstage_catalog: ${{ inputs.backstage-catalog }}
-          ootb_supplychain_repo: ${{ inputs.ootb-supply-chain-repo }}
+          ootb_supply_chain_repo: ${{ inputs.ootb-supply-chain-repo }}
           build_service_repo: ${{ inputs.build-service-repo }}
           build_service_repo_aws_iam_role_arn: ${{ inputs.build-service-repo-aws-iam-role-arn }}
           workload_repo_aws_iam_role_arn: ${{ inputs.workload-repo-aws-iam-role-arn }}
