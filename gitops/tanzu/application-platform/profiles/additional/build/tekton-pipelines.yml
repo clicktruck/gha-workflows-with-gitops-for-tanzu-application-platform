@@ -262,7 +262,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: python-3.10-tekton-pipeline-python
-  namespace: #@ data.values.name
+  namespace: #@ data.values.tap.devNamespace
   labels:
     apps.tanzu.vmware.com/pipeline: test
     apps.tanzu.vmware.com/language: python
