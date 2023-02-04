@@ -9,9 +9,9 @@ LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
 ENV HELM_VERSION=3.11.0 \
     IMGPKG_VERSION=0.34.1 \
-    KAPP_VERSION=0.54.2 \
-    KBLD_VERSION=0.36.3 \
-    KCTRL_VERSION=0.44.3 \
+    KAPP_VERSION=0.54.3 \
+    KBLD_VERSION=0.36.4 \
+    KCTRL_VERSION=0.44.6 \
     KUBECTL_VERSION=1.24.9 \
     MKPCLI_VERSION=0.15.0 \
     VENDIR_VERSION=0.32.5 \
