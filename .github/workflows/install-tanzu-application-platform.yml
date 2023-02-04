@@ -203,7 +203,7 @@ jobs:
     - name: Encode
       id: encode
       run: |
-        result="$(cat "scripts/install-package.sh" | base64 -w 0)"
+        result="$(cat scripts/install-package.sh | base64 -w 0)"
         echo "result=${result}" >> $GITHUB_OUTPUT
 
   encode-observe-clusters-script:
@@ -219,7 +219,7 @@ jobs:
     - name: Encode
       id: encode
       run: |
-        result="$(cat "scripts/observe-clusters.sh" | base64 -w 0)"
+        result="$(cat scripts/observe-clusters.sh | base64 -w 0)"
         echo "result=${result}" >> $GITHUB_OUTPUT
 
   install:

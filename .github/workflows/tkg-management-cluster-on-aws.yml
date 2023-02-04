@@ -65,7 +65,7 @@ jobs:
     - name: Encode
       id: encode
       run: |
-          result="$(cat "scripts/teardown-tkg-management-cluster" | base64 -w 0)"
+          result="$(cat scripts/teardown-tkg-management-cluster | base64 -w 0)"
           echo "result=${result}" >> $GITHUB_OUTPUT
 
   deploy:

@@ -70,7 +70,7 @@ jobs:
     - name: Encode
       id: encode
       run: |
-          result="$(cat "scripts/deploy-tkg-workload-cluster.sh" | base64 -w 0)"
+          result="$(cat scripts/deploy-tkg-workload-cluster.sh | base64 -w 0)"
           echo "result=${result}" >> $GITHUB_OUTPUT
 
   encode-tkg-workload-teardown-script:
@@ -87,7 +87,7 @@ jobs:
     - name: Encode
       id: encode
       run: |
-          result="$(cat "scripts/teardown-tkg-workload-cluster.sh" | base64 -w 0)"
+          result="$(cat scripts/teardown-tkg-workload-cluster.sh | base64 -w 0)"
           echo "result=${result}" >> $GITHUB_OUTPUT
 
   deploy:
