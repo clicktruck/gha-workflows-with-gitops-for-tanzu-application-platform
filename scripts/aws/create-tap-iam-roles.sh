@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
-
-
 # Create IAM roles required for installing Tanzu Application Platform on AWS EKS integrating with ECR
 
 # This script is based off policy documents described in https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/aws-resources.html#create-iam-roles-5.
@@ -17,6 +14,7 @@ fi
 set -x
 export EKS_CLUSTER_NAME="$1"
 export AWS_REGION="$2"
+export AWS_PAGER=""
 
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 export OIDCPROVIDER=$(aws eks describe-cluster --name $EKS_CLUSTER_NAME --region $AWS_REGION --output json | jq '.cluster.identity.oidc.issuer' | tr -d '"' | sed 's/https:\/\///')
@@ -205,7 +203,7 @@ cat << EOF > workload-trust-policy-for-$EKS_CLUSTER_NAME.json
 EOF
 
 # Check to see if tap-build-service role for cluster already exists
-aws iam get-role --role-name tap-build-service-for-$EKS_CLUSTER_NAME
+aws iam get-role --role-name tap-build-service-for-$EKS_CLUSTER_NAME 2> /dev/null
 if [ $? -eq 0 ]; then
   echo "IAM role named [ tap-build-service-for-$EKS_CLUSTER_NAME ] already exists!"
 else
@@ -217,7 +215,7 @@ else
 fi
 
 # Check to see if tap-workload role for cluster already exists
-aws iam get-role --role-name tap-workload-for-$EKS_CLUSTER_NAME
+aws iam get-role --role-name tap-workload-for-$EKS_CLUSTER_NAME 2> /dev/null
 if [ $? -eq 0 ]; then
   echo "IAM role named [ tap-workload-for-$EKS_CLUSTER_NAME ] already exists!"
 else
