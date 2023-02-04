@@ -298,6 +298,7 @@ jobs:
         template: ${{ env.GITOPS_DIR }}/.init/tap-install-config.tpl
         vars: |
           app_name: ${{ inputs.deployment-name }}-${{ inputs.active-profile }}
+          cluster_provider: ${{ inputs.cluster-provider }}
           domain: ${{ inputs.domain }}
           dev_namespace: ${{ inputs.dev-namespace }}
           backstage_catalog: ${{ inputs.backstage-catalog }}
