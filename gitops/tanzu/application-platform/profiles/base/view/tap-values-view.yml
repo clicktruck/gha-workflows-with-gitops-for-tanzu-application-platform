@@ -166,9 +166,17 @@ scanning:
     url: ""
 
 contour:
+  #@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws"):
+  infrastructure_provider: aws
+  #@ end
   envoy:
     service:
+      #@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws"):
+      aws:
+        LBType: nlb
+      #@ else:
       type: LoadBalancer
+      #@ end
 
 image_policy_webhook:
   allow_unmatched_images: true

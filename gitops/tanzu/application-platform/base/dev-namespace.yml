@@ -7,6 +7,7 @@ metadata:
   name: #@ data.values.tap.devNamespace
 #@ end
 ---
+#@ if ((data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1) == False:
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretImport
 metadata:
@@ -14,6 +15,7 @@ metadata:
   namespace: #@ data.values.tap.devNamespace
 spec:
   fromNamespace: #@ data.values.tap.namespace
+#@ end
 ---
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretImport
@@ -49,11 +51,15 @@ metadata:
     eks.amazonaws.com/role-arn: #@ data.values.tap.supply_chain.aws.iam_role_arn
   #@ end
 secrets:
+#@ if ((data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1) == False:
   - name: container-registry-credentials
+#@ end
   - name: git-ssh
   - name: git-http
 imagePullSecrets:
+#@ if ((data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1) == False:
   - name: container-registry-credentials
+#@ end
   - name: tanzu-network-credentials
 ---
 apiVersion: rbac.authorization.k8s.io/v1

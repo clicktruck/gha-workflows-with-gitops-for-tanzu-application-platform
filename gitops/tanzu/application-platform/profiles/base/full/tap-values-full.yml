@@ -171,19 +171,21 @@ metadata_store:
 
 grype:
   namespace: #@ data.values.tap.devNamespace
+  #@ if ((data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1) == False:
   targetImagePullSecret: "container-registry-credentials"
+  #@ end
   targetSourceSshSecret: #@ data.values.tap.supply_chain.gitops.ssh_secret
 
 image_policy_webhook:
   allow_unmatched_tags: true
 
 contour:
-  #@ if data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws"
+  #@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws"):
   infrastructure_provider: aws
   #@ end
   envoy:
     service:
-      #@ if data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws"
+      #@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws"):
       aws:
         LBType: nlb
       #@ else:
