@@ -94,7 +94,7 @@ jobs:
     if: github.event.inputs.container-image-registry-provider == 'ecr'
     uses: ./.github/workflows/aws-container-registry.yml
     with:
-      repository-names: "[ tap-images, tap-build-service, tanzu-application-platform ]"
+      repository-names: '["tap-images","tap-build-service","tanzu-application-platform"]'
       region: ${{ github.event.inputs.region }}
       action: create
     secrets:

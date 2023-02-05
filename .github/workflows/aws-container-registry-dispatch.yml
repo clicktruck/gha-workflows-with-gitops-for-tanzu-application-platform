@@ -6,7 +6,7 @@ on:
       repository-names:
         description:  "Comma-separated list of names of ECR registry repositories; these can only be alphanumeric"
         required: true
-        default: "[ tap-images, tap-build-service, tanzu-application-platform ]"
+        default: '["tap-images","tap-build-service","tanzu-application-platform"]'
       region:
         description: "The AWS region where the Elastic Container Registry will be available"
         required: true
