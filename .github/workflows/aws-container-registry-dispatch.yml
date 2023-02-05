@@ -3,7 +3,7 @@ name: "aws-08-dispatch-elastic-container-registry"
 on:
   workflow_dispatch:
     inputs:
-      registryName:
+      repository-names:
         description:  "Comma-separated list of names of ECR registry repositories; these can only be alphanumeric"
         required: true
         default: "[ tap-images, tap-build-service, tanzu-application-platform ]"
@@ -43,7 +43,7 @@ jobs:
   manage-ecr:
     uses: ./.github/workflows/aws-container-registry.yml
     with:
-      registryNames: ${{ github.event.inputs.registryNames }}
+      repository-names: ${{ github.event.inputs.repository-names }}
       region: ${{ github.event.inputs.region }}
       action: ${{ github.event.inputs.action }}
     secrets:
