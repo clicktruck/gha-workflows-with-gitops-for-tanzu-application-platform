@@ -35,5 +35,5 @@ spec:
             #! ECR hostnames look like {aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com
             region: #@ (data.values.tap.credentials.registry.host).split(".")[3]
             repoPrefix: #@ "{}/tanzu-application-platform/workloads".format(data.values.tap.credentials.registry.host)
-            providerName: aws-provider
+            providerName: default
 #@ end
