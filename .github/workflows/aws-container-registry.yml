@@ -3,8 +3,8 @@ name: "aws-08-administer-elastic-container-registry"
 on:
   workflow_call:
     inputs:
-      registryName:
-        description: "The name of the ECR registry, this can only be alphanumeric"
+      registryNames:
+        description: "Comma-separated list of names of ECR registry repositories; these can only be alphanumeric"
         required: true
         type: string
       region:
@@ -44,7 +44,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ${{ inputs.region }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_VAR_registry_name: "${{ inputs.registryName }}"
+      TF_VAR_registry_names: "[ ${{ inputs.registryNames }} ]"
     runs-on: ubuntu-22.04
 
     outputs:

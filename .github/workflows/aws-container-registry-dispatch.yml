@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       registryName:
-        description: "The name of the ECR registry, this can only be alphanumeric"
+        description:  "Comma-separated list of names of ECR registry repositories; these can only be alphanumeric"
         required: true
-        default: "tanzu"
+        default: "[ tap-images, tap-build-service, tanzu-application-platform ]"
       region:
         description: "The AWS region where the Elastic Container Registry will be available"
         required: true
@@ -43,7 +43,7 @@ jobs:
   manage-ecr:
     uses: ./.github/workflows/aws-container-registry.yml
     with:
-      registryName: ${{ github.event.inputs.registryName }}
+      registryNames: ${{ github.event.inputs.registryNames }}
       region: ${{ github.event.inputs.region }}
       action: ${{ github.event.inputs.action }}
     secrets:

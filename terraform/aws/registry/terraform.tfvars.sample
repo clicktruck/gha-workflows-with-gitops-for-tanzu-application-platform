@@ -1,1 +1,1 @@
-registry_name = "tapcr"
+registry_names = ["tap-images", "tap-build-service", "tanzu-application-platform"]
