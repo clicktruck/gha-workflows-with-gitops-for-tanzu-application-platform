@@ -34,6 +34,6 @@ spec:
             #! The split function is used to acquire the AWS region from the ECR hostname
             #! ECR hostnames look like {aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com
             region: #@ (data.values.tap.credentials.registry.host).split(".")[3]
-            repoPrefix: #@ "{}/tanzu-application-platform/workloads".format(data.values.tap.credentials.registry.host)
+            repoPrefix: #@ "{}/tanzu-application-platform".format(data.values.tap.credentials.registry.host)
             providerName: aws-provider
 #@ end
