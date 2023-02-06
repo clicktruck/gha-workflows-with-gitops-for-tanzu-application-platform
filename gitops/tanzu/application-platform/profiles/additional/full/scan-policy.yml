@@ -15,14 +15,39 @@ spec:
     notAllowedSeverities := ["Critical", "UnknownSeverity"]
 
     # List of known vulnerabilities to ignore when deciding whether to fail compliance. Example:
-    # ignoreCves := [
-    #   {
-    #     "id": "CVE-2018-14643",
-    #     "detail": "Determined affected code is not in the execution path.",
-    #     "expiration": "2022-Dec-31"
-    #   }
-    # ]
-    ignoreCves := []
+    # These are the exceptions for Critical CVEs made for TAP 1.4.0
+    ignoreCves := [
+      {
+        "id": "CVE-2017-18342",
+        "detail": "Determined affected code is not in the execution path.",
+        "expiration": "2023-Apr-01"
+      },
+      {
+        "id": "GHSA-6757-jp84-gxfx",
+        "detail": "Determined affected code is not in the execution path.",
+        "expiration": "2023-Apr-01"
+      },
+      {
+        "id": "GHSA-rprw-h62v-c2w7",
+        "detail": "Determined affected code is not in the execution path.",
+        "expiration": "2023-Apr-01"
+      },
+      {
+        "id": "CVE-2018-16395",
+        "detail": "Determined affected code is not in the execution path.",
+        "expiration": "2023-Apr-01"
+      },
+      {
+        "id": "CVE-2022-37434",
+        "detail": "Determined affected code is not in the execution path.",
+        "expiration": "2023-Apr-01"
+      },
+      {
+        "id": "GHSA-8q59-q68h-6hv4",
+        "detail": "Determined affected code is not in the execution path.",
+        "expiration": "2023-Apr-01"
+      }
+    ]
 
     containsSeverity(array, elem) = true {
       array[_] = elem
