@@ -29,11 +29,14 @@ CROSSPLANE_PROVIDER_VERSION=v0.12.0 # @see https://github.com/crossplane-contrib
 CROSSPLANE_PROVIDER_SECRET_NAME="jet-azure-creds"
 WORKLOAD_NAMESPACE="workloads"
 DEPLOY_WORKLOAD="false"
+INSTALL_CROSSPLANE="false"
 
 set -x
 
 # Create namespace to host all service instances
 kubectl create ns ${SERVICE_INSTANCE_NAMESPACE}
+
+if [ "true" == "$INSTALL_CROSSPLANE" ]; then
 
 # Create namespace to host Crossplane
 kubectl create ns ${CROSSPLANE_NAMESPACE}
@@ -119,6 +122,8 @@ spec:
   credentials:
     source: InjectedIdentity
 EOF
+
+fi
 
 
 # Define composite resource type w/ custom CompositeResourceDefinition (XRD)

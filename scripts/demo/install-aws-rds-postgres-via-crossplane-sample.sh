@@ -29,11 +29,14 @@ CROSSPLANE_PROVIDER_VERSION=v0.36.1 # @see https://github.com/crossplane-contrib
 CROSSPLANE_PROVIDER_SECRET_NAME="aws-provider-creds"
 WORKLOAD_NAMESPACE="workloads"
 DEPLOY_WORKLOAD="false"
+INSTALL_CROSSPLANE="false"
 
 set -x
 
 # Create namespace to host all service instances
 kubectl create ns ${SERVICE_INSTANCE_NAMESPACE}
+
+if [ "true" == "$INSTALL_CROSSPLANE" ]; then
 
 # Create namespace to host Crossplane
 kubectl create ns ${CROSSPLANE_NAMESPACE}
@@ -90,6 +93,9 @@ spec:
       name: ${CROSSPLANE_PROVIDER_SECRET_NAME}
       key: creds
 EOF
+
+fi
+
 
 # Define composite resource type w/ custom CompositeResourceDefinition (XRD)
 kubectl apply --wait=true -f -<<EOF

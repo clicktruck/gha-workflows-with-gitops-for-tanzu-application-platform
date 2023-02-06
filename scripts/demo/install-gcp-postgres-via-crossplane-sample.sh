@@ -28,11 +28,14 @@ CROSSPLANE_PROVIDER_VERSION=v0.21.0 # @see https://github.com/crossplane-contrib
 CROSSPLANE_PROVIDER_SECRET_NAME="gcp-provider-creds"
 WORKLOAD_NAMESPACE="workloads"
 DEPLOY_WORKLOAD="false"
+INSTALL_CROSSPLANE="false"
 
 set -x
 
 # Create namespace to host all service instances
 kubectl create ns ${SERVICE_INSTANCE_NAMESPACE}
+
+if [ "true" == "$INSTALL_CROSSPLANE" ]; then
 
 # Create namespace to host Crossplane
 kubectl create ns ${CROSSPLANE_NAMESPACE}
@@ -94,6 +97,9 @@ EOF
 # Wait for the provider to become healthy
 kubectl -n ${CROSSPLANE_NAMESPACE} wait provider/${CROSSPLANE_PROVIDER_NAME} \
   --for=condition=Healthy=True --timeout=3m
+
+fi
+
 
 # Define composite resource type w/ custom CompositeResourceDefinition (XRD)
 kubectl apply --wait=true -f -<<EOF
