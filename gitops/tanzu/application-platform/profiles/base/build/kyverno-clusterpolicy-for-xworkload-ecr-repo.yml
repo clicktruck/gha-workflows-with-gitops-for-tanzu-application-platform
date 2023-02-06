@@ -34,6 +34,6 @@ spec:
             #! The split function is used to acquire the AWS region from the ECR hostname
             #! ECR hostnames look like {aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com
             region: #@ (data.values.tap.credentials.registry.host).split(".")[3]
-            repoPrefix: tap-build-service/workloads
+            repoPrefix: tap-build-service
             providerName: default
 #@ end
