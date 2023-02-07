@@ -25,21 +25,31 @@ metadata:
 spec:
   fromNamespace: #@ data.values.tap.namespace
 ---
-apiVersion: secretgen.carvel.dev/v1alpha1
-kind: SecretImport
+apiVersion: v1
+kind: Secret
 metadata:
   name: git-ssh
   namespace: #@ data.values.tap.devNamespace
-spec:
-  fromNamespace: #@ data.values.tap.namespace
+  annotations:
+    tekton.dev/git-0: #@ str(data.values.tap.credentials.git.host)
+type: kubernetes.io/ssh-auth
+data:
+  ssh-privatekey: #@ data.values.tap.credentials.git.ssh.privatekey
+  known_hosts: #@ data.values.tap.credentials.git.ssh.knownhosts
+  identity: #@ data.values.tap.credentials.git.ssh.privatekey
+  identity.pub: #@ data.values.tap.credentials.git.ssh.publickey
 ---
-apiVersion: secretgen.carvel.dev/v1alpha1
-kind: SecretImport
+apiVersion: v1
+kind: Secret
 metadata:
   name: git-http
   namespace: #@ data.values.tap.devNamespace
-spec:
-  fromNamespace: #@ data.values.tap.namespace
+  annotations:
+    tekton.dev/git-0: #@ "https://{}".format(data.values.tap.credentials.git.host)
+type: kubernetes.io/basic-auth
+stringData:
+  username: #@ data.values.tap.credentials.git.username
+  password: #@ data.values.tap.credentials.git.token
 ---
 apiVersion: v1
 kind: ServiceAccount
