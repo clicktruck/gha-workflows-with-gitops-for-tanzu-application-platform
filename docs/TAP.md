@@ -7,7 +7,7 @@
   * [Setup a Personal Access Token in Github](#setup-a-personal-access-token-in-github)
   * [Establish accounts on VMware sites](#establish-accounts-on-vmware-sites)
   * [Configure Github Secrets](#configure-github-secrets)
-  * [Create a Gitops repository for your deliverables](#create-a-gitops-repository-for-your-deliverables)
+  * [Create a Gitops repository for your deliverables](#create-a-gitops-repositories-for-your-k8s-configuration-and-deliverables)
 * [Lifecycle Management](#lifecycle-management)
   * [Requirements](#requirements)
   * [Install](#install)
@@ -120,10 +120,14 @@ export OIDC_AUTH_CLIENT_SECRET=""
 </details>
 
 
-### Create a Gitops repository for your deliverables
+### Create Gitops repositories for your K8s configuration and deliverables
 
 ```bash
+#! Repository hosting Kubernetes configuration (e.g., Knative Service, K8s Service/Deployment) in a predefined nested folder hierarchy: config/{workload-namespace}/{workload}.
 gh repo create tap-gitops-depot --private
+
+#! Repository where application deliverables are managed. Deliverables target configuration from depot to be deployed to a Kubernetes cluster.
+gh repo create tap-gitops-deliverables --private
 ```
 > Note: if you change the name of the repo you will need to search-and-replace occurrences of `tap-gitops-depot` in your fork with the new name and then commit the updates.
 
