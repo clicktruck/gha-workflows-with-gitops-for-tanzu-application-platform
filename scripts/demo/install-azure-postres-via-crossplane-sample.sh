@@ -319,7 +319,7 @@ EOF
 az postgres flexible-server list -o table
 
 # Wait for database to be ready for connections
-kubectl wait postgresqlinstances.bindable.database.example.org/${AZURE_INSTANCE_NAME} \
+kubectl wait postgresqlinstances.bindable.database.example.org/${AZURE_INSTANCE_NAME} -n ${SERVICE_INSTANCE_NAMESPACE} \
   --for=condition=Ready=true --timeout=10m
 
 # Address a bug in Crossplane 1.7.2 onwards with the --enable-external-secret-stores feature gate enabled

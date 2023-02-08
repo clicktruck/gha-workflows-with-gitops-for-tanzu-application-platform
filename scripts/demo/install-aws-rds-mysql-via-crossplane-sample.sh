@@ -360,7 +360,7 @@ EOF
 aws rds describe-db-instances --region ${AWS_REGION} --profile ${AWS_PROFILE}
 
 # Wait for database to be ready for connections
-kubectl wait --for=condition=Ready=true mysqlinstances.bindable.database.example.org ${AWS_RDS_INSTANCE_NAME} \
+kubectl wait --for=condition=Ready=true mysqlinstances.bindable.database.example.org ${AWS_RDS_INSTANCE_NAME} -n ${SERVICE_INSTANCE_NAMESPACE} \
   --timeout=10m
 
 # Address a bug in Crossplane 1.7.2 onwards with the --enable-external-secret-stores feature gate enabled

@@ -6,8 +6,11 @@ locals {
 
   crossplane_aws_provider = {
     enable                   = true
-    provider_aws_version     = "v0.36.0"
+    provider_aws_version     = "v0.36.1"
     additional_irsa_policies = ["arn:aws:iam::aws:policy/PowerUserAccess"]
   }
 
+  crossplane_helm_config = {
+    args = "--enable-external-secret-stores"
+  }
 }
