@@ -11,6 +11,8 @@ locals {
   }
 
   crossplane_helm_config = {
-    args = "--enable-external-secret-stores"
+    values = [templatefile("${path.module}/helm-values/crossplane-values.yaml", {
+      args = "--enable-external-secret-stores"
+    })]
   }
 }
