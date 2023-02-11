@@ -135,7 +135,7 @@ jobs:
     if: github.event.inputs.container-image-registry-provider == 'ecr'
     uses: ./.github/workflows/aws-container-registry.yml
     with:
-      registryName: "tanzu"
+      repository-names: '["tap-images","tap-build-service","tanzu-application-platform"]'
       region: ${{ github.event.inputs.region }}
       action: destroy
     secrets:

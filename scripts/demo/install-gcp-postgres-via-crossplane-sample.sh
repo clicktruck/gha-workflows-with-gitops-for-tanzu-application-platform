@@ -254,7 +254,7 @@ gcloud sql instances list
 
 
 # Wait for database to be ready for connections
-kubectl wait --for=condition=Ready=true postgresqlinstances.bindable.database.example.org ${GCP_INSTANCE_NAME} \
+kubectl wait --for=condition=Ready=true postgresqlinstances.bindable.database.example.org ${GCP_INSTANCE_NAME} -n ${SERVICE_INSTANCE_NAMESPACE} \
   --timeout=10m
 
 # Address a bug in Crossplane 1.7.2 onwards with the --enable-external-secret-stores feature gate enabled

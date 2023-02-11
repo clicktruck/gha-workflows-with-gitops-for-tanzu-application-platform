@@ -33,6 +33,9 @@ brew install oci-cli
 # Install VSCode
 brew install --cask visual-studio-code
 
+# Install Tilt
+brew install tilt
+
 # Install GNU coreutils
 brew install coreutils gnu-sed gnu-tar grep
 

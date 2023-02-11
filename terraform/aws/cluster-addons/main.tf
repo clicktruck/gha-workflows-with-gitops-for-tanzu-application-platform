@@ -1,5 +1,5 @@
 module "eks_blueprints_kubernetes_addons" {
-  source = "github.com/aws-ia/terraform-aws-eks-blueprints//modules/kubernetes-addons?ref=v4.21.0"
+  source = "github.com/aws-ia/terraform-aws-eks-blueprints//modules/kubernetes-addons?ref=v4.23.0"
 
   eks_cluster_id       = var.eks_cluster_id
   eks_cluster_endpoint = var.eks_cluster_endpoint
@@ -16,6 +16,7 @@ module "eks_blueprints_kubernetes_addons" {
   enable_aws_load_balancer_controller = true
   enable_crossplane                   = true
   crossplane_aws_provider             = local.crossplane_aws_provider
+  crossplane_helm_config              = local.crossplane_helm_config
   enable_kyverno                      = true
   enable_kyverno_policies             = false
   enable_kyverno_policy_reporter      = true

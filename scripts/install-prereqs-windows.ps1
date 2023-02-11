@@ -117,3 +117,6 @@ Invoke-WebRequest https://raw.githubusercontent.com/oracle/oci-cli/master/script
 
 # Install VSCode
 choco install -y vscode
+
+# Install Tilt
+iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.ps1'))
