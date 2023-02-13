@@ -1,7 +1,0 @@
-vpc_id = ""
-subnet_ids = []
-vpc_cidr_block = ""
-database_name = "tap-backend"
-database_username = "admin"
-instance_class = "db.t3a.large"
-tags = {}
