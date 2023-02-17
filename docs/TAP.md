@@ -7,7 +7,8 @@
   * [Setup a Personal Access Token in Github](#setup-a-personal-access-token-in-github)
   * [Establish accounts on VMware sites](#establish-accounts-on-vmware-sites)
   * [Configure Github Secrets](#configure-github-secrets)
-  * [Create a Gitops repository for your deliverables](#create-a-gitops-repositories-for-your-k8s-configuration-and-deliverables)
+  * [Create Gitops repositories for your K8s configuration and deliverables](#create-gitops-repositories-for-your-k8s-configuration-and-deliverables)
+  * [Domain setup](#domain-setup)
 * [Lifecycle Management](#lifecycle-management)
   * [Requirements](#requirements)
   * [Install](#install)
@@ -125,11 +126,51 @@ export OIDC_AUTH_CLIENT_SECRET=""
 ```bash
 #! Repository hosting Kubernetes configuration (e.g., Knative Service, K8s Service/Deployment) in a predefined nested folder hierarchy: config/{workload-namespace}/{workload}.
 gh repo create tap-gitops-depot --private
+```
+> Note: if you change the name of this repo you will need to search-and-replace occurrences of `tap-gitops-depot` in your fork with the new name and then commit the updates.
 
+```bash
 #! Repository where application deliverables are managed. Deliverables target configuration from depot to be deployed to a Kubernetes cluster.
 gh repo create tap-gitops-deliverables --private
 ```
-> Note: if you change the name of the repo you will need to search-and-replace occurrences of `tap-gitops-depot` in your fork with the new name and then commit the updates.
+
+### Domain setup
+
+Once TAP is installed you will be able to access components and workloads from your browser.
+Install automation configuration (as-designed) expects that you'll manage a domain and/or subdomains in a DNS provider.
+
+#### Single-cluster, full profile footprint
+
+1 zone hosting domain's A or CNAME records
+
+```bash
+#! Addressable URLs
+https://tap-gui.{domain}
+https://api-portal.{domain}
+https://learning-center-guided.{domain}
+https://{workload}.{domain}
+```
+
+#### Multi-cluster footprint
+
+Opt for assigning a subdomain per cluster (excluding cluster hosting build profile)
+
+```bash
+#! Addressable URLs
+https://tap-gui.{view}.{domain}
+https://api-portal.{view}.{domain}
+https://learning-center-guided.{view}.{domain}
+https://{workload}.{iterate}.{domain}
+https://{workload}.{run[1..N]}.{domain}
+```
+
+3 zones hosting each subdomain's A or CNAME records
+
+It's helpful to create a root zone for the base domain and then a zone per subdomain to manage records
+When opting for this approach you'll create NS records for each zone (subdomain) in the root zone.
+
+You'll also want to create a service account or role and assign appropriate permissions (policy) to read and write records into the(se) zone(s).
+Each cluster will have contour, cert-manager and external-dns installed.  Both the ClusterIssuer and the external-dns controller rely on a Secret where the credentials for the service account or role are encapsulated.
 
 
 ## Lifecycle Management
