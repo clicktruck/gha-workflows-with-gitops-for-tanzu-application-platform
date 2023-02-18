@@ -8,7 +8,7 @@ LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanz
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
 ENV HELM_VERSION=3.11.1 \
-    IMGPKG_VERSION=0.34.1 \
+    IMGPKG_VERSION=0.36.0 \
     KAPP_VERSION=0.54.3 \
     KBLD_VERSION=0.36.4 \
     KCTRL_VERSION=0.44.6 \
