@@ -63,7 +63,7 @@ jobs:
       run: |
         cp ../backend/backend.tf .
         echo "bucket = \"${{ secrets.TF_BACKEND_GCS_BUCKET_NAME }}\"" > config.gcs.tfbackend
-        echo "prefix = \"child-dns\"" >> config.gcs.tfbackend
+        echo "prefix = \"dns-${{ inputs.subdomain }}-${{ inputs.root-domain-zone-name }}\"" >> config.gcs.tfbackend
 
     - name: Decrypt service account keyfile contents and write to /tmp/gcloud/sa.json
       env:

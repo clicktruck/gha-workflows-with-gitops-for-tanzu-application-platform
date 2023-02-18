@@ -166,11 +166,11 @@ https://{workload}.{run[1..N]}.{domain}
 
 3 zones hosting each subdomain's A or CNAME records
 
-It's helpful to create a root zone for the base domain and then a zone per subdomain to manage records
+It's helpful to create a root zone for the base domain and then a zone per subdomain to manage records.
 When opting for this approach you'll create NS records for each zone (subdomain) in the root zone.
 
 You'll also want to create a service account or role and assign appropriate permissions (policy) to read and write records into the(se) zone(s).
-Each cluster will have contour, cert-manager and external-dns installed.  Both the ClusterIssuer and the external-dns controller rely on a Secret where the credentials for the service account or role are encapsulated.
+Each cluster will have contour, cert-manager and external-dns installed.  Both the ClusterIssuer and the external-dns controller rely on a Secret where the credentials for the service account or role are stored.
 
 
 ## Lifecycle Management
