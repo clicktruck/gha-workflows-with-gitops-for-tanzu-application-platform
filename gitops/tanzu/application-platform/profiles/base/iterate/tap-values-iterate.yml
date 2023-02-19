@@ -73,7 +73,7 @@ contour:
 cnrs:
   default_tls_secret: #@ "{}/{}".format(data.values.tap.ingress.contour_tls_namespace, data.values.tap.ingress.contour_tls_secret)
   domain_name: #@ data.values.tap.domains.knative
-  domain_template: #@ "{}-{}-{}".format("{{.Name}}", data.values.tap.domains.suffix, "{{.Namespace}}.{{.Domain}}")
+  domain_template: "{{.Name}}.{{.Domain}}"
   ingress:
     internal:
       namespace: tanzu-system-ingress

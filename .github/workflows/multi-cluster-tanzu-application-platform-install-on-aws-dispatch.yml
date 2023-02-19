@@ -17,6 +17,11 @@ on:
       domain:
         description: "A domain that the installation of TAP will be addressable from"
         required: true
+        default: "foo.com"
+      subdomains:
+        description: "Comma-separated list of subdomains for each cluster hosting iterate, view, and run TAP profiles"
+        required: true
+        default: "view,iterate,run"
       email-address:
         description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
         required: true
@@ -168,6 +173,28 @@ jobs:
         TAP_RUN_CLUSTER_NAME=$(echo "$TAP_RUN_KCONFIG" | base64 -d > run_config && kubectl config current-context --kubeconfig run_config | cut -d "/" -f2)
         echo "tap-run-cluster-name=$TAP_RUN_CLUSTER_NAME" >> $GITHUB_OUTPUT
 
+  assemble-domain-names:
+    runs-on: ubuntu-22.04
+
+    outputs:
+      iterate-domain: ${{ steps.vars.outputs.iterate_domain }}
+      view-domain: ${{ steps.vars.outputs.view_domain }}
+      run-domain: ${{ steps.vars.outputs.run_domain }}
+
+    steps:
+      - uses: jungwinter/split@v2
+        id: split
+        with:
+          msg: '${{ github.event.inputs.subdomains }}'
+          separator: ','
+
+      - name: Assemble fully-qualified domain names
+        id: vars
+        run: |
+          echo "iterate_domain=${{ steps.split.outputs._0 }}.${{ github.event.inputs.domain }}" >> $GITHUB_OUTPUT
+          echo "view_domain=${{ steps.split.outputs._1 }}.${{ github.event.inputs.domain }}" >> $GITHUB_OUTPUT
+          echo "run_domain=${{ steps.split.outputs._2 }}.${{ github.event.inputs.domain }}" >> $GITHUB_OUTPUT
+
   install-tap-build-on-aws:
     needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager,prepare-metadata-store-secrets]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
@@ -206,11 +233,11 @@ jobs:
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   install-tap-iterate-on-aws:
-    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager]
+    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager,assemble-domain-names]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       aws-region: ${{ github.event.inputs.region }}
-      domain: ${{ github.event.inputs.domain }}
+      domain: ${{ needs.assemble-domain-names.outputs.iterate-domain }}
       dev-namespace: ${{ github.event.inputs.dev-namespace }}
       backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-url }}
@@ -243,11 +270,11 @@ jobs:
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   install-tap-view-on-aws:
-    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager]
+    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager,assemble-domain-names]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       aws-region: ${{ github.event.inputs.region }}
-      domain: ${{ github.event.inputs.domain }}
+      domain: ${{ needs.assemble-domain-names.outputs.view-domain }}
       dev-namespace: ${{ github.event.inputs.dev-namespace }}
       backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-url }}
@@ -293,11 +320,11 @@ jobs:
       TAP_VIEW_KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
 
   install-tap-run-on-aws:
-    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager]
+    needs: [obtain-aws-account-id,obtain-secrets-from-secrets-manager,assemble-domain-names]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       aws-region: ${{ github.event.inputs.region }}
-      domain: ${{ github.event.inputs.domain }}
+      domain: ${{ needs.assemble-domain-names.outputs.run-domain }}
       dev-namespace: ${{ github.event.inputs.dev-namespace }}
       backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
       container-image-registry-url: ${{ needs.obtain-secrets-from-secrets-manager.outputs.container-image-registry-url }}
