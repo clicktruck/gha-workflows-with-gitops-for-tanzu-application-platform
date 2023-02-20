@@ -15,7 +15,7 @@ spec:
     notAllowedSeverities := ["Critical", "UnknownSeverity"]
 
     # List of known vulnerabilities to ignore when deciding whether to fail compliance. Example:
-    # These are the exceptions for Critical CVEs made for TAP 1.4.0
+    # These are the exceptions for Critical CVEs made for TAP 1.4.1
     ignoreCves := [
       {
         "id": "CVE-2017-18342",
