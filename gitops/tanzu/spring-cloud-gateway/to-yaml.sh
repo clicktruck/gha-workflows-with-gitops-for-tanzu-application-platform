@@ -24,3 +24,7 @@ sed \
   -e "s/{{ .tanzu_network_password }}/$TANZU_NETWORK_PASSWORD/g" \
   .init/scg-install-secrets.tpl > .init/scg-install-secrets.yml
 
+# Convert .install/scg-install-install.tpl to .install/scg-install-install.yml
+sed \
+  -e "s~{{ .git_ref_name }}~$GIT_REF_NAME~g" \
+  .install/scg-install-install.tpl > .install/scg-install-install.yml

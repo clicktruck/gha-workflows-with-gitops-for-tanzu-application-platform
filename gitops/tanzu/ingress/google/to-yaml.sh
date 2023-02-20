@@ -24,3 +24,13 @@ sed \
   -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
   -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
   .init/ingress-install-secrets.tpl > .init/ingress-install-secrets.yml
+
+# Convert .install/ingress-install.tpl to .install/ingress-install.yml
+sed \
+  -e "s~{{ .git_ref_name }}~$GIT_REF_NAME~g" \
+  .install/ingress-install.tpl > .install/ingress-install.yml
+
+# Convert .post-install/ingress-post-install.tpl to .post-install/ingress-post-install.yml
+sed \
+  -e "s~{{ .git_ref_name }}~$GIT_REF_NAME~g" \
+  .post-install/ingress-post-install.tpl > .post-install/ingress-post-install.yml

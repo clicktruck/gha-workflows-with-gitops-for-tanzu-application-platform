@@ -23,7 +23,7 @@ runs:
     - "${{ inputs.command }}"
     - "${{ inputs.kubeconfig-contents }}"
   env:
-    TANZU_CLI_VERSION: 1.6.0
-    TANZU_CLI_CORE_VERSION: 0.25.0
+    TANZU_CLI_VERSION: 2.1.0
+    TANZU_CLI_CORE_VERSION: 0.28.0
     CSP_API_TOKEN: ${{ inputs.csp-api-token }}
     TANZU_CLI_ENABLED: ${{ inputs.enable-tanzu-cli }}

@@ -22,3 +22,8 @@ sed \
   -e "s/{{ .tanzu_network_username }}/$TANZU_NETWORK_USERNAME/g" \
   -e "s/{{ .tanzu_network_password }}/$TANZU_NETWORK_PASSWORD/g" \
   .init/data-services-install-secrets.tpl > .init/data-services-install-secrets.yml
+
+# Convert .install/data-services-install.tpl to .install/data-services-install.yml
+sed \
+  -e "s~{{ .git_ref_name }}~$GIT_REF_NAME~g" \
+  .install/data-services-install.tpl > .install/data-services-install.yml

@@ -85,6 +85,14 @@ jobs:
           git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
         result_path: ${{ env.GITOPS_DIR }}/.init/data-services-install-secrets.yml
 
+    - name: Render data-services-install
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/data-services-install.tpl
+        vars: |
+          git_ref_name: ${{ github.ref_name }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/data-services-install.yml
+
     - name: "Install Tanzu Data Services Repo on Azure"
       if: inputs.cluster-provider == 'aks'
       uses: ./docker/actions/tanzu-runsh-setup-action

@@ -22,3 +22,8 @@ sed \
   -e "s/{{ .tanzu_network_username }}/$TANZU_NETWORK_USERNAME/g" \
   -e "s/{{ .tanzu_network_password }}/$TANZU_NETWORK_PASSWORD/g" \
   .init/standard-install-secrets.tpl > .init/standard-install-secrets.yml
+
+# Convert .install/standard-install.tpl to .install/standard-install.yml
+sed \
+  -e "s~{{ .git_ref_name }}~$GIT_REF_NAME~g" \
+  .install/standard-install.tpl > .install/standard-install.yml

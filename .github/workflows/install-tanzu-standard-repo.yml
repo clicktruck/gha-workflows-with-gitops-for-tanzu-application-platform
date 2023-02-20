@@ -85,6 +85,14 @@ jobs:
           git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
         result_path: ${{ env.GITOPS_DIR }}/.init/standard-install-secrets.yml
 
+    - name: Render standard-install
+      uses: chuhlomin/render-template@v1.6
+      with:
+        template: ${{ env.GITOPS_DIR }}/.init/standard-install.tpl
+        vars: |
+          git_ref_name: ${{ github.ref_name }}
+        result_path: ${{ env.GITOPS_DIR }}/.init/standard-install.yml
+
     - name: "Install Tanzu Standard Repo on AKS"
       if: inputs.cluster-provider == 'aks'
       uses: ./docker/actions/tanzu-runsh-setup-action
