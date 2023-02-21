@@ -1,4 +1,4 @@
-## Sample dispatch workflows
+# Sample dispatch workflows
 
 A curated collection of gh CLI commands that will automate:
 
@@ -6,13 +6,13 @@ A curated collection of gh CLI commands that will automate:
 * Installing Tanzu Application Platform
 
 
-### AWS
+## AWS
 
-* [Create](docs/sample-dispatch-workflows/aws/create/README.md)
-* [Destroy](docs/sample-dispatch-workflows/aws/destroy/README.md)
+* [Create](sample-dispatch-workflows/aws/create/README.md)
+* [Destroy](sample-dispatch-workflows/aws/destroy/README.md)
 
 
-### Google Cloud
+## Google Cloud
 
-* [Create](docs/sample-dispatch-workflows/google/create/README.md)
-* [Destroy](docs/sample-dispatch-workflows/google/destroy/README.md)
+* [Create](sample-dispatch-workflows/google/create/README.md)
+* [Destroy](sample-dispatch-workflows/google/destroy/README.md)
