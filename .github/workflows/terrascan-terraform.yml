@@ -1,17 +1,13 @@
 name: 'Use tenable/terrascan to scan for vulnerabilities in terraform modules'
 
-on:
-  push:
-    branches:
-    - main
-  pull_request:
-    branches:
-    - main
+on: workflow_dispatch
 
 jobs:
   terrascan_job:
-    runs-on: ubuntu-latest
     name: terrascan-action
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
 
     steps:
     - name: Checkout repository

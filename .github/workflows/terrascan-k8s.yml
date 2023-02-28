@@ -4,8 +4,10 @@ on: workflow_dispatch
 
 jobs:
   terrascan_job:
-    runs-on: ubuntu-latest
     name: terrascan-action
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
 
     steps:
     - name: Checkout repository
