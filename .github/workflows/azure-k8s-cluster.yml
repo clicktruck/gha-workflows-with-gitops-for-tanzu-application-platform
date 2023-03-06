@@ -179,7 +179,7 @@ jobs:
 
   install-tanzu-data-services-repo:
     if: inputs.action == 'create'
-    needs: [obtain-base64-encoded-kubeconfig-from-cluster,install-tanzu-cluster-essentials]
+    needs: [install-tanzu-cluster-essentials]
     uses: ./.github/workflows/install-tanzu-data-services-repo.yml
     with:
       cluster-provider: "aks"
