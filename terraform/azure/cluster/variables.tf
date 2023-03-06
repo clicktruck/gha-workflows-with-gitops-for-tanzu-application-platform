@@ -1,7 +1,7 @@
 variable "cluster_name" {
-  type = string
+  type        = string
   description = "Name for the AKS cluster which will be suffixed with a random id."
-  default = "tap"
+  default     = "tap"
 }
 
 variable "suffix" {
