@@ -98,7 +98,7 @@ jobs:
       id: set_outputs
       if: inputs.action == 'create'
       run: |
-        zone_name=$(terraform output zone_name)
+        zone_name=$(terraform output --raw zone_name)
         echo "zone_name=${zone_name}" >> $GITHUB_OUTPUT
-        zone_subdomain=$(terraform output zone_subdomain)
+        zone_subdomain=$(terraform output --raw zone_subdomain)
         echo "zone_subdomain=${zone_subdomain}" >> $GITHUB_OUTPUT

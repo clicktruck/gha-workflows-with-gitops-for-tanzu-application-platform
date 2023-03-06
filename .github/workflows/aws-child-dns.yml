@@ -107,9 +107,9 @@ jobs:
       id: set_outputs
       if: inputs.action == 'create'
       run: |
-        base_domain=$(terraform output base_domain)
+        base_domain=$(terraform output --raw base_domain)
         echo "base_domain=${base_domain}" >> $GITHUB_OUTPUT
-        child_domain=$(terraform output child_domain)
+        child_domain=$(terraform output --raw child_domain)
         echo "child_domain=${child_domain}" >> $GITHUB_OUTPUT
         hosted_zone_id=$(terraform output hosted_zone_id)
         echo "hosted_zone_id=${hosted_zone_id}" >> $GITHUB_OUTPUT

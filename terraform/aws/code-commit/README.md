@@ -84,5 +84,5 @@ You will need to set up authentication. There several ways to do this, but here'
 Use the [git](https://git-scm.com/downloads) CLI and [clone](https://git-scm.com/docs/git-clone) the repository you just created with
 
 ```bash
-git clone $(terraform output -raw code_commit_clone_url_http)
+git clone $(terraform output --raw code_commit_clone_url_http)
 ```
