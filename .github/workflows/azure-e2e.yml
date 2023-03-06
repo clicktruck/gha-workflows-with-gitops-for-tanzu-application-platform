@@ -190,7 +190,7 @@ jobs:
       target-cloud: "azure"
       domain: ${{ github.event.inputs.baseDomain }}
       email-address: ${{ github.event.inputs.email-address }}
-      azure-resource-group: participant-${{ github.event.inputs.participantNumber }
+      azure-resource-group: participant-${{ github.event.inputs.participantNumber }}
     secrets:
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
