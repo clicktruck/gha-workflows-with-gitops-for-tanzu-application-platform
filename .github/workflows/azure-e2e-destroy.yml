@@ -20,6 +20,7 @@ on:
       sigResourceGroup:
         description: "The name of the resource group the shared image gallery is in"
         required: true
+        default: "toolset"
       destroyCoreComponents:
         description: Whether or not to also destroy the non participant scoped resources (e.g., shared gallery, dns)
         required: true

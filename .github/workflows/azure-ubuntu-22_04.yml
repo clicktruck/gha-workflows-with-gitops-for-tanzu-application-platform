@@ -6,6 +6,7 @@ on:
       resourceGroupName:
         description: "Name of the resource group to create for Shared Image Gallery"
         required: true
+        default: "toolset"
 jobs:
   create-gallery-rg:
     uses: ./.github/workflows/azure-resource-group.yml

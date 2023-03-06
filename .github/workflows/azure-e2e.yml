@@ -27,13 +27,21 @@ on:
       aksNodes:
         description: "Minimum number of cluster worker nodes"
         required: true
-        default: "4"
+        default: "5"
       aksNodeType:
         description: "VM type to use for the nodes"
         required: true
+        type: choice
+        options:
+        - "Standard_D4_v4"
+        - "Standard_D8_v4"
+        - "Standard_D4_v5"
+        - "Standard_D8_v5"
+        default: "Standard_D4_v5"
       sigResourceGroup:
         description: "The name of the resource group the shared image gallery is in"
         required: true
+        default: "toolset"
       email-address:
         description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt. Only required if container-image-registry-provider was set to [ harbor ]."
         required: false
