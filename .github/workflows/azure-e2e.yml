@@ -204,6 +204,7 @@ jobs:
     uses: ./.github/workflows/azure-harbor.yml
     needs: [create-harbor-cluster,install-tanzu-ingress-into-harbor-cluster]
     with:
+      resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       email-address: ${{ github.event.inputs.email-address }}
       domain: ${{ github.event.inputs.baseDomain }}
       action: create
