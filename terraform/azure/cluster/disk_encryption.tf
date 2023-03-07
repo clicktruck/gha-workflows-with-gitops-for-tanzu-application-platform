@@ -9,7 +9,7 @@ resource "azurerm_key_vault_key" "des_key" {
   ]
   key_type        = "RSA-HSM"
   key_vault_id    = azurerm_key_vault.des_vault.id
-  name            = "des-key"
+  name            = "${var.cluster_name}-des-key"
   expiration_date = timeadd("${formatdate("YYYY-MM-DD", timestamp())}T00:00:00Z", "168h")
   key_size        = 2048
 
@@ -25,7 +25,7 @@ resource "azurerm_key_vault_key" "des_key" {
 resource "azurerm_disk_encryption_set" "des" {
   key_vault_key_id    = azurerm_key_vault_key.des_key.id
   location            = data.azurerm_resource_group.rg.location
-  name                = "des"
+  name                = "${var.cluster_name}-des"
   resource_group_name = var.resource_group_name
 
   identity {

@@ -11,6 +11,4 @@ provider "azurerm" {
   }
 }
 
-provider "curl" {}
-
 provider "random" {}
