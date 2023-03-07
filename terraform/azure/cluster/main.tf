@@ -43,8 +43,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
   kubernetes_version  = local.k8s_version
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
-  dns_prefix          = "${data.azurerm_resource_group.rg.name}-cluster"
-  node_resource_group = "${data.azurerm_resource_group.rg.name}-nrg"
+  dns_prefix          = "${var.cluster_name}-${random_id.cluster_name.hex}-cluster"
+  node_resource_group = "${var.cluster_name}-${random_id.cluster_name.hex}-nrg"
 
   api_server_authorized_ip_ranges = var.k8s_api_server_authorized_ip_ranges
 
