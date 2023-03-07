@@ -1,6 +1,7 @@
 resource "random_string" "suffix" {
   length  = 6
   special = false
+  numeric = false
 }
 
 data "azurerm_subscription" "primary" {
