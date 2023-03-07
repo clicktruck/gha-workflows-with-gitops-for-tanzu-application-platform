@@ -18,6 +18,7 @@ data "azurerm_kubernetes_service_versions" "current" {
 resource "random_string" "prefix" {
   length  = 4
   special = false
+  numeric = false
 }
 
 
