@@ -231,7 +231,7 @@ jobs:
     uses: ./.github/workflows/azure-k8s-cluster.yml
     needs: create-vnet
     with:
-      clusterName: "tap"
+      clusterName: "tap-full"
       aksNodes: ${{ github.event.inputs.aksNodes }}
       aksNodeType: ${{ github.event.inputs.aksNodeType }}
       aksNodeDiskSize: "80"
