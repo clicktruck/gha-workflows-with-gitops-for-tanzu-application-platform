@@ -44,7 +44,7 @@ module "aks" {
     not_allowed = []
   }
 
-  vnet_subnet_id       = data.azurerm_subnet.aks_subnet.id
+  vnet_subnet_id = data.azurerm_subnet.aks_subnet.id
 
   rbac_aad                          = true
   rbac_aad_managed                  = true
