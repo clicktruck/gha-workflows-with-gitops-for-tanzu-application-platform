@@ -2,6 +2,7 @@ variable "resource_group_name" {
   type        = string
   description = "The resource group within which all network resources are created.  Must already exist!"
 }
+
 variable "vnet_cidr" {
   type        = string
   description = "The Virtual Network CIDR block (e.g., 10.1.0.0/16)"

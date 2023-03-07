@@ -1,9 +1,5 @@
-output "path_to_kubeconfig" {
-  value = local_file.kubeconfig.filename
-}
-
 output "contents_of_kubeconfig" {
-  value     = azurerm_kubernetes_cluster.aks.kube_config_raw
+  value     = module.aks.kube_config_raw
   sensitive = true
 }
 
@@ -15,28 +11,16 @@ output "k8s_version_installed" {
   value = local.k8s_version
 }
 
-output "k8s_cluster_egress_ip" {
-  value = data.azurerm_public_ip.aks.ip_address
-}
-
-output "path_to_public_openssh_keyfile" {
-  value = local_file.path_to_public_openssh_keyfile.filename
-}
-
-output "path_to_private_openssh_keyfile" {
-  value = local_file.path_to_private_openssh_keyfile.filename
-}
-
 output "public_openssh_key" {
-  value     = tls_private_key.pair.public_key_openssh
+  value     = module.aks.generated_cluster_public_ssh_key
   sensitive = true
 }
 
 output "private_openssh_key" {
-  value     = tls_private_key.pair.private_key_pem
+  value     = module.aks.generated_cluster_private_ssh_key
   sensitive = true
 }
 
 output "aks_cluster_name" {
-  value = resource.azurerm_kubernetes_cluster.aks.name
+  value = module.aks.aks_name
 }

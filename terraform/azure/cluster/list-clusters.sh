@@ -1,3 +1,3 @@
 #!/bin/bash
 
-az aks list
+az aks list --output table
