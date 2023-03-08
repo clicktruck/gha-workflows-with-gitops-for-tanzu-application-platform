@@ -88,10 +88,10 @@ jobs:
     - name: Render data-services-install
       uses: chuhlomin/render-template@v1.6
       with:
-        template: ${{ env.GITOPS_DIR }}/.init/data-services-install.tpl
+        template: ${{ env.GITOPS_DIR }}/.install/data-services-install.tpl
         vars: |
           git_ref_name: ${{ github.ref_name }}
-        result_path: ${{ env.GITOPS_DIR }}/.init/data-services-install.yml
+        result_path: ${{ env.GITOPS_DIR }}/.install/data-services-install.yml
 
     - name: "Install Tanzu Data Services Repo on Azure"
       if: inputs.cluster-provider == 'aks'

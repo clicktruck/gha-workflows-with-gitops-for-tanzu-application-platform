@@ -88,10 +88,10 @@ jobs:
     - name: Render standard-install
       uses: chuhlomin/render-template@v1.6
       with:
-        template: ${{ env.GITOPS_DIR }}/.init/standard-install.tpl
+        template: ${{ env.GITOPS_DIR }}/.install/standard-install.tpl
         vars: |
           git_ref_name: ${{ github.ref_name }}
-        result_path: ${{ env.GITOPS_DIR }}/.init/standard-install.yml
+        result_path: ${{ env.GITOPS_DIR }}/.install/standard-install.yml
 
     - name: "Install Tanzu Standard Repo on AKS"
       if: inputs.cluster-provider == 'aks'
