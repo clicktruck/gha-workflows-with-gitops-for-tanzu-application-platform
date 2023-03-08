@@ -1,4 +1,4 @@
-FROM alpine:3.17
+FROM mcr.microsoft.com/azure-cli:2.46.0
 
 LABEL "com.github.actions.name"="tanzu-runsh-setup-action"
 LABEL "com.github.actions.icon"="server"
@@ -18,10 +18,8 @@ ENV HELM_VERSION=3.11.1 \
     YQ_VERSION=4.30.8 \
     YTT_VERSION=0.44.3
 
-RUN apk add --update --no-cache bash coreutils ca-certificates curl docker gcompat jq openrc python3 py3-pip wget \
+RUN apk add --update --no-cache coreutils docker gcompat openrc wget \
     && rc-update add docker boot \
-    && pip3 install --upgrade pip \
-    && curl -sL https://aka.ms/InstallAzureCLIDeb | bash \
     && curl -s -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
     && chmod +x /usr/local/bin/kubectl \
     && wget -O imgpkg https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v${IMGPKG_VERSION}/imgpkg-linux-amd64 \
