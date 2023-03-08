@@ -109,10 +109,10 @@ jobs:
         script-arguments: "${{ env.GITOPS_DIR }} tanzu-standard-repo"
         kubeconfig-contents: "${{ secrets.KUBECONFIG_CONTENTS }}"
         csp-api-token: ${{ secrets.CSP_API_TOKEN }}
-        azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        azure_ad_tenant_id: ${{ secrets.AZURE_AD_TENANT_ID }}
-        azure_ad_client_id: ${{ secrets.AZURE_AD_CLIENT_ID }}
-        azure_ad_client_secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+        azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        azure-tenant-id: ${{ secrets.AZURE_AD_TENANT_ID }}
+        azure-ad-client-id: ${{ secrets.AZURE_AD_CLIENT_ID }}
+        azure-ad-client-secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
 
     - name: "Install Tanzu Standard Repo on EKS"
       if: inputs.cluster-provider == 'eks'
