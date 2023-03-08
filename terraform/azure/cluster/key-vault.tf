@@ -1,14 +1,14 @@
 data "azurerm_client_config" "current" {}
 
 resource "random_string" "suffix" {
-  length  = 6
+  length  = 4
   special = false
   numeric = false
 }
 
 resource "azurerm_key_vault" "des_vault" {
   location                    = data.azurerm_resource_group.rg.location
-  name                        = "${var.cluster_name}-des-keyvault-${random_string.suffix.result}"
+  name                        = "${var.cluster_name}-des-kv-${random_string.suffix.result}"
   resource_group_name         = var.resource_group_name
   sku_name                    = "premium"
   tenant_id                   = data.azurerm_client_config.current.tenant_id
