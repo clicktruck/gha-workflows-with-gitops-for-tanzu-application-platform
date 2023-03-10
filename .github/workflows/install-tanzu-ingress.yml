@@ -139,11 +139,11 @@ jobs:
       with:
         template: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.tpl
         vars: |
-          azure-tenant-id: ${{ secrets.AZURE_AD_TENANT_ID }}
-          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azure_ad_tenant_id: ${{ secrets.AZURE_AD_TENANT_ID }}
+          azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           azure_resource_group_name: ${{ inputs.azure-resource-group }}
-          azure-ad-client-id: ${{ secrets.AZURE_AD_CLIENT_ID }}
-          azure-ad-client-secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+          azure_ad_client_id: ${{ secrets.AZURE_AD_CLIENT_ID }}
+          azure_ad_client_secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
           email_address: ${{ inputs.email-address }}
           git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
           git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
