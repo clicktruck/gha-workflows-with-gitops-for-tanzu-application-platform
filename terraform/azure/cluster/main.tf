@@ -41,7 +41,7 @@ module "aks" {
   agents_max_count          = var.aks_nodes * 2
   agents_max_pods           = 100
   agents_min_count          = var.aks_nodes
-  agents_pool_name          = "${var.cluster_name}np"
+  agents_pool_name          = replace("${var.cluster_name}np", "-", "")
   agents_pool_linux_os_configs = [
     {
       transparent_huge_page_enabled = "always"
@@ -52,6 +52,7 @@ module "aks" {
       }]
     }
   ]
+  agents_size                             = var.aks_node_type
   agents_type                             = "VirtualMachineScaleSets"
   azure_policy_enabled                    = true
   disk_encryption_set_id                  = azurerm_disk_encryption_set.des.id
