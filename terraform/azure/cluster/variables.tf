@@ -41,7 +41,7 @@ variable "environment" {
 variable "k8s_version" {
   type        = string
   description = "If this variable is defined and is a supported Kubernetes version, then it is used to install a version for the cluster and node pool(s), otherwise the latest supported version is installed."
-  default     = "1.24.6"
+  default     = "1.24"
 }
 
 variable "k8s_api_server_authorized_ip_ranges" {

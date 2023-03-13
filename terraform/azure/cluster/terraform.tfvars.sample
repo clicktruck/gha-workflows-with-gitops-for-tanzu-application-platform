@@ -1,5 +1,5 @@
 cluster_name = "tap"
-k8s_version = "1.24.6"
+k8s_version = "1.24"
 resource_group_name = "test-resource-group"
 aks_nodes = 5
 aks_node_type = "Standard_D4_v4"
