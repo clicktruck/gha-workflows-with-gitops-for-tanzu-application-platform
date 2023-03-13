@@ -108,7 +108,7 @@ jobs:
       virtualNetworkCidr: 10.1.0.0/16
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       operatorSubnetCidr: 10.1.0.0/24
-      aksSubnetCidr: 10.1.1.0/24
+      aksSubnetCidr: 10.1.128.0/22
       action: create
     secrets:
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
