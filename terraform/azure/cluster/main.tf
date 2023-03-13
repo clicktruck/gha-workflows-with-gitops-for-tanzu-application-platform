@@ -3,8 +3,8 @@ data "azurerm_resource_group" "rg" {
 }
 
 data "azurerm_virtual_network" "aks_vnet" {
-  name                 = "vnet-${var.suffix}"
-  resource_group_name  = data.azurerm_resource_group.rg.name
+  name                = "vnet-${var.suffix}"
+  resource_group_name = data.azurerm_resource_group.rg.name
 }
 
 data "azurerm_subnet" "aks_subnet" {
@@ -93,5 +93,5 @@ module "aks" {
     environment = var.environment
   }
   api_server_authorized_ip_ranges = var.k8s_api_server_authorized_ip_ranges
-  vnet_subnet_id = data.azurerm_subnet.aks_subnet.id
+  vnet_subnet_id                  = data.azurerm_subnet.aks_subnet.id
 }
