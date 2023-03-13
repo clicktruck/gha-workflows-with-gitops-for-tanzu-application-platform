@@ -36,7 +36,7 @@ deployment:
     - --registry=txt
     - --txt-prefix=txt
     - --provider=azure
-    - #@ "--azure-resource-group=" + str(data.values.azure.resource_group)
+    - #@ "--azure-resource-group=" + str(data.values.azure.resourceGroup)
   env: []
   securityContext: {}
   volumeMounts:
