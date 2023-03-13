@@ -36,7 +36,6 @@ module "aks" {
   prefix                    = random_string.prefix.result
   resource_group_name       = data.azurerm_resource_group.rg.name
   kubernetes_version        = var.k8s_version
-  automatic_channel_upgrade = "patch"
   agents_availability_zones = ["1", "2"]
   agents_count              = null
   agents_max_count          = var.aks_nodes * 2
