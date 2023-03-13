@@ -193,11 +193,11 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: golang-1.19-tekton-pipeline
+  name: golang-1.20-tekton-pipeline
   labels:
     apps.tanzu.vmware.com/pipeline: test
     apps.tanzu.vmware.com/language: golang
-    apps.tanzu.vmware.com/build-engine: go-1.19
+    apps.tanzu.vmware.com/build-engine: go-1.20
   namespace: #@ data.values.tap.devNamespace
 spec:
   params:
@@ -219,7 +219,7 @@ spec:
       - name: source-revision
         type: string
       steps:
-      - image: golang:1.19-bullseye
+      - image: golang:1.20-bullseye
         name: test
         script: |-
           cd `mktemp -d`

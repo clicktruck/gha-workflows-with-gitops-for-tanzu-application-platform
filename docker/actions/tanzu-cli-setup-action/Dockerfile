@@ -7,16 +7,16 @@ LABEL "com.github.actions.color"="blue"
 LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/tanzu-cli-setup-action"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
-ENV HELM_VERSION=3.11.1 \
+ENV HELM_VERSION=3.11.2 \
     IMGPKG_VERSION=0.36.0 \
-    KAPP_VERSION=0.54.3 \
-    KBLD_VERSION=0.36.4 \
-    KCTRL_VERSION=0.44.6 \
+    KAPP_VERSION=0.55.0 \
+    KBLD_VERSION=0.37.0 \
+    KCTRL_VERSION=0.45.0 \
     KUBECTL_VERSION=1.24.9 \
     MKPCLI_VERSION=0.15.0 \
-    VENDIR_VERSION=0.32.5 \
+    VENDIR_VERSION=0.33.1 \
     YQ_VERSION=4.30.8 \
-    YTT_VERSION=0.44.3
+    YTT_VERSION=0.45.0
 
 RUN apk add --update --no-cache bash coreutils ca-certificates curl docker gcompat jq openrc wget \
     && rc-update add docker boot \

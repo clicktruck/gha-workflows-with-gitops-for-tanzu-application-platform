@@ -70,7 +70,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_wrapper: false
-        terraform_version: 1.3.9
+        terraform_version: 1.4.0
 
     - name: Copy Google provider configuration into place
       run: |
@@ -93,7 +93,7 @@ jobs:
 
     - name: Install Carvel tools
       run: |
-        KAPP_VERSION=0.54.3
+        KAPP_VERSION=0.55.0
         wget -O kapp https://github.com/vmware-tanzu/carvel-kapp/releases/download/v${KAPP_VERSION}/kapp-linux-amd64
         chmod +x kapp
         sudo mv kapp /usr/bin
