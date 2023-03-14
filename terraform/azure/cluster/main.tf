@@ -58,7 +58,7 @@ module "aks" {
   disk_encryption_set_id                  = azurerm_disk_encryption_set.des.id
   enable_auto_scaling                     = true
   enable_host_encryption                  = false
-  http_application_routing_enabled        = true
+  http_application_routing_enabled        = false
   ingress_application_gateway_enabled     = true
   ingress_application_gateway_name        = "${var.cluster_name}-agw"
   ingress_application_gateway_subnet_cidr = cidrsubnet(data.azurerm_virtual_network.aks_vnet.address_space[0], 4, 12)
