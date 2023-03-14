@@ -27,17 +27,17 @@ spec:
       name: letsencrypt-prod
     server: https://acme-v02.api.letsencrypt.org/directory
     solvers:
-    # @see https://cert-manager.io/docs/configuration/acme/dns01/azuredns/
+    #! @see https://cert-manager.io/docs/configuration/acme/dns01/azuredns/
     - dns01:
         azureDNS:
           clientID: #@ data.values.azure.credentials.clientId
           clientSecretSecretRef:
-            # The following is the secret we created in Kubernetes. Issuer will use this to present challenge to Azure DNS.
+            #! The following is the secret we created in Kubernetes. Issuer will use this to present challenge to Azure DNS.
             name: azuredns-config
             key: client-secret
-          subscriptionID: #@ data.values.azure.credentials.subscriptionId
+          subscriptionID: #@ data.values.azure.credentials.subscription
           tenantID: #@ data.values.azure.credentials.tenantId
           resourceGroupName: #@ data.values.azure.resourceGroup
           hostedZoneName: #@ data.values.ingress.domain
-          # Azure Cloud Environment, default to AzurePublicCloud
+          #! Azure Cloud Environment, default to AzurePublicCloud
           environment: AzurePublicCloud
