@@ -15,7 +15,7 @@ spec:
   packageRef:
     refName: external-dns.tanzu.vmware.com
     versionSelection:
-      constraints: 0.11.0+vmware.1-tkg.2
+      constraints: 0.12.2+vmware.4-tkg.1
   serviceAccountName: ingress-sa
   values:
   - secretRef:
