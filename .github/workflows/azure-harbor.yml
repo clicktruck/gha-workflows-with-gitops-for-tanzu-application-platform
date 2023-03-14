@@ -86,7 +86,7 @@ jobs:
 
     - name: Generate backend configuration
       run: |
-          cp ../backend/backend.tf .
+          cp ../../azure/backend/backend.tf .
           echo "resource_group_name = \"${{ secrets.TF_BACKEND_resource_group_name }}\"" > config.azurerm.tfbackend
           echo "storage_account_name = \"${{ secrets.TF_BACKEND_storage_account_name }}\"" >> config.azurerm.tfbackend
           echo "container_name = \"${{ secrets.TF_BACKEND_storage_container_name }}\"" >> config.azurerm.tfbackend
