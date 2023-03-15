@@ -36,8 +36,6 @@ on:
         required: true
       AZURE_AD_TENANT_ID:
         required: true
-      AZURE_REGION:
-        required: true
       TF_BACKEND_resource_group_name:
         required: true
       TF_BACKEND_storage_account_name:

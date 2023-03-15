@@ -41,7 +41,6 @@ jobs:
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-      AZURE_REGION: ${{ secrets.AZURE_REGION }}
       TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
       TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
       TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
@@ -59,7 +58,6 @@ jobs:
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-      AZURE_REGION: ${{ secrets.AZURE_REGION }}
       TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
       TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
       TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
@@ -89,7 +87,6 @@ jobs:
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-      AZURE_REGION: ${{ secrets.AZURE_REGION }}
       TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
       TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
       TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}

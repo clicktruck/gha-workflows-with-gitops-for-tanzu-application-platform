@@ -19,7 +19,6 @@ jobs:
   create-backend-storage:
     runs-on: ubuntu-22.04
     env:
-      AZURE_REGION: ${{ secrets.AZURE_REGION }}
       AZURE_RESOURCE_GROUP: ${{ github.event.inputs.resourceGroup }}
       AZURE_STORAGE_ACCOUNT_NAME: ${{ github.event.inputs.storageAccountName }}
       AZURE_STORAGE_CONTAINER_NAME: ${{ github.event.inputs.storageContainerName }}
