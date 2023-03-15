@@ -13,7 +13,10 @@ on:
         description: "The Subnet CIDR block for operator resources (e.g., 10.1.0.0/24)"
         required: true
       aksSubnetCidr:
-        description: "The Subnet CIDR block hosting AKS cluster (e.g., 10.1.1.0/24)"
+        description: "The Subnet CIDR block hosting AKS cluster (e.g., 10.1.128.0/22)"
+        required: true
+      agwSubnetCidr:
+        description: "The Subnet CIDR block hosting the Application Ingress Gateway (e.g., 10.1.1.0/24)"
         required: true
       action:
         required: true
@@ -31,6 +34,7 @@ jobs:
       resourceGroupName: ${{ github.event.inputs.participantNumber }}
       operatorSubnetCidr: ${{ github.event.inputs.operatorSubnetCidr }}
       aksSubnetCidr: ${{ github.event.inputs.aksSubnetCidr }}
+      agwSubnetCidr: ${{ github.event.inputs.agwSubnetCidr }}
       action: ${{ github.event.inputs.action }}
     secrets:
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}

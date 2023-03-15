@@ -4,7 +4,11 @@ on:
   workflow_call:
     inputs:
       clusterName:
-        description: "The name given to the AKS cluster (it will be suffixed by a random id)."
+        description: "The name given to the AKS cluster"
+        required: true
+        type: string
+      ingressApplicationGatewayName:
+        description: "The name of an Ingress Application Gateway"
         required: true
         type: string
       k8sVersion:
@@ -87,6 +91,9 @@ jobs:
       TF_VAR_aks_node_disk_size: "${{ inputs.aksNodeDiskSize }}"
       TF_VAR_k8s_version: "${{ inputs.k8sVersion }}"
       TF_VAR_suffix: "${{ inputs.suffix }}"
+      TF_VAR_client_id: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      TF_VAR_client_secret: "${{ secrets.AZURE_AD_CLIENT_SECRET }}"
+
     runs-on: ubuntu-22.04
 
     outputs:
@@ -150,7 +157,23 @@ jobs:
         base64_kubeconfig=$(terraform output --raw contents_of_kubeconfig | base64 -w 0)
         echo "base64_kubeconfig=${base64_kubeconfig}" >> $GITHUB_OUTPUT
 
+  update-cluster-storage-class-default:
+    if: inputs.action == 'create'
+    needs: terraform
+    uses: ./.github/workflows/azure-k8s-cluster-storage.yml
+    with:
+      cluster-name: ${{ inputs.cluster-name }}
+      action: "update"
+    secrets:
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      KUBECONFIG_CONTENTS: ${{ needs.terraform.outputs.base64_kubeconfig }}
+      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+
   install-tanzu-cluster-essentials:
+    if: inputs.action == 'create'
     needs: terraform
     uses: ./.github/workflows/install-tanzu-cluster-essentials.yml
     with:
@@ -163,6 +186,7 @@ jobs:
       KUBECONFIG_CONTENTS: ${{ needs.terraform.outputs.base64_kubeconfig }}
 
   install-tanzu-standard-repo:
+    if: inputs.action == 'create'
     needs: [terraform,install-tanzu-cluster-essentials]
     uses: ./.github/workflows/install-tanzu-standard-repo.yml
     with:

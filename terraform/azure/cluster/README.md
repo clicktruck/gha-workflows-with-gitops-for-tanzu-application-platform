@@ -21,6 +21,8 @@ cp terraform.tfvars.sample terraform.tfvars
 
 Amend the values for
 
+* `client_id`
+* `client_secret`
 * `cluster_name`
 * `resource_group_name`
 * `suffix`
@@ -28,6 +30,7 @@ Amend the values for
 * `aks_node_type`
 * `aks_node_disk_size`
 * `environment`
+* `ingress_application_gateway_name`
 
 
 ### Specify environment variables

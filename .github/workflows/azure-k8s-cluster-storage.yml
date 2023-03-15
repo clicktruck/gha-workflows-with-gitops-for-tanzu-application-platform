@@ -1,14 +1,10 @@
-name: "aws-06b-elastic-kubernetes-storage-updates"
+name: "azure-kubernetes-service-storage-updates"
 
 on:
   workflow_call:
     inputs:
       cluster-name:
-        description: "Name of the EKS cluster where StorageClass configuration updates will be made"
-        type: string
-        required: true
-      region:
-        description: "The AWS region where the EKS cluster resides"
+        description: "Name of the AKS cluster where StorageClass configuration updates will be made"
         required: true
         type: string
       action:
@@ -16,15 +12,21 @@ on:
         type: string
         description: "Update or rollback"
     secrets:
-      AWS_ACCESS_KEY_ID:
+      AZURE_AD_CLIENT_ID:
         required: true
-      AWS_SECRET_ACCESS_KEY:
+      AZURE_AD_CLIENT_SECRET:
         required: true
-      AWS_SESSION_TOKEN:
-        required: false
-      TF_BACKEND_s3_bucket_name:
+      AZURE_SUBSCRIPTION_ID:
         required: true
-      AWS_KMS_ALIAS:
+      AZURE_AD_TENANT_ID:
+        required: true
+      AZURE_REGION:
+        required: true
+      TF_BACKEND_resource_group_name:
+        required: true
+      TF_BACKEND_storage_account_name:
+        required: true
+      TF_BACKEND_storage_container_name:
         required: true
       KUBECONFIG_CONTENTS:
         required: true
@@ -32,10 +34,10 @@ on:
 jobs:
   manage-storage:
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: ${{ inputs.region }}
-      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
       TF_VAR_kubeconfig_path: "/tmp/.kube/config"
       KUBECONFIG: "/tmp/.kube/config"
 
@@ -46,7 +48,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: terraform/aws/cluster-storage
+        working-directory: terraform/azure/cluster-storage
 
     steps:
     # Checkout the repository to the GitHub Actions runner
@@ -63,12 +65,10 @@ jobs:
     - name: Generate backend configuration
       run: |
         cp ../backend/backend.tf .
-        echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
-        echo "key = \"cluster-storage/${{ inputs.cluster-name }}/terraform.tfstate\"" >> config.aws.tfbackend
-        echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
-        echo "encrypt = true" >> config.aws.tfbackend
-        echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
-        echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+        echo "resource_group_name = \"${{ secrets.TF_BACKEND_resource_group_name }}\"" > config.azurerm.tfbackend
+          echo "storage_account_name = \"${{ secrets.TF_BACKEND_storage_account_name }}\"" >> config.azurerm.tfbackend
+          echo "container_name = \"${{ secrets.TF_BACKEND_storage_container_name }}\"" >> config.azurerm.tfbackend
+          echo "key = \"${{ inputs.resourceGroupName }}.cluster.storage.${{ inputs.clusterName }}.tfstate\"" >> config.azurerm.tfbackend
 
     - name: Generate .kube/config
       env:
@@ -80,7 +80,7 @@ jobs:
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
-      run: terraform init -upgrade -backend-config=./config.aws.tfbackend
+      run: terraform init -upgrade -backend-config=./config.azurerm.tfbackend
 
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format

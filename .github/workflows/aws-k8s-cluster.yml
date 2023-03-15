@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       cluster-name:
-        description: "Name of the EKS cluster."
+        description: "Name of the EKS cluster"
         type: string
         required: true
       vpc-id:

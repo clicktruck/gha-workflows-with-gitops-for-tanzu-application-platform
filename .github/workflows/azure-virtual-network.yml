@@ -16,7 +16,11 @@ on:
         required: true
         type: string
       aksSubnetCidr:
-        description: "The Subnet CIDR block hosting AKS cluster (e.g., 10.1.1.0/24)"
+        description: "The Subnet CIDR block hosting AKS cluster (e.g., 10.1.128.0/22)"
+        required: true
+        type: string
+      agwSubnetCidr:
+        description: "The Subnet CIDR block hosting the Application Ingress Gateway (e.g., 10.1.1.0/24)"
         required: true
         type: string
       action:
@@ -41,20 +45,10 @@ on:
       TF_BACKEND_storage_container_name:
         required: true
     outputs:
-      vnet_name:
-        value: ${{ jobs.terraform.outputs.vnet_name }}
-      vnet_id:
-        value: ${{ jobs.terraform.outputs.vnet_id }}
-      aks_subnet_name:
-        value: ${{ jobs.terraform.outputs.aks_subnet_name }}
-      aks_subnet_id:
-        value: ${{ jobs.terraform.outputs.aks_subnet_id }}
-      operator_subnet_name:
-        value: ${{ jobs.terraform.outputs.operator_subnet_name }}
-      operator_subnet_id:
-        value: ${{ jobs.terraform.outputs.operator_subnet_id }}
       vnet_suffix:
         value: ${{ jobs.terraform.outputs.vnet_suffix }}
+      ingress_application_gateway_name:
+        value: ${{ jobs.terraform.outputs.ingress_application_gateway_name }}
 
 jobs:
   terraform:
@@ -67,16 +61,12 @@ jobs:
       TF_VAR_vnet_cidr: ${{ inputs.virtualNetworkCidr }}
       TF_VAR_operator_subnet_cidr: ${{ inputs.operatorSubnetCidr }}
       TF_VAR_aks_subnet_cidr: ${{ inputs.aksSubnetCidr }}
+      TF_VAR_agw_subnet_cidr: ${{ inputs.agwSubnetCidr }}
     runs-on: ubuntu-22.04
 
     outputs:
-      vnet_name: ${{ steps.set_outputs.outputs.vnet_name }}
-      vnet_id: ${{ steps.set_outputs.outputs.vnet_id }}
-      aks_subnet_name: ${{ steps.set_outputs.outputs.aks_subnet_name }}
-      aks_subnet_id: ${{ steps.set_outputs.outputs.aks_subnet_id }}
-      operator_subnet_name: ${{ steps.set_outputs.outputs.operator_subnet_name }}
-      operator_subnet_id: ${{ steps.set_outputs.outputs.operator_subnet_id }}
       vnet_suffix: ${{ steps.set_outputs.outputs.vnet_suffix }}
+      ingress_application_gateway_name: ${{ steps.set_outputs.ingress_application_gateway_name }}
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
@@ -128,17 +118,7 @@ jobs:
       id: set_outputs
       if: inputs.action == 'create'
       run: |
-        vnet_name=$(terraform output --raw vnet_name)
-        echo "vnet_name=${vnet_name}" >> $GITHUB_OUTPUT
-        vnet_id=$(terraform output --raw vnet_id)
-        echo "vnet_id=${vnet_id}" >> $GITHUB_OUTPUT
-        aks_subnet_name=$(terraform output --raw aks_subnet_name)
-        echo "aks_subnet_name=${aks_subnet_name}" >> $GITHUB_OUTPUT
-        aks_subnet_id=$(terraform output --raw aks_subnet_id)
-        echo "aks_subnet_id=${aks_subnet_id}" >> $GITHUB_OUTPUT
-        operator_subnet_name=$(terraform output --raw operator_subnet_name)
-        echo "operator_subnet_name=${operator_subnet_name}" >> $GITHUB_OUTPUT
-        operator_subnet_id=$(terraform output --raw operator_subnet_id)
-        echo "operator_subnet_id=${operator_subnet_id}" >> $GITHUB_OUTPUT
         vnet_suffix=$(terraform output --raw vnet_suffix)
         echo "vnet_suffix=${vnet_suffix}" >> $GITHUB_OUTPUT
+        ingress_application_gateway_name=$(terraform output --raw ingress_application_gateway_name)
+        echo "ingress_application_gateway_name=${ingress_application_gateway_name}" >> $GITHUB_OUTPUT

@@ -20,6 +20,11 @@ data "azurerm_kubernetes_service_versions" "current" {
   include_preview = false
 }
 
+data "azurerm_application_gateway" "gw" {
+  name                = var.ingress_application_gateway_name
+  resource_group_name = data.azurerm_resource_group.rg.name
+}
+
 resource "random_string" "prefix" {
   length  = 4
   special = false
@@ -32,10 +37,15 @@ module "aks" {
 
   cluster_name                         = var.cluster_name
   cluster_log_analytics_workspace_name = var.cluster_name
+  private_cluster_enabled              = false
 
-  prefix                    = random_string.prefix.result
-  resource_group_name       = data.azurerm_resource_group.rg.name
-  kubernetes_version        = var.k8s_version
+  client_id     = var.client_id
+  client_secret = var.client_secret
+
+  prefix              = random_string.prefix.result
+  resource_group_name = data.azurerm_resource_group.rg.name
+  kubernetes_version  = var.k8s_version
+
   agents_availability_zones = ["1", "2"]
   agents_count              = null
   agents_max_count          = var.aks_nodes * 2
@@ -52,18 +62,21 @@ module "aks" {
       }]
     }
   ]
-  agents_size                             = var.aks_node_type
-  agents_type                             = "VirtualMachineScaleSets"
-  azure_policy_enabled                    = true
-  disk_encryption_set_id                  = azurerm_disk_encryption_set.des.id
-  enable_auto_scaling                     = true
-  enable_host_encryption                  = false
-  http_application_routing_enabled        = false
-  ingress_application_gateway_enabled     = true
-  ingress_application_gateway_name        = "${var.cluster_name}-agw"
-  ingress_application_gateway_subnet_cidr = cidrsubnet(data.azurerm_virtual_network.aks_vnet.address_space[0], 4, 12)
-  local_account_disabled                  = false
-  log_analytics_workspace_enabled         = true
+  agents_size = var.aks_node_type
+  agents_type = "VirtualMachineScaleSets"
+  agents_tags = {
+    environment = var.environment
+  }
+
+  azure_policy_enabled                = true
+  disk_encryption_set_id              = azurerm_disk_encryption_set.des.id
+  enable_auto_scaling                 = true
+  enable_host_encryption              = false
+  http_application_routing_enabled    = false
+  ingress_application_gateway_enabled = true
+  ingress_application_gateway_id      = data.azurerm_application_gateway.gw.id
+  local_account_disabled              = false
+  log_analytics_workspace_enabled     = true
   maintenance_window = {
     allowed = [
       {
@@ -84,14 +97,17 @@ module "aks" {
   network_plugin                    = "azure"
   network_policy                    = "azure"
   os_disk_size_gb                   = var.aks_node_disk_size
-  private_cluster_enabled           = false
   rbac_aad                          = true
   rbac_aad_managed                  = true
   role_based_access_control_enabled = true
   sku_tier                          = "Paid"
-  agents_tags = {
-    environment = var.environment
-  }
+
+  storage_profile_enabled                     = true
+  storage_profile_blob_driver_enabled         = true
+  storage_profile_disk_driver_enabled         = true
+  storage_profile_file_driver_enabled         = true
+  storage_profile_snapshot_controller_enabled = true
+
   api_server_authorized_ip_ranges = var.k8s_api_server_authorized_ip_ranges
   vnet_subnet_id                  = data.azurerm_subnet.aks_subnet.id
 }

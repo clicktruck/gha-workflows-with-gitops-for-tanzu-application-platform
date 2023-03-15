@@ -6,6 +6,9 @@ on:
       clusterName:
         description: "The name given to the AKS cluster (it will be suffixed by a random id)."
         required: true
+      ingressApplicationGatewayName:
+        description: "The name of an Ingress Application Gateway"
+        required: true
       k8sVersion:
         description: "A currently supported Kubernetes version in AKS"
         required: true
@@ -45,6 +48,7 @@ jobs:
     uses: ./.github/workflows/azure-k8s-cluster.yml
     with:
       clusterName: ${{ github.event.inputs.clusterName }}
+      ingressApplicationGatewayName: ${{ github.event.inputs.ingressApplicationGatewayName }}
       k8sVersion: ${{ github.event.inputs.k8sVersion }}
       aksNodes: ${{ github.event.inputs.aksNodes }}
       aksNodeType: ${{ github.event.inputs.aksNodeType }}

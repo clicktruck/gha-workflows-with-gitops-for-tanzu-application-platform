@@ -22,6 +22,22 @@ output "aks_subnet_id" {
   value = azurerm_subnet.aks_subnet.id
 }
 
+output "agw_subnet_name" {
+  value = azurerm_subnet.agw_subnet.name
+}
+
+output "agw_subnet_id" {
+  value = azurerm_subnet.agw_subnet.id
+}
+
 output "vnet_suffix" {
   value = random_string.suffix.result
+}
+
+output "ingress_application_gateway_name" {
+  value = azurerm_application_gateway.gw.name
+}
+
+output "ingress_application_gateway_id" {
+  value = azurerm_application_gateway.gw.id
 }

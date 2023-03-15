@@ -109,6 +109,7 @@ jobs:
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       operatorSubnetCidr: 10.1.0.0/24
       aksSubnetCidr: 10.1.128.0/22
+      agwSubnetCidr: 10.1.1.0/24
       action: create
     secrets:
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
@@ -164,8 +165,9 @@ jobs:
       aksNodes: ${{ github.event.inputs.aksNodes }}
       aksNodeType: ${{ github.event.inputs.aksNodeType }}
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24.6"
+      k8sVersion: "1.24"
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
+      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -235,8 +237,9 @@ jobs:
       aksNodes: ${{ github.event.inputs.aksNodes }}
       aksNodeType: ${{ github.event.inputs.aksNodeType }}
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24.6"
+      k8sVersion: "1.24"
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
+      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -263,8 +266,9 @@ jobs:
       aksNodes: ${{ github.event.inputs.aksNodes }}
       aksNodeType: ${{ github.event.inputs.aksNodeType }}
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24.6"
+      k8sVersion: "1.24"
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
+      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -291,8 +295,9 @@ jobs:
       aksNodes: ${{ github.event.inputs.aksNodes }}
       aksNodeType: ${{ github.event.inputs.aksNodeType }}
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24.6"
+      k8sVersion: "1.24"
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
+      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -319,8 +324,9 @@ jobs:
       aksNodes: ${{ github.event.inputs.aksNodes }}
       aksNodeType: ${{ github.event.inputs.aksNodeType }}
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24.6"
+      k8sVersion: "1.24"
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
+      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -347,8 +353,9 @@ jobs:
       aksNodes: ${{ github.event.inputs.aksNodes }}
       aksNodeType: ${{ github.event.inputs.aksNodeType }}
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24.6"
+      k8sVersion: "1.24"
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
+      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
