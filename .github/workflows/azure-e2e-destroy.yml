@@ -41,9 +41,9 @@ jobs:
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-      TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
-      TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
-      TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
+      TF_BACKEND_RESOURCE_GROUP_NAME: ${{ secrets.TF_BACKEND_RESOURCE_GROUP_NAME }}
+      TF_BACKEND_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}
+      TF_BACKEND_STORAGE_CONTAINER_NAME:  ${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}
   destroy-child-dns:
     if: github.event.inputs.azure-dns-zone-created == 'true'
     uses: ./.github/workflows/azure-child-dns.yml
@@ -58,9 +58,9 @@ jobs:
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-      TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
-      TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
-      TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
+      TF_BACKEND_RESOURCE_GROUP_NAME: ${{ secrets.TF_BACKEND_RESOURCE_GROUP_NAME }}
+      TF_BACKEND_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}
+      TF_BACKEND_STORAGE_CONTAINER_NAME:  ${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}
   destroy-participant-rg:
     uses: ./.github/workflows/azure-resource-group.yml
     needs: [destroy-child-dns,destroy-key-vault]
@@ -73,9 +73,9 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
       AZURE_REGION: ${{ secrets.AZURE_REGION }}
-      TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
-      TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
-      TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
+      TF_BACKEND_RESOURCE_GROUP_NAME: ${{ secrets.TF_BACKEND_RESOURCE_GROUP_NAME }}
+      TF_BACKEND_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}
+      TF_BACKEND_STORAGE_CONTAINER_NAME:  ${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}
   destroy-main-dns-rg:
     if:  github.event.inputs.destroyCoreComponents == 'yes' && github.event.inputs.azure-dns-zone-created == 'true'
     uses: ./.github/workflows/azure-resource-group.yml
@@ -87,9 +87,9 @@ jobs:
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-      TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
-      TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
-      TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
+      TF_BACKEND_RESOURCE_GROUP_NAME: ${{ secrets.TF_BACKEND_RESOURCE_GROUP_NAME }}
+      TF_BACKEND_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}
+      TF_BACKEND_STORAGE_CONTAINER_NAME:  ${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}
 
   destroy-gallery-rg:
     uses: ./.github/workflows/azure-resource-group.yml
@@ -104,6 +104,6 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
       AZURE_REGION: ${{ secrets.AZURE_REGION }}
-      TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
-      TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
-      TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
+      TF_BACKEND_RESOURCE_GROUP_NAME: ${{ secrets.TF_BACKEND_RESOURCE_GROUP_NAME }}
+      TF_BACKEND_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}
+      TF_BACKEND_STORAGE_CONTAINER_NAME:  ${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}

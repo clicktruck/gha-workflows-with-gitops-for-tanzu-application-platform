@@ -26,7 +26,7 @@ on:
         required: false
       AWS_SESSION_TOKEN:
         required: false
-      TF_BACKEND_s3_bucket_name:
+      TF_BACKEND_S3_BUCKET_NAME:
         required: true
       AWS_KMS_ALIAS:
         required: true
@@ -83,12 +83,12 @@ jobs:
     - name: Generate backend configuration
       run: |
           cp ../../aws/backend/backend.tf .
-          echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
+          echo "bucket = \"${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}\"" > config.aws.tfbackend
           echo "key = \"harbor/terraform.tfstate\"" >> config.aws.tfbackend
           echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
           echo "encrypt = true" >> config.aws.tfbackend
           echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
-          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}\"" >> config.aws.tfbackend
 
     - name: Install Carvel tools
       run: |

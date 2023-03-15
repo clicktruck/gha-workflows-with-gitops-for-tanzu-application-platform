@@ -49,11 +49,11 @@ on:
         required: true
       AZURE_AD_TENANT_ID:
         required: true
-      TF_BACKEND_resource_group_name:
+      TF_BACKEND_RESOURCE_GROUP_NAME:
         required: true
-      TF_BACKEND_storage_account_name:
+      TF_BACKEND_STORAGE_ACCOUNT_NAME:
         required: true
-      TF_BACKEND_storage_container_name:
+      TF_BACKEND_STORAGE_CONTAINER_NAME:
         required: true
       TANZU_NETWORK_API_TOKEN:
         required: true
@@ -120,9 +120,9 @@ jobs:
     - name: Generate backend configuration
       run: |
           cp ../backend/backend.tf .
-          echo "resource_group_name = \"${{ secrets.TF_BACKEND_resource_group_name }}\"" > config.azurerm.tfbackend
-          echo "storage_account_name = \"${{ secrets.TF_BACKEND_storage_account_name }}\"" >> config.azurerm.tfbackend
-          echo "container_name = \"${{ secrets.TF_BACKEND_storage_container_name }}\"" >> config.azurerm.tfbackend
+          echo "resource_group_name = \"${{ secrets.TF_BACKEND_RESOURCE_GROUP_NAME }}\"" > config.azurerm.tfbackend
+          echo "storage_account_name = \"${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}\"" >> config.azurerm.tfbackend
+          echo "container_name = \"${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}\"" >> config.azurerm.tfbackend
           echo "key = \"${{ inputs.resourceGroupName }}.cluster.${{ inputs.clusterName }}.tfstate\"" >> config.azurerm.tfbackend
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
@@ -168,7 +168,7 @@ jobs:
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       KUBECONFIG_CONTENTS: ${{ needs.terraform.outputs.base64_kubeconfig }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
 
   install-tanzu-cluster-essentials:
     if: inputs.action == 'create'

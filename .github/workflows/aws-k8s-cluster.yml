@@ -54,7 +54,7 @@ on:
         required: true
       AWS_SESSION_TOKEN:
         required: false
-      TF_BACKEND_s3_bucket_name:
+      TF_BACKEND_S3_BUCKET_NAME:
         required: true
       AWS_KMS_ALIAS:
         required: true
@@ -130,12 +130,12 @@ jobs:
     - name: Generate backend configuration
       run: |
           cp ../backend/backend.tf .
-          echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
+          echo "bucket = \"${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}\"" > config.aws.tfbackend
           echo "key = \"cluster/${{ inputs.cluster-name }}/terraform.tfstate\"" >> config.aws.tfbackend
           echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
           echo "encrypt = true" >> config.aws.tfbackend
           echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
-          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}\"" >> config.aws.tfbackend
 
     - name: Copy provider variant into place
       run: |
@@ -196,7 +196,7 @@ jobs:
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-existing-cluster-details.outputs.b64_kubeconfig }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
 
   destroy-cluster:
     needs: remove-eks-cluster-addons
@@ -258,12 +258,12 @@ jobs:
     - name: Generate backend configuration
       run: |
           cp ../backend/backend.tf .
-          echo "bucket = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" > config.aws.tfbackend
+          echo "bucket = \"${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}\"" > config.aws.tfbackend
           echo "key = \"cluster/${{ inputs.cluster-name }}/terraform.tfstate\"" >> config.aws.tfbackend
           echo "region = \"${{ env.AWS_REGION }}\"" >> config.aws.tfbackend
           echo "encrypt = true" >> config.aws.tfbackend
           echo "kms_key_id = \"${{ secrets.AWS_KMS_ALIAS }}\"" >> config.aws.tfbackend
-          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_s3_bucket_name }}\"" >> config.aws.tfbackend
+          echo "dynamodb_table = \"${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}\"" >> config.aws.tfbackend
 
     - name: Copy provider variant into place
       run: |
@@ -313,7 +313,7 @@ jobs:
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
 
   update-cluster-storage-class-default:
     if: inputs.action == 'create'
@@ -329,7 +329,7 @@ jobs:
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-from-cluster.outputs.b64kubeconfig }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
 
   install-tanzu-cluster-essentials:
     if: inputs.action == 'create'

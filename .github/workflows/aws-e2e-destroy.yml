@@ -129,7 +129,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
   destroy-ecr:
     if: github.event.inputs.container-image-registry-provider == 'ecr'
@@ -142,7 +142,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
   destroy-vnet-single-cluster-with-ecr:
     if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
@@ -156,7 +156,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
   destroy-vnet-single-cluster-with-harbor:
     if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'harbor'
@@ -170,7 +170,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
   destroy-vnet-multi-cluster-with-ecr:
     if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
@@ -184,7 +184,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
   destroy-vnet-multi-cluster-with-harbor:
     if: github.event.inputs.footprint == 'multi-cluster' && github.event.inputs.container-image-registry-provider == 'harbor'
@@ -198,7 +198,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
   destroy-harbor-cluster:
     if: github.event.inputs.container-image-registry-provider == 'harbor'
@@ -220,7 +220,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
       TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
@@ -248,7 +248,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
       TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
@@ -276,7 +276,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
       TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
@@ -304,7 +304,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
       TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
@@ -332,7 +332,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
       TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
@@ -360,7 +360,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}
       TANZU_NETWORK_API_TOKEN: ${{ secrets.TANZU_NETWORK_API_TOKEN }}
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
@@ -437,5 +437,5 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_BACKEND_s3_bucket_name: ${{ secrets.TF_BACKEND_s3_bucket_name }}
+      TF_BACKEND_S3_BUCKET_NAME: ${{ secrets.TF_BACKEND_S3_BUCKET_NAME }}
       AWS_KMS_ALIAS: ${{ secrets.AWS_KMS_ALIAS }}

@@ -102,7 +102,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
       run: |
-        gh secret set TF_BACKEND_s3_bucket_name --body ${{ needs.create-backend-storage.outputs.provisioned_bucket_name }}
+        gh secret set TF_BACKEND_S3_BUCKET_NAME --body ${{ needs.create-backend-storage.outputs.provisioned_bucket_name }}
 
   destroy-backend-storage:
     if: inputs.action == 'destroy'

@@ -37,6 +37,6 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
       KUBECONFIG_CONTENTS: ${{ needs.create-harbor-cluster.outputs.base64_kubeconfig }}
-      TF_BACKEND_resource_group_name: ${{ secrets.TF_BACKEND_resource_group_name }}
-      TF_BACKEND_storage_account_name: ${{ secrets.TF_BACKEND_storage_account_name }}
-      TF_BACKEND_storage_container_name:  ${{ secrets.TF_BACKEND_storage_container_name }}
+      TF_BACKEND_RESOURCE_GROUP_NAME: ${{ secrets.TF_BACKEND_RESOURCE_GROUP_NAME }}
+      TF_BACKEND_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}
+      TF_BACKEND_STORAGE_CONTAINER_NAME:  ${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}
