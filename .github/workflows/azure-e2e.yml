@@ -219,7 +219,7 @@ jobs:
     needs: install-harbor
     uses: ./.github/workflows/create-harbor-project.yml
     with:
-      api-endpoint: harbor.${{ github.event.inputs.domain }}
+      api-endpoint: harbor.${{ github.event.inputs.domainPrefix }}.${{ github.event.inputs.baseDomain }}
       project: "tanzu"
     secrets:
       HARBOR_USERNAME: "admin"
