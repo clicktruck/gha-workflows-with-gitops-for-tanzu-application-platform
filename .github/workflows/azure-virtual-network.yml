@@ -64,7 +64,7 @@ jobs:
 
     outputs:
       vnet_suffix: ${{ steps.set_outputs.outputs.vnet_suffix }}
-      ingress_application_gateway_name: ${{ steps.set_outputs.ingress_application_gateway_name }}
+      ingress_application_gateway_name: ${{ steps.set_outputs.outputs.ingress_application_gateway_name }}
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
@@ -112,6 +112,7 @@ jobs:
     - name: Terraform Destroy
       if: inputs.action == 'destroy'
       run: terraform destroy -auto-approve
+
     - name: Set Outputs
       id: set_outputs
       if: inputs.action == 'create'
