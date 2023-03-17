@@ -116,7 +116,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_wrapper: false
-        terraform_version: 1.4.0
+        terraform_version: 1.4.2
 
     - name: Generate backend configuration
       run: |
@@ -161,7 +161,7 @@ jobs:
     needs: terraform
     uses: ./.github/workflows/azure-k8s-cluster-storage.yml
     with:
-      cluster-name: ${{ inputs.cluster-name }}
+      cluster-name: ${{ inputs.clusterName }}
       action: "update"
     secrets:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
