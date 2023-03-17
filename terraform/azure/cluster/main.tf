@@ -97,9 +97,6 @@ module "aks" {
   network_plugin                    = "azure"
   network_policy                    = "azure"
   os_disk_size_gb                   = var.aks_node_disk_size
-  rbac_aad                          = true
-  rbac_aad_managed                  = true
-  role_based_access_control_enabled = true
   sku_tier                          = "Paid"
 
   storage_profile_enabled                     = true

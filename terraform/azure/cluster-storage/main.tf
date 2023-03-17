@@ -21,4 +21,3 @@ resource "kubernetes_annotations" "blob_default_storage" {
   }
   force = true
 }
-

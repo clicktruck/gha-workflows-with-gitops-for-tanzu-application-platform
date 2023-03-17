@@ -37,7 +37,7 @@ variable "aks_nodes" {
 variable "aks_node_type" {
   type        = string
   description = "A valid Azure VM size.  See https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general."
-  default     = "Standard_D4_v4"
+  default     = "Standard_D4_v5"
 }
 
 variable "aks_node_disk_size" {

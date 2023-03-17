@@ -14,10 +14,11 @@ on:
         required: true
         type: choice
         options:
-        - "1.24.6"
-        - "1.23.12"
-        - "1.22.15"
-        default: "1.24.6"
+        - "1.25"
+        - "1.24"
+        - "1.23"
+        - "1.22"
+        default: "1.24"
       resourceGroupName:
         description: "The resource group to provision the cluster in"
         required: true
