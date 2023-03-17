@@ -8,7 +8,7 @@ output "latest_k8s_version" {
 }
 
 output "k8s_version_installed" {
-  value = local.k8s_version
+  value = var.k8s_version
 }
 
 output "public_openssh_key" {
