@@ -107,4 +107,6 @@ module "aks" {
 
   api_server_authorized_ip_ranges = var.k8s_api_server_authorized_ip_ranges
   vnet_subnet_id                  = data.azurerm_subnet.aks_subnet.id
+
+  rbac_aad = false
 }
