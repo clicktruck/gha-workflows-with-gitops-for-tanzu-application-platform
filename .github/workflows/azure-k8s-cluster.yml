@@ -162,6 +162,7 @@ jobs:
     uses: ./.github/workflows/azure-k8s-cluster-storage.yml
     with:
       cluster-name: ${{ inputs.clusterName }}
+      resource-group-name: ${{ inputs.resourceGroupName }}
       action: "update"
     secrets:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

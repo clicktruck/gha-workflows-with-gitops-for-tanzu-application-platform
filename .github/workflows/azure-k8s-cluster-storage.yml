@@ -7,6 +7,10 @@ on:
         description: "Name of the AKS cluster where StorageClass configuration updates will be made"
         required: true
         type: string
+      resource-group-name:
+        description: "The resource group to provision the cluster in"
+        required: true
+        type: string
       action:
         required: true
         type: string
@@ -64,9 +68,9 @@ jobs:
       run: |
         cp ../backend/backend.tf .
         echo "resource_group_name = \"${{ secrets.TF_BACKEND_RESOURCE_GROUP_NAME }}\"" > config.azurerm.tfbackend
-          echo "storage_account_name = \"${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}\"" >> config.azurerm.tfbackend
-          echo "container_name = \"${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}\"" >> config.azurerm.tfbackend
-          echo "key = \"${{ inputs.resourceGroupName }}.cluster.storage.${{ inputs.clusterName }}.tfstate\"" >> config.azurerm.tfbackend
+        echo "storage_account_name = \"${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}\"" >> config.azurerm.tfbackend
+        echo "container_name = \"${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}\"" >> config.azurerm.tfbackend
+        echo "key = \"${{ inputs.resource-group-name }}.cluster.storage.${{ inputs.cluster-name }}.tfstate\"" >> config.azurerm.tfbackend
 
     - name: Generate .kube/config
       env:
