@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       mainResourceGroup:
-        description: "The resource group that the main DNS zone was created it."
+        description: "The resource group that the main DNS zone was created in."
         required: true
         type: string
       action:

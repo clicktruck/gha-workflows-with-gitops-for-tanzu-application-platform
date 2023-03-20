@@ -14,7 +14,7 @@ on:
         description: "The resource group to create the child zone in (e.g., participant-1)"
         required: true
       mainResourceGroup:
-        description: "The resource group that the main DNS zone was created it."
+        description: "The resource group that the main DNS zone was created in."
         required: true
       action:
         required: true
