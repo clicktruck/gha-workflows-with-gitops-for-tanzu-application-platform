@@ -9,7 +9,7 @@ LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
 ENV KUBECTL_VERSION=1.24.9 \
     MKPCLI_VERSION=0.15.0 \
-    YQ_VERSION=4.30.8
+    YQ_VERSION=4.32.2
 
 RUN apk add --update --no-cache bash coreutils ca-certificates curl docker gcompat jq openrc wget \
     && rc-update add docker boot \
