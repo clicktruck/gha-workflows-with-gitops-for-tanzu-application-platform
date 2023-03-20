@@ -144,8 +144,8 @@ main() {
   sudo mv kn /usr/local/bin
 
   # Install Operations Manager CLI (for Cloud Foundry)
-  wget https://github.com/pivotal-cf/om/releases/download/${OM_VERSION}/om-linux-${OM_VERSION}
-  mv om-linux-${OM_VERSION} om
+  wget https://github.com/pivotal-cf/om/releases/download/${OM_VERSION}/om-linux-amd64-${OM_VERSION}
+  mv om-linux-amd64-${OM_VERSION} om
   chmod +x om
   sudo mv om /usr/local/bin
 
