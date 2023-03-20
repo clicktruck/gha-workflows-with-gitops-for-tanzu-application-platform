@@ -5,7 +5,7 @@
 # export AZURE_REGION=<region_name>
 # export AZURE_STORAGE_ACCOUNT_NAME=<storage_account_name>
 # export AZURE_STORAGE_CONTAINER_NAME=<storage_container_name>
-#
+
 # scripts/azure/setup-azure-provided-remote-backend.sh
 
 set -eo pipefail

@@ -60,9 +60,9 @@ Then set the needed environment variables.
 ```bash
 # Your Azure subscription identifier
 export AZURE_SUBSCRIPTION_ID= 
-# The name of the service principal that will be created
+# The name of the service principal that will be created [ e.g., tap-sp ]
 export AZURE_SP_NAME= 
-# The role assigned to the service principal [ e.g., Contributor, Owner, Reader]
+# The role assigned to the service principal [ e.g., Contributor, Owner ]
 export AZURE_SP_ROLE= 
 ```
 
