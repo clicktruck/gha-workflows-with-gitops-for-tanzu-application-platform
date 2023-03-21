@@ -56,7 +56,7 @@ GCP_REGION="us-west1"
 EOF
 )
 
-if [ -d "$HOME/.iam"]; then
+if [ -d "$HOME/.iam" ]; then
   if [ -f "$HOME/.iam/config" ]; then
     source $HOME/.iam/config
   else
