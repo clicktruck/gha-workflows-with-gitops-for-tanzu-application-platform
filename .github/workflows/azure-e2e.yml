@@ -489,7 +489,7 @@ jobs:
       id: b64
       run: |
           bastion_script=$(cat scripts/azure/fetch-creds-on-azure-bastion.sh | base64 -w 0)
-          echo "bastion_script=${bastion_script}"
+          echo "bastion_script=${bastion_script}" >> $GITHUB_OUTPUT
 
   run-script:
     if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'acr'

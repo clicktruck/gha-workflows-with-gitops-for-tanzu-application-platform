@@ -23,7 +23,3 @@ az account set -s $AZURE_SUBSCRIPTION_ID
 az ad sp create-for-rbac --name $AZURE_SP_NAME --role $AZURE_SP_ROLE \
     --scopes /subscriptions/${AZURE_SUBSCRIPTION_ID} \
     --sdk-auth
-
-# Get service principal appId
-AZURE_CLIENT_ID=`az ad app list --display-name $AZURE_SP_NAME | jq -r '.[] | .appId'`
-

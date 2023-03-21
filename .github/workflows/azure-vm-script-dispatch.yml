@@ -28,7 +28,7 @@ jobs:
     uses: ./.github/workflows/azure-vm-script.yml
     with:
       script: ${{ github.event.inputs.script }}
-      resourceGroupName: ${{ github.event.inputs.participantNumber }}
+      resourceGroupName: ${{ github.event.inputs.resourceGroupName }}
       vmName: ${{ github.event.inputs.vmName }}
       action: ${{ github.event.inputs.action }}
     secrets:

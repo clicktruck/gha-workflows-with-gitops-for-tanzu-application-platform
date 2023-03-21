@@ -4,9 +4,6 @@ resource "random_string" "suffix" {
   numeric = false
 }
 
-data "azurerm_subscription" "primary" {
-}
-
 data "azurerm_resource_group" "rg" {
   name = var.resource_group_name
 }
