@@ -10,7 +10,7 @@ if [ -z "$1" ] && [ "x$KUBECONFIG" != "x" ]; then
 else
   mkdir -p /tmp/.kube
   KUBECONFIG_CONTENTS="$1"
-  echo "KUBECONFIG_CONTENTS" | base64 -d > /tmp/.kube/config
+  echo "$KUBECONFIG_CONTENTS" | base64 -d > /tmp/.kube/config
   chmod 600 /tmp/.kube/config
   export KUBECONFIG=/tmp/.kube/config
 fi
