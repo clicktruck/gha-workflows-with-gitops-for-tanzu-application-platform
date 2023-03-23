@@ -32,8 +32,8 @@ runs:
     - "${{ inputs.script-arguments }}"
     - "${{ inputs.kubeconfig-contents }}"
   env:
-    TANZU_CLI_VERSION: 2.1.0
-    TANZU_CLI_CORE_VERSION: 0.28.0
+    TANZU_CLI_VERSION: 2.1.1
+    TANZU_CLI_CORE_VERSION: 0.28.1
     CSP_API_TOKEN: ${{ inputs.csp-api-token }}
     GOOGLE_PROJECT_ID: ${{ inputs.google-project-id }}
     GOOGLE_SERVICE_ACCOUNT_KEY: ${{ inputs.google-service-account-key }}
