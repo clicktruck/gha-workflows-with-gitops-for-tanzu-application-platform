@@ -2,7 +2,7 @@
 
 # Install Oracle CLI
 if [ "x${OCI_CLI_VERSION}" == "x" ]; then
-  OCI_CLI_VERSION=3.23.4
+  OCI_CLI_VERSION=3.24.0
 fi
 
 curl -LO https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
