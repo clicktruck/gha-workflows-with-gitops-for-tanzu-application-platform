@@ -1,7 +1,7 @@
-# Gitops module for Spring Cloud Gateway
+# Gitops module for Spring Cloud Gateway for K8s
 
 Are you bought-in to managing and auditing updates to Kubernetes resources via Git commits and merge requests?
-Would you like to be able to install Tanzu Application Platform without the `tanzu` CLI and necessary plugins?
+Would you like to be able to install Spring Cloud Gateway for K8s without the `tanzu` CLI and necessary plugins?
 Are you invested in the [Carvel](https://carvel.dev/) toolset and [CRD](https://carvel.dev/kapp-controller/docs/latest/app-spec/)s?
 
 Then, you've come to the right place.
