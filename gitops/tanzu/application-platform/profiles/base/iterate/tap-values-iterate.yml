@@ -82,7 +82,7 @@ cnrs:
 
 appliveview_connector:
   backend:
-    sslDisabled: false
+    sslDeactivated: false
     ingressEnabled: true
     host: #@ "appliveview.{}".format(data.values.tap.domains.main)
 
