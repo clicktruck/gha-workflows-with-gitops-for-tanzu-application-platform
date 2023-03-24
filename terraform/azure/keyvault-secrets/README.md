@@ -40,6 +40,23 @@ export ARM_TENANT_ID=xxx
 ./create-secrets.sh
 ```
 
+### Retrieve secret from Keyvault
+
+See https://learn.microsoft.com/en-us/azure/key-vault/secrets/quick-create-cli#retrieve-a-secret-from-key-vault.
+
+For example
+
+```
+# Login with service principal that has Keyvault Secrets Officer role assigned
+az login --service-principal -u <clientId> -p <clientSecret> --tenant <tenantId>
+# Fetch list of key vaults
+az keyvault list -o table
+# Fetch list of secret names from a key vault
+az keyvault secret list --vault-name <keyVaultName> -o table
+# Fetch a secret value
+az keyvault secret show --vault-name <keyVaultName> --name <secretName> -o table
+```
+
 ### Teardown secrets
 
 ```
