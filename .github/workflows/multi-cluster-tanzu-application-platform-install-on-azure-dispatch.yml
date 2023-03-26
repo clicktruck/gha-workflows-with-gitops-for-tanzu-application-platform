@@ -112,8 +112,8 @@ jobs:
           echo "container-image-registry-username=${{ needs.obtain-secrets-from-secrets-manager.outputs.acr-admin-username }}" >> $GITHUB_OUTPUT
           echo "container-image-registry-password=${{ needs.obtain-secrets-from-secrets-manager.outputs.acr-admin-password }}" >> $GITHUB_OUTPUT
           echo "container-image-registry-url=${{ needs.obtain-secrets-from-secrets-manager.outputs.acr-url }}" >> $GITHUB_OUTPUT
-          echo "build-service-repo=tap-build-service" >> $GITHUB_OUTPUT
-          echo "ootb-supply-chain-repo=tanzu-application-platform" >> $GITHUB_OUTPUT
+          echo "build-service-repo=build-service" >> $GITHUB_OUTPUT
+          echo "ootb-supply-chain-repo=supply-chain" >> $GITHUB_OUTPUT
         fi
         if [ "harbor" == "$CONTAINER_IMAGE_REGISTRY_PROVIDER" ]; then
           echo "container-image-registry-username=${{ needs.obtain-secrets-from-secrets-manager.outputs.harbor-admin-username }}" >> $GITHUB_OUTPUT
