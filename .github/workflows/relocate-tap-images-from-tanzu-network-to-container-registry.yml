@@ -71,7 +71,6 @@ jobs:
 
   relocate:
     needs: encode-tanzu-application-platform-relocate-images-script
-    if: always()
     runs-on: ubuntu-22.04
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
