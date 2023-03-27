@@ -89,8 +89,8 @@ module "aks" {
   net_profile_dns_service_ip     = "10.0.0.10"
   net_profile_docker_bridge_cidr = "170.10.0.1/16"
   net_profile_service_cidr       = "10.0.0.0/16"
-  network_plugin                 = "azure"
-  network_policy                 = "azure"
+  network_plugin                 = "kubenet"
+  network_policy                 = "kubenet"
   os_disk_size_gb                = var.aks_node_disk_size
   sku_tier                       = "Paid"
 
@@ -104,22 +104,4 @@ module "aks" {
   vnet_subnet_id                  = data.azurerm_subnet.aks_subnet.id
 
   rbac_aad = false
-}
-
-resource "azurerm_role_assignment" "cluster_sp_for_blob_sc" {
-  scope                = module.aks.aks_id
-  role_definition_name = "Storage Blob Data Owner"
-  principal_id         = module.aks.kubelet_identity[0].object_id
-}
-
-resource "azurerm_role_assignment" "cluster_sp_for_disk_sc" {
-  scope                = module.aks.aks_id
-  role_definition_name = "Data Operator for Managed Disks"
-  principal_id         = module.aks.kubelet_identity[0].object_id
-}
-
-resource "azurerm_role_assignment" "cluster_sp_for_file_sc" {
-  scope                = module.aks.aks_id
-  role_definition_name = "Storage File Data SMB Share Elevated Contributor"
-  principal_id         = module.aks.kubelet_identity[0].object_id
 }
