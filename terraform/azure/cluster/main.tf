@@ -109,17 +109,17 @@ module "aks" {
 resource "azurerm_role_assignment" "cluster_sp_for_blob_sc" {
   scope                = module.aks.aks_id
   role_definition_name = "Storage Blob Data Owner"
-  principal_id         = module.aks.kubelet_identity.object_id
+  principal_id         = module.aks.kubelet_identity[0].object_id
 }
 
 resource "azurerm_role_assignment" "cluster_sp_for_disk_sc" {
   scope                = module.aks.aks_id
   role_definition_name = "Data Operator for Managed Disks"
-  principal_id         = module.aks.kubelet_identity.object_id
+  principal_id         = module.aks.kubelet_identity[0].object_id
 }
 
 resource "azurerm_role_assignment" "cluster_sp_for_file_sc" {
   scope                = module.aks.aks_id
   role_definition_name = "Storage File Data SMB Share Elevated Contributor"
-  principal_id         = module.aks.kubelet_identity.object_id
+  principal_id         = module.aks.kubelet_identity[0].object_id
 }
