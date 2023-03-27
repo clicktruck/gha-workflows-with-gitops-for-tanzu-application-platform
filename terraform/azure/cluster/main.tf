@@ -1,10 +1,7 @@
+data "azurerm_client_config" "current" {}
+
 data "azurerm_resource_group" "rg" {
   name = var.resource_group_name
-}
-
-data "azurerm_virtual_network" "aks_vnet" {
-  name                = "vnet-${var.suffix}"
-  resource_group_name = data.azurerm_resource_group.rg.name
 }
 
 data "azurerm_subnet" "aks_subnet" {
@@ -109,4 +106,10 @@ module "aks" {
   vnet_subnet_id                  = data.azurerm_subnet.aks_subnet.id
 
   rbac_aad = false
+}
+
+resource "azurerm_role_assignment" "cluster_sp" {
+  scope                = module.aks.aks_id
+  role_definition_name = "Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
 }
