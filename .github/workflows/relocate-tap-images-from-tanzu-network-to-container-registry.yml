@@ -1,0 +1,119 @@
+name: "relocate-tap-images-from-tanzu-network-to-container-registry"
+
+on:
+  workflow_call:
+    inputs:
+      container-image-registry-url:
+        description: "The container registry that will host the packages and images for the installation"
+        type: string
+        required: true
+      target-repo:
+        description: "Name of an existing repository in container image registry that will host Tanzu Application Platform images"
+        type: string
+        required: true
+      container-image-registry-username:
+        description: "The container registry's admin account username"
+        type: string
+        required: true
+      container-image-registry-password:
+        description: "The container registry's admin account password"
+        type: string
+        required: true
+      container-image-registry-provider:
+        description: "A choice of provider for a container image registry"
+        type: string
+        required: true
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+      AWS_SESSION_TOKEN:
+        required: false
+      AZURE_AD_CLIENT_ID:
+        required: false
+      AZURE_AD_CLIENT_SECRET:
+        required: false
+      AZURE_SUBSCRIPTION_ID:
+        required: false
+      AZURE_AD_TENANT_ID:
+        required: false
+      GOOGLE_PROJECT_ID:
+        required: false
+      GOOGLE_SERVICE_ACCOUNT_KEY:
+        required: false
+      CSP_API_TOKEN:
+        required: true
+      PA_TOKEN:
+        required: true
+      TANZU_NETWORK_USERNAME:
+        required: true
+      TANZU_NETWORK_PASSWORD:
+        required: true
+
+jobs:
+
+  encode-tanzu-application-platform-relocate-images-script:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      result: ${{ steps.encode.outputs.result }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Encode
+      id: encode
+      run: |
+        result="$(cat scripts/relocate-tap-images.sh | base64 -w 0)"
+        echo "result=${result}" >> $GITHUB_OUTPUT
+
+  relocate:
+    needs: encode-tanzu-application-platform-relocate-images-script
+    runs-on: ubuntu-22.04
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    ## We'll likely source manufactured sensitive data like domain, private registry credentials from a secrets management store like AWS Secrets Manager or Azure KeyVault
+
+    - name: "Relocate images from Tanzu Network for Tanzu Application Platform install to Container Registry repository on Azure"
+      if: contains(fromJson('["acr","harbor-on-azure"]'), inputs.container-image-registry-provider)
+      uses: ./docker/actions/azure/tanzu-runsh-setup-action
+      with:
+        script-contents: ${{ needs.encode-tanzu-application-platform-relocate-images-script.outputs.result }}
+        script-arguments: "${{ secrets.TANZU_NETWORK_USERNAME }} ${{ secrets.TANZU_NETWORK_PASSWORD }} ${{ inputs.container-image-registry-url }} ${{ inputs.container-image-registry-username }} ${{ inputs.container-image-registry-password }} ${{ inputs.target-repo }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+        azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        azure-tenant-id: ${{ secrets.AZURE_AD_TENANT_ID }}
+        azure-ad-client-id: ${{ secrets.AZURE_AD_CLIENT_ID }}
+        azure-ad-client-secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+
+    - name: "Relocate images from Tanzu Network for Tanzu Application Platform install to Container Registry repository on AWS"
+      if: contains(fromJson('["ecr","harbor-on-aws"]'), inputs.container-image-registry-provider)
+      uses: ./docker/actions/aws/tanzu-runsh-setup-action
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        script-contents: ${{ needs.encode-tanzu-application-platform-relocate-images-script.outputs.result }}
+        script-arguments: "${{ secrets.TANZU_NETWORK_USERNAME }} ${{ secrets.TANZU_NETWORK_PASSWORD }} ${{ inputs.container-image-registry-url }} ${{ inputs.container-image-registry-username }} ${{ inputs.container-image-registry-password }} ${{ inputs.target-repo }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
+
+    - name: "Relocate images from Tanzu Network for Tanzu Application Platform install to Container Registry repository on Google"
+      if: contains(fromJson('["gar","gcr","harbor-on-google"]'), inputs.container-image-registry-provider)
+      uses: ./docker/actions/google/tanzu-runsh-setup-action
+      with:
+        google-project-id: ${{ secrets.GOOGLE_PROJECT_ID }}
+        google-service-account-key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        script-contents: ${{ needs.encode-tanzu-application-platform-relocate-images-script.outputs.result }}
+        script-arguments: "${{ secrets.TANZU_NETWORK_USERNAME }} ${{ secrets.TANZU_NETWORK_PASSWORD }} ${{ inputs.container-image-registry-url }} ${{ inputs.container-image-registry-username }} ${{ inputs.container-image-registry-password }} ${{ inputs.target-repo }}"
+        csp-api-token: ${{ secrets.CSP_API_TOKEN }}
