@@ -90,7 +90,7 @@ module "aks" {
   net_profile_docker_bridge_cidr = "170.10.0.1/16"
   net_profile_service_cidr       = "10.0.0.0/16"
   network_plugin                 = "kubenet"
-  network_policy                 = "kubenet"
+  network_policy                 = "azure"
   os_disk_size_gb                = var.aks_node_disk_size
   sku_tier                       = "Paid"
 
