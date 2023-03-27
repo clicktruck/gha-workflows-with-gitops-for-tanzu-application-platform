@@ -1,0 +1,157 @@
+name: "relocate-tap-images-from-tanzu-network-to-container-registry-dispatch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      container-image-registry-url:
+        description: "The container registry that will host the packages and images for the installation"
+        required: true
+      container-image-registry-username:
+        description: "The container registry's admin account username"
+        type: string
+        required: true
+      container-image-registry-password:
+        description: "The container registry's admin account password"
+        type: string
+        required: true
+      container-image-registry-provider:
+        description: "A choice of provider for a container image registry"
+        required: true
+        type: choice
+        options:
+        - acr
+        - ecr
+        - gar
+        - gcr
+        - harbor-on-aws
+        - harbor-on-azure
+        - harbor-on-google
+      google-project-id:
+        description: "[Optional] Google project that is hosting this TAP footprint."
+        required: false
+
+jobs:
+  relocate-images-to-ecr:
+    if: github.event.inputs.container-image-registry-provider == 'ecr'
+    uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
+    with:
+      container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
+      container-image-registry-username: ${{ github.event.inputs.container-image-registry-username }}
+      container-image-registry-password: ${{ github.event.inputs.container-image-registry-password }}
+      container-image-registry-provider: ${{ github.event.inputs.container-image-registry-provider }}
+      target-repo: tap-images
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  relocate-images-to-acr:
+    if: github.event.inputs.container-image-registry-provider == 'acr'
+    uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
+    with:
+      container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
+      container-image-registry-username: ${{ github.event.inputs.container-image-registry-username }}
+      container-image-registry-password: ${{ github.event.inputs.container-image-registry-password }}
+      container-image-registry-provider: ${{ github.event.inputs.container-image-registry-provider }}
+      target-repo: tanzu-application-platform
+    secrets:
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  relocate-images-to-gar:
+    if: github.event.inputs.container-image-registry-provider == 'gar'
+    uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
+    with:
+      container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
+      container-image-registry-username: ${{ github.event.inputs.container-image-registry-username }}
+      container-image-registry-password: ${{ github.event.inputs.container-image-registry-password }}
+      container-image-registry-provider: ${{ github.event.inputs.container-image-registry-provider }}
+      target-repo: "${{ github.event.inputs.google-project-id }}/tanzu"
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  relocate-images-to-gcr:
+    if: github.event.inputs.container-image-registry-provider == 'gcr'
+    uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
+    with:
+      container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
+      container-image-registry-username: ${{ github.event.inputs.container-image-registry-username }}
+      container-image-registry-password: ${{ github.event.inputs.container-image-registry-password }}
+      container-image-registry-provider: ${{ github.event.inputs.container-image-registry-provider }}
+      target-repo: ${{ github.event.inputs.google-project-id }}
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  relocate-images-to-harbor-on-aws:
+    if: github.event.inputs.container-image-registry-provider == 'harbor-on-aws'
+    uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
+    with:
+      container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
+      container-image-registry-username: ${{ github.event.inputs.container-image-registry-username }}
+      container-image-registry-password: ${{ github.event.inputs.container-image-registry-password }}
+      container-image-registry-provider: ${{ github.event.inputs.container-image-registry-provider }}
+      target-repo: tanzu
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  relocate-images-to-harbor-on-azure:
+    if: github.event.inputs.container-image-registry-provider == 'harbor-on-azure'
+    uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
+    with:
+      container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
+      container-image-registry-username: ${{ github.event.inputs.container-image-registry-username }}
+      container-image-registry-password: ${{ github.event.inputs.container-image-registry-password }}
+      container-image-registry-provider: ${{ github.event.inputs.container-image-registry-provider }}
+      target-repo: tanzu
+    secrets:
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+      AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
+
+  relocate-images-to-harbor-on-google:
+    if: github.event.inputs.container-image-registry-provider == 'harbor-on-google'
+    uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
+    with:
+      container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
+      container-image-registry-username: ${{ github.event.inputs.container-image-registry-username }}
+      container-image-registry-password: ${{ github.event.inputs.container-image-registry-password }}
+      container-image-registry-provider: ${{ github.event.inputs.container-image-registry-provider }}
+      target-repo: tanzu
+    secrets:
+      CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
+      TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
+      TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
