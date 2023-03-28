@@ -36,7 +36,8 @@ app_registry:
     #@ if ((data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1) == False:
     namespace: #@ data.values.tas_adapter.namespace
     secret_name: container-registry-credentials
-    #@ else
+    #@ end
+    #@ if (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
     #! The Amazon Resource Name (ARN) of an AWS IAM role that can be used to access an Elastic Container Registry (ECR)
     aws_iam_role_arn: #@ data.values.tas_adapter.registry.repositories.aws.iam_role_arn
     #@ end
