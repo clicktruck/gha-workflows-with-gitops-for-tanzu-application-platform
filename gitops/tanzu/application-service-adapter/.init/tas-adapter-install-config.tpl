@@ -2,8 +2,9 @@
 ---
 #@ def config():
 tap:
-  registry:
-    host: {{ .container_image_registry_url }}
+  credentials:
+    registry:
+      host: {{ .container_image_registry_url }}
 
 tas_adapter:
   domains:
