@@ -9,6 +9,10 @@ tas_adapter:
     tanzuNet:
       username: {{ .tanzu_network_username }}
       password: {{ .tanzu_network_password }}
+  registry:
+    repositories:
+      aws:
+        iam_role_arn: {{ or .aws_iam_role_arn_for_ecr "" }}
 #@ end
 ---
 apiVersion: v1

@@ -33,8 +33,14 @@ app_ingress:
 
 app_registry:
   credentials:
+    #@ if (data.values.tas_adapter.registry.repositories.aws.iam_role_arn == "":
     namespace: #@ data.values.tas_adapter.namespace
     secret_name: container-registry-credentials
+    #@ end
+    #@ if (data.values.tas_adapter.registry.repositories.aws.iam_role_arn != "":
+    #! The Amazon Resource Name (ARN) of an AWS IAM role that can be used to access an Elastic Container Registry (ECR)
+    aws_iam_role_arn: #@ data.values.tas_adapter.registry.repositories.aws.iam_role_arn
+    #@ end
   hostname: #@ data.values.tap.registry.host
   path:
 #! Container registry repository where staged, runnable app images (Droplets) will be stored
