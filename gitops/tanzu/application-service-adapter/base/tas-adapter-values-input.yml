@@ -8,7 +8,7 @@ tap:
     host: registry.tap.tanzu.corp
 
 tas_adapter:
-  version: "1.2.0-dev.125"
+  version: "1.2.0-dev.140"
   namespace: tas-adapter-install
 
   domains:
