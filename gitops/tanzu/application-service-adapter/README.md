@@ -70,7 +70,7 @@ kubectl get httpproxy korifi-api-proxy -n tas-adapter-system
 
 You'll need to authenticate, then create a `RoleBinding`, before actually being able to exercise the [cf](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html) CLI (version 8.6.1 or better).
 
-Follow [these instructions](https://docs-staging.vmware.com/en/Application-Service-Adapter-for-VMware-Tanzu-Application-Platform/1.0/tas-adapter/GUID-install.html#assign-the-admin-role-to-a-user).
+Follow [these instructions](https://docs.vmware.com/en/Application-Service-Adapter-for-VMware-Tanzu-Application-Platform/1.1/tas-adapter/install.html#assign-the-admin-role-to-a-user).
 
 
 ## Removal
