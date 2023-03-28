@@ -10,3 +10,12 @@ type: kubernetes.io/ssh-auth
 data:
   ssh-privatekey: {{ .git_ssh_private_key }}
   ssh-knownhosts: {{ .git_ssh_known_hosts }}
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: git-ssh-for-carvel
+  namespace: tap-install-gitops
+spec:
+  toNamespaces:
+  - '*'
