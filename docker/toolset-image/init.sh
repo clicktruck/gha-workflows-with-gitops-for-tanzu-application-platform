@@ -24,7 +24,9 @@ main() {
   OCI_CLI_VERSION=3.25.0
   OM_VERSION=7.9.0
   MKPCLI_VERSION=0.15.1
+  PINNIPED_VERSION=0.22.0
   PIVNET_VERSION=3.0.1
+  RELOK8S_VERSION=0.5.2
   TEKTONCD_VERSION=0.29.0
   TERRAFORM_VERSION=1.4.2
   TERRAFORM_DOCS_VERSION=0.16.0
@@ -258,6 +260,17 @@ main() {
   curl -L -o cmctl.tar.gz https://github.com/jetstack/cert-manager/releases/latest/download/cmctl-linux-amd64.tar.gz
   tar xzf cmctl.tar.gz
   sudo mv cmctl /usr/local/bin
+
+  # Install relok8s
+  curl -LO https://github.com/vmware-tanzu/asset-relocation-tool-for-kubernetes/releases/download/v${RELOK8S_VERSION}/relok8s_${RELOK8S_VERSION}_linux_x86_64.tar.gz
+  tar -xvf relok8s_${RELOK8S_VERSION}_linux_x86_64.tar.gz
+  chmod +x relok8s
+  sudo mv relok8s /usr/local/bin
+
+  # Install pinniped
+  curl -Lso pinniped https://get.pinniped.dev/v${PINNIPED_VERSION}/pinniped-cli-linux-amd64
+  chmod +x pinniped
+  sudo mv pinniped /usr/local/bin
 
   # Clean-up APT cache
   rm -Rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
