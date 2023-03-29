@@ -1,6 +1,6 @@
 # Provisioning and Install Automation for Tanzu Application Platform
 
-![Current State](https://img.shields.io/badge/current%20state-stable-brightgreen) ![Supported TAP release versions](https://img.shields.io/badge/versions%20supported-1.4-blue)
+![Current State](https://img.shields.io/badge/current%20state-stable-brightgreen) ![Supported TAP release versions](https://img.shields.io/badge/versions%20supported-1.4,%201.5-blue)
 
 
 ## Table of Contents
