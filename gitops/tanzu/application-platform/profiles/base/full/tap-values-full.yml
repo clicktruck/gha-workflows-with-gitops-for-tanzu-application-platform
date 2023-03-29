@@ -7,6 +7,10 @@ profile: full
 excluded_packages:
   - cert-manager.tanzu.vmware.com
   - contour.tanzu.vmware.com
+  #! EKS clusters auto-deploy Crossplane with k8s, helm and AWS providers
+  #@ if data.values.tap.cluster.provider == "eks":
+  - crossplane.tanzu.vmware.com
+  #@ end
 
 #! installed_for_vmware_internal_use: "true"
 ceip_policy_disclosed: true
