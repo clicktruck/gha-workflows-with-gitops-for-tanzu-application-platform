@@ -16,7 +16,7 @@ ENV HELM_VERSION=3.11.2 \
     MKPCLI_VERSION=0.15.0 \
     LEFTOVERS_VERSION=0.62.0 \
     VENDIR_VERSION=0.33.1 \
-     YQ_VERSION=4.33.1 \
+    YQ_VERSION=4.33.2 \
     YTT_VERSION=0.45.0
 
 RUN apk add --update --no-cache coreutils docker gcompat openrc wget \

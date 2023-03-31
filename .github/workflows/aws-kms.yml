@@ -61,7 +61,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_wrapper: false
-        terraform_version: 1.4.2
+        terraform_version: 1.4.4
 
     # Initialize a new or existing Terraform working directory by creating initial files, downloading modules, etc.
     - name: Terraform Init
