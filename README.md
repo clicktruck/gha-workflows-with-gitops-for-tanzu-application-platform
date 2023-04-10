@@ -154,6 +154,7 @@ Also be sure to checkout these guides:
 
 * [Getting Started with the Tanzu Application Platform](https://docs.vmware.com/en/Tanzu-Application-Platform/1.5/tap/getting-started.html)
 * [Getting started with multi-cluster Tanzu Application Platform](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/multicluster-getting-started.html)
+* [Configure and deploy to multiple environments with custom parameters](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/scc-config-deploy-multi-env.html)
 
 Companion repositories:
 
