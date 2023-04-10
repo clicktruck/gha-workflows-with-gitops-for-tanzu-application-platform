@@ -4,7 +4,7 @@
 # Collect token and ca-cert from cluster hosting TAP view profile
 # Create secrets in namespace on cluster hosting TAP build profile
 
-# Based upon procedure described here: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/scst-store-multicluster-setup.html
+# Based upon procedure described here: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/scst-store-multicluster-setup.html
 
 # Inputs:
 # * base64-encoded kubeconfig contents for cluster hosting TAP view profile

@@ -2,7 +2,7 @@
 
 # Create IAM roles required for installing Tanzu Application Platform on AWS EKS integrating with ECR
 
-# This script is based off policy documents described in https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/aws-resources.html#create-iam-roles-5.
+# This script is based off policy documents described in https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/aws-resources.html#create-iam-roles-5.
 # It must be run once per AWS account and per cluster!
 
 

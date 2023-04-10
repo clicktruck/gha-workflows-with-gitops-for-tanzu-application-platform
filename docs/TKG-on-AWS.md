@@ -87,7 +87,7 @@ Here's how to set up such a key-pair for named repo providers:
 
 You'll want to set environment variables starting with `GIT_SSH` - use the [gh-secrets-setup.sh](../scripts/gh-set-secrets.sh) with the `--include-git-ssh-private-key` option to store these values in Github secrets.
 
-Also see [Git Authentication](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/scc-git-auth.html).
+Also see [Git Authentication](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/scc-git-auth.html).
 
 ### Setup a Personal Access Token in Github
 
