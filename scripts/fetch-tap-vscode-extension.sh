@@ -19,7 +19,7 @@ TANZU_NETWORK_API_TOKEN="$1"
 pivnet login --api-token=$TANZU_NETWORK_API_TOKEN
 
 cd /tmp
-TAP_VERSION="1.5.0-rc.19"
+TAP_VERSION="1.5.0"
 
 # Download Tanzu Developer Tools for VS Code
 TAP_PRODUCT_FILE_ID=1463764
