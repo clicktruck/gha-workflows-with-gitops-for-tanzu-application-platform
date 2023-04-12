@@ -3,4 +3,4 @@
 #@overlay/match-child-defaults missing_ok=True
 ---
 tds:
-  version: "1.7.0"
+  version: "1.7.1"

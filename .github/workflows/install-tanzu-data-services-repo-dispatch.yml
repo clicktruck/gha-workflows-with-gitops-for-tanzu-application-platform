@@ -7,7 +7,7 @@ on:
         description: "Tanzu Data Services Package Repository version"
         type: string
         required: true
-        default: "1.5.0"
+        default: "1.7.1"
       cluster-provider:
         description: "The Kubernetes service provider"
         required: true
