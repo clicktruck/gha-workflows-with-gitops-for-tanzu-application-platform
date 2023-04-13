@@ -116,7 +116,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_wrapper: false
-        terraform_version: 1.4.4
+        terraform_version: 1.4.5
 
     - name: Generate backend configuration
       run: |
