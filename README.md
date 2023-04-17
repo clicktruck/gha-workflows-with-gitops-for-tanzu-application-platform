@@ -1,6 +1,6 @@
 # Provisioning and Install Automation for Tanzu Application Platform
 
-![Current State](https://img.shields.io/badge/current%20state-stable-brightgreen) ![Supported TAP release versions](https://img.shields.io/badge/versions%20supported-1.4-blue)
+![Current State](https://img.shields.io/badge/current%20state-stable-brightgreen) ![Supported TAP release versions](https://img.shields.io/badge/versions%20supported-1.4,%201.5-blue)
 
 
 ## Table of Contents
@@ -129,11 +129,13 @@ Want some TAP do you? There are a few pathways to achieve dial-tone, some more e
 
 ### Manual
 
-* Consult the public Tanzu Application Platform [installation documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/install-intro.html)
+* Consult the public Tanzu Application Platform [installation documentation](https://docs.vmware.com/en/Tanzu-Application-Platform/1.5/tap/install-intro.html)
 
 ### Alternative
 
-* Adopt a [Gitops approach](gitops/README.md)
+* Adopt a Gitops approach
+  * via beta release of the [reference implementation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/install-gitops-intro.html)
+  * via [this repository's implementation](gitops/README.md)
 
 
 ## Usage
@@ -150,8 +152,9 @@ Once you have successfully installed Tanzu Application Platform, you may wish to
 
 Also be sure to checkout these guides:
 
-* [Getting Started with the Tanzu Application Platform](https://docs.vmware.com/en/Tanzu-Application-Platform/1.4/tap/getting-started.html)
-* [Getting started with multi-cluster Tanzu Application Platform](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/multicluster-getting-started.html)
+* [Getting Started with the Tanzu Application Platform](https://docs.vmware.com/en/Tanzu-Application-Platform/1.5/tap/getting-started.html)
+* [Getting started with multi-cluster Tanzu Application Platform](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/multicluster-getting-started.html)
+* [Configure and deploy to multiple environments with custom parameters](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/scc-config-deploy-multi-env.html)
 
 Companion repositories:
 

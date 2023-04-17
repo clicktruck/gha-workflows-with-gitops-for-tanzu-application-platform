@@ -12,8 +12,8 @@ on:
         default: "pacphi/setup-kind@v0.6.0-pre"
         required: true
       kind-version:
-        description: "Version of Kind to use (default v0.17.0)"
-        default: "v0.17.0"
+        description: "Version of Kind to use (default v0.18.0)"
+        default: "v0.18.0"
         type: string
         required: true
       cluster-name:

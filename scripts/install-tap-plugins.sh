@@ -10,12 +10,12 @@ OS="$(uname | tr '[:upper:]' '[:lower:]')"
 case $OS in
   darwin)
     echo "Installing MacOS version of Tanzu Application Platform plugins for tanzu CLI"
-	TAP_PRODUCT_FILE_ID=1433867
+	TAP_PRODUCT_FILE_ID=1446071
     ;;
 
   linux)
     echo "Installing Linux version of Tanzu Application Platform plugins for tanzu CLI"
-	TAP_PRODUCT_FILE_ID=1433868
+	TAP_PRODUCT_FILE_ID=1446073
     ;;
 
   *)
@@ -38,11 +38,11 @@ pivnet login --api-token=$TANZU_NETWORK_API_TOKEN
 
 mkdir -p $HOME/tanzu
 cd /tmp
-TAP_VERSION="1.4.2"
+TAP_VERSION="1.5.0"
 
 export TANZU_CLI_NO_INIT=true
 cd $HOME/tanzu
-export CORE_VERSION=v0.25.4
+export CORE_VERSION=v0.28.1
 
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --product-file-id="${TAP_PRODUCT_FILE_ID}"
 tar -xvf tanzu-framework-${OS}-amd64-${CORE_VERSION}*.tar -C $HOME/tanzu

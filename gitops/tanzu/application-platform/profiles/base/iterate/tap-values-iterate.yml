@@ -7,6 +7,10 @@ profile: iterate
 excluded_packages:
   - cert-manager.tanzu.vmware.com
   - contour.tanzu.vmware.com
+  #! EKS clusters auto-deploy Crossplane with k8s, helm and AWS providers
+  #@ if data.values.tap.cluster.provider == "eks":
+  - crossplane.tanzu.vmware.com
+  #@ end
 
 #! installed_for_vmware_internal_use: "true"
 ceip_policy_disclosed: true
@@ -23,8 +27,6 @@ buildservice:
   kp_default_repository_username: #@ data.values.tap.credentials.registry.username
   kp_default_repository_password: #@ data.values.tap.credentials.registry.password
   #@ end
-  tanzunet_username: #@ data.values.tap.credentials.tanzuNet.username
-  tanzunet_password: #@ data.values.tap.credentials.tanzuNet.password
   exclude_dependencies: true
   stack_configuration: #@ data.values.tap.stack_configuration
 
@@ -82,7 +84,7 @@ cnrs:
 
 appliveview_connector:
   backend:
-    sslDisabled: false
+    sslDeactivated: false
     ingressEnabled: true
     host: #@ "appliveview.{}".format(data.values.tap.domains.main)
 

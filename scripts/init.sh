@@ -7,31 +7,32 @@ main() {
   # Manage software versions installed here
   TZ=America/Los_Angeles
   ARGO_VERSION=3.4.5
-  ARGOCD_VERSION=2.6.4
-  BOSH_VERSION=7.2.0
+  ARGOCD_VERSION=2.6.7
+  BOSH_VERSION=7.2.2
   CF_VERSION=8.6.1
-  CREDHUB_VERSION=2.9.12
-  HELM_VERSION=3.11.2
-  HELMFILE_VERSION=0.151.0
+  CREDHUB_VERSION=2.9.13
+  HELM_VERSION=3.11.3
+  HELMFILE_VERSION=0.152.0
   AWS_IAM_AUTHENTICATOR_VERSION=0.6.2
   IMGPKG_VERSION=0.36.0
   KAPP_VERSION=0.55.0
   KBLD_VERSION=0.37.0
   KCTRL_VERSION=0.45.0
-  KIND_VERSION=0.17.0
+  KIND_VERSION=0.18.0
   KPACK_CLI_VERSION=0.10.0
   KWT_VERSION=0.0.6
   KUBECTL_VERSION=1.24.9
-  KNATIVE_VERSION=1.9.1
+  KNATIVE_VERSION=1.9.2
   LEFTOVERS_VERSION=0.62.0
-  OCI_CLI_VERSION=3.24.0
+  OCI_CLI_VERSION=3.25.1
   OM_VERSION=7.9.0
   MKPCLI_VERSION=0.15.1
+  PINNIPED_VERSION=0.22.0
   PIVNET_VERSION=3.0.1
-  TEKTONCD_VERSION=0.29.0
-  TERRAFORM_VERSION=1.4.2
+  TEKTONCD_VERSION=0.30.0
+  TERRAFORM_VERSION=1.4.5
   TERRAFORM_DOCS_VERSION=0.16.0
-  TMC_VERSION=0.5.3-d5b26b4a
+  TMC_VERSION=0.5.3-88d04e82
   VELERO_VERSION=1.10.2
   VENDIR_VERSION=0.33.1
   YTT_VERSION=0.45.0
@@ -264,6 +265,17 @@ main() {
   curl -L -o cmctl.tar.gz https://github.com/jetstack/cert-manager/releases/latest/download/cmctl-linux-amd64.tar.gz
   tar xzf cmctl.tar.gz
   sudo mv cmctl /usr/local/bin
+
+  # Install relok8s
+  curl -LO https://github.com/vmware-tanzu/asset-relocation-tool-for-kubernetes/releases/download/v${RELOK8S_VERSION}/relok8s_${RELOK8S_VERSION}_linux_x86_64.tar.gz
+  tar -xvf relok8s_${RELOK8S_VERSION}_linux_x86_64.tar.gz
+  chmod +x relok8s
+  sudo mv relok8s /usr/local/bin
+
+  # Install pinniped
+  curl -Lso pinniped https://get.pinniped.dev/v${PINNIPED_VERSION}/pinniped-cli-linux-amd64
+  chmod +x pinniped
+  sudo mv pinniped /usr/local/bin
 
   # Install yq
   sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64

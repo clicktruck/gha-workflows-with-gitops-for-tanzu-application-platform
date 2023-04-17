@@ -1,7 +1,7 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:yaml", "yaml")
 ---
-#! See https://docs.vmware.com/en/Application-Service-Adapter-for-VMware-Tanzu-Application-Platform/1.0/tas-adapter/GUID-install.html#configure-the-installation-settings
+#! See https://docs.vmware.com/en/Application-Service-Adapter-for-VMware-Tanzu-Application-Platform/1.1/tas-adapter/install.html#configure-the-installation-settings
 
 #@ def config():
 ceip_policy_disclosed: true
@@ -33,9 +33,15 @@ app_ingress:
 
 app_registry:
   credentials:
+    #@ if ((data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1) == False:
     namespace: #@ data.values.tas_adapter.namespace
     secret_name: container-registry-credentials
-  hostname: #@ data.values.tap.registry.host
+    #@ end
+    #@ if (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
+    #! The Amazon Resource Name (ARN) of an AWS IAM role that can be used to access an Elastic Container Registry (ECR)
+    aws_iam_role_arn: #@ data.values.tas_adapter.registry.repositories.aws.iam_role_arn
+    #@ end
+  hostname: #@ data.values.tap.credentials.registry.host
   path:
 #! Container registry repository where staged, runnable app images (Droplets) will be stored
     droplets: #@ data.values.tas_adapter.registry.repositories.droplets

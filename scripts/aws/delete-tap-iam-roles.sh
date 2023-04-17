@@ -2,7 +2,7 @@
 
 # Delete previously created IAM roles required for installing Tanzu Application Platform on AWS EKS integrating with ECR
 
-# This script is based off policy documents described in https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.4/tap/aws-resources.html#create-iam-roles-5.
+# This script is based off policy documents described in https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.5/tap/aws-resources.html#create-iam-roles-5.
 # Use it to remove roles created by create-tap-iam-roles.sh.
 
 if [ -z "$1" ] && [ -z "$2" ]; then

@@ -189,6 +189,10 @@ For each cluster that will host a TAP profile
 * [install-tanzu-data-services-repo-dispatch](../../../actions/workflows/install-tanzu-data-services-repo-dispatch.yml)
 * [install-tanzu-ingress-dispatch](../../../actions/workflows/install-tanzu-ingress-dispatch.yml)
 
+Relocate Tanzu Application Platform images from Tanzu Network to your container registry
+
+* [relocate-tap-images-from-tanzu-network-to-container-registry-dispatch](../../../actions/workflows/relocate-tap-images-from-tanzu-network-to-container-registry-dispatch.yml)
+
 > If you used any of the provisioning automation (i.e., cloud -cluster or -e2e flows) the above requisite packages get installed.
 
 ### Install

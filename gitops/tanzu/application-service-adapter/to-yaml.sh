@@ -25,6 +25,7 @@ sed \
   -e "s~{{ or .cf_admin_username \"\" }}~$CF_ADMIN_USERNAME~g" \
   -e "s/{{ .tanzu_network_username }}/$TANZU_NETWORK_USERNAME/g" \
   -e "s/{{ .tanzu_network_password }}/$TANZU_NETWORK_PASSWORD/g" \
+  -e "s~{{ or .aws_iam_role_arn_for_ecr \"\" }}~$AWS_IAM_ROLE_ARN_FOR_ECR~g" \
   .init/tas-adapter-install-secrets.tpl > .init/tas-adapter-install-secrets.yml
 
 # Convert .install/tas-adapter-install.tpl to .install/tas-adapter-install.yml

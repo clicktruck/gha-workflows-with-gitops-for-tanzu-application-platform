@@ -18,6 +18,7 @@ See [gh workflow run](https://cli.github.com/manual/gh_workflow_run) for additio
   * [Provision cluster, registry, secrets manager, and secrets](#provision-cluster-registry-secrets-manager-and-secrets)
 * [Provision GKE and Harbor on Google](#provision-gke-and-harbor-on-google)
   * [Provision workload clusters, secrets manager, and secrets](#provision-workload-clusters-secrets-manager-and-secrets)
+* [Relocate TAP images from Tanzu Network](#relocate-tap-images-from-tanzu-network)
 * [Install Tanzu Application Platform targeting GKE](#install-tanzu-application-platform-targeting-gke)
   * [Install prereqs into cluster](#install-prereqs-into-cluster)
   * [Install](#install)
@@ -182,7 +183,7 @@ echo '{ "cluster-provider": "gke", "kubeconfig-contents": "KVkfThQJXekP3fIgzasYb
 > Only executed on Non-TKG clusters.  This is actually automatically installed if you executed [ google-k8s-cluster-dispatch, azure-k8s-cluster-dispatch, google-k8s-cluster-dispatch ] workflows.
 
 ```bash
-echo '{ "tkg-version": "v1.6.1", "cluster-provider": "gke", "kubeconfig-contents": "KVkfThQJXekP3fIgzasYb3lD..." }' | gh workflow run install-tanzu-standard-repo-dispatch.yml --json
+echo '{ "tkg-version": "v2.1.1", "cluster-provider": "gke", "kubeconfig-contents": "KVkfThQJXekP3fIgzasYb3lD..." }' | gh workflow run install-tanzu-standard-repo-dispatch.yml --json
 ```
 > Only executed on Non-TKG clusters.  This is actually automatically installed if you executed [ google-k8s-cluster-dispatch, azure-k8s-cluster-dispatch, google-k8s-cluster-dispatch ] workflows.
 
@@ -195,6 +196,14 @@ echo '{ "domain": "ironleg.me", "email-address": "admin@ironleg.me", "google-pro
 </details>
 
 
+### Relocate TAP images from Tanzu Network
+
+Do this once
+
+```bash
+echo '{ "container-image-registry-url": "harbor.ironleg.me", "container-image-registry-username": "admin", "container-image-registry-password": "cEBzc3cwcmQlCg==", "container-image-registry-provider": "google-on-harbor", "google-project-id": "xx-xxxxx" }' | gh workflow relocate-tap-images-from-tanzu-network-to-container-registry-dispatch.yml --json
+```
+
 ### Install
 
 Single-cluster
@@ -204,7 +213,7 @@ Single-cluster
 <p>
 
 ```bash
-echo '{ "domain": "apps.ironleg.me", "email-address": "admin@ironleg.me", "dev-namespace": "default", "backstage-catalog": "https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml", "container-image-registry-connection-details": "harbor.ironleg.me;admin;cEBzc3cwcmQlCg==;tanzu/", "cluster-provider": "gke", "active-profile": "full", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run install-tanzu-application-platform-dispatch.yml --json
+echo '{ "domain": "apps.ironleg.me", "email-address": "admin@ironleg.me", "dev-namespace": "default", "backstage-catalog": "https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml", "container-image-registry-connection-details": "harbor.ironleg.me;admin;cEBzc3cwcmQlCg==;tanzu/build-service;tanzu/supply-chain", "cluster-provider": "gke", "active-profile": "full", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run install-tanzu-application-platform-dispatch.yml --json
 ```
 > Note, this dispatch workflow supports variant configuration for targeting Amazon GKE, Azure AKS and Google GKE clusters.  To-date only the following `cluster-provider`s are supported: [ "aks", "gke", "gke", "tkg»aws", "tkg»azure" ].  Other optional options may apply depending on choice of provider.  Remember to base64-encode the _password_ if the _host_ in `container-image-registry-connection-details` is Google Container Registry or Google Artifact Registry!
 

@@ -4,11 +4,12 @@
 ---
 tap:
   namespace: tap-install
-  registry:
-    host: registry.tap.tanzu.corp
+  credentials:
+    registry:
+      host: registry.tap.tanzu.corp
 
 tas_adapter:
-  version: "1.1.2"
+  version: "1.2.0-dev.140"
   namespace: tas-adapter-install
 
   domains:
