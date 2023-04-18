@@ -28,7 +28,7 @@ resource "random_string" "prefix" {
 
 
 module "aks" {
-  source = "github.com/Azure/terraform-azurerm-aks?ref=6.7.1"
+  source = "github.com/Azure/terraform-azurerm-aks?ref=6.8.0"
 
   cluster_name                         = var.cluster_name
   cluster_log_analytics_workspace_name = var.cluster_name
