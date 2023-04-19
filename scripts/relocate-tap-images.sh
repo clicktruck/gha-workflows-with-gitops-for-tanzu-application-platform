@@ -18,7 +18,7 @@ TARGET_REPOSITORY="${6}"
 # Set up environment variables for installation use by running:
 
 export TAP_VERSION=1.5.0
-export TBS_FULL_DEPS_VERSION=1.10.2
+export TBS_FULL_DEPS_VERSION=1.10.8
 export IMGPKG_REGISTRY_HOSTNAME_0=registry.tanzu.vmware.com
 export IMGPKG_REGISTRY_USERNAME_0="${TANZUNET_USERNAME}"
 export IMGPKG_REGISTRY_PASSWORD_0="${TANZUNET_PASSWORD}"
