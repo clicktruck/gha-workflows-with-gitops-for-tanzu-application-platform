@@ -40,12 +40,14 @@ learningcenter:
 
 tap_gui:
   service_type: ClusterIP
-  ingressEnabled: "true"
+  ingressEnabled: true
   ingressDomain: #@ data.values.tap.domains.main
   tls:
     namespace: #@ data.values.tap.ingress.contour_tls_namespace
     secretName: #@ data.values.tap.ingress.contour_tls_secret
   app_config:
+    supplyChain:
+      enablePlugin: true
     app:
       baseUrl: #@ "https://{}".format(data.values.tap.domains.tapGui)
     integrations:

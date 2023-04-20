@@ -107,7 +107,7 @@ learningcenter:
 
 tap_gui:
   service_type: ClusterIP
-  ingressEnabled: "true"
+  ingressEnabled: true
   ingressDomain: #@ data.values.tap.domains.main
   tls:
     namespace: #@ data.values.tap.ingress.contour_tls_namespace
@@ -163,6 +163,8 @@ tap_gui:
         github:
           title: Github Login
           message: Login with your GitHub account
+    supplyChain:
+      enablePlugin: true
     #@ end
 
 scanning:
