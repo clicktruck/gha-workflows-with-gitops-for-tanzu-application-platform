@@ -13,9 +13,12 @@ admin:
     - #@ data.values.tas_adapter.credentials.cf.admin.username
 #@ end
 
+shared:
+  ingress_issuer: letsencrypt-contour-cluster-issuer
+
 api_ingress:
 #! FQDN used to access the CF API
-  fqdn: #@ "cf.{}".format(data.values.tas_adapter.domains.main)
+  fqdn: #@ "{}".format(data.values.tas_adapter.domains.main)
   tls:
 #! Name of the secret containing the TLS certificate for the CF API (PEM format)
     secret_name: #@ data.values.tas_adapter.ingress.contour_tls_secret
@@ -42,11 +45,6 @@ app_registry:
     aws_iam_role_arn: #@ data.values.tas_adapter.registry.repositories.aws.iam_role_arn
     #@ end
   hostname: #@ data.values.tap.credentials.registry.host
-  path:
-#! Container registry repository where staged, runnable app images (Droplets) will be stored
-    droplets: #@ data.values.tas_adapter.registry.repositories.droplets
-#! Container registry repository where uploaded app source code (Packages) will be stored
-    packages: #@ data.values.tas_adapter.registry.repositories.packages
 #! Name of the kpack cluster builder to use for staging
 kpack_clusterbuilder_name: full
 
