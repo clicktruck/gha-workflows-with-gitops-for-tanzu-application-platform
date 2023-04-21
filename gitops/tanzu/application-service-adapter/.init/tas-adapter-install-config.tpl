@@ -13,9 +13,7 @@ tas_adapter:
     contour_tls_secret: tls
     contour_tls_namespace: contour-tls
   registry:
-    repositories:
-      droplets: {{ or .container_image_registry_prefix "tas-adapter" }}/droplets
-      packages: {{ or .container_image_registry_prefix "tas-adapter" }}/packages
+    prefix: {{ or .container_image_registry_prefix "tas-adapter" }}
 
 #@ end
 ---
