@@ -45,7 +45,7 @@ app_registry:
     aws_iam_role_arn: #@ data.values.tas_adapter.registry.repositories.aws.iam_role_arn
     #@ end
   hostname: #@ data.values.tap.credentials.registry.host
-  prefix: #@ "{}/{}".format(data.values.tap.credentials.registry.host, data.values.tas_adapter.registry.prefix)
+  repository_prefix: #@ "{}/{}".format(data.values.tap.credentials.registry.host, data.values.tas_adapter.registry.prefix)
 
 #! Name of the kpack cluster builder to use for staging
 kpack_clusterbuilder_name: full
