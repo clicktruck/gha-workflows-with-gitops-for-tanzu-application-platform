@@ -24,17 +24,18 @@ main() {
   KUBECTL_VERSION=1.24.9
   KNATIVE_VERSION=1.9.2
   LEFTOVERS_VERSION=0.62.0
-  OCI_CLI_VERSION=3.25.1
+  OCI_CLI_VERSION=3.25.4
   OM_VERSION=7.9.0
   MKPCLI_VERSION=0.15.1
   PINNIPED_VERSION=0.22.0
   PIVNET_VERSION=3.0.1
   RELOK8S_VERSION=0.5.2
+  SOPS_VERSION=3.7.3
   TEKTONCD_VERSION=0.30.0
   TERRAFORM_VERSION=1.4.5
   TERRAFORM_DOCS_VERSION=0.16.0
   TMC_VERSION=0.5.3-88d04e82
-  VELERO_VERSION=1.10.2
+  VELERO_VERSION=1.11.0
   VENDIR_VERSION=0.33.1
   YTT_VERSION=0.45.0
 
@@ -272,6 +273,12 @@ main() {
   tar -xvf relok8s_${RELOK8S_VERSION}_linux_x86_64.tar.gz
   chmod +x relok8s
   sudo mv relok8s /usr/local/bin
+
+  # Install Mozilla Secrets for Operations
+  curl -LO https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64
+  mv sops-v${SOPS_VERSION}.linux.amd64 sops
+  chmod +x sops
+  sudo mv sops /usr/local/bin
 
   # Install pinniped
   curl -Lso pinniped https://get.pinniped.dev/v${PINNIPED_VERSION}/pinniped-cli-linux-amd64
