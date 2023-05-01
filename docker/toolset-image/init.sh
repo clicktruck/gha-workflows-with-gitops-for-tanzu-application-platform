@@ -3,6 +3,7 @@
 main() {
   # Manage software versions installed here
   TZ=America/Los_Angeles
+  AGE_VERSION=1.1.1
   ARGO_VERSION=3.4.5
   ARGOCD_VERSION=2.6.7
   BOSH_VERSION=7.2.3
@@ -112,6 +113,12 @@ main() {
 
   # Install Cloud Foundry UAA CLI
   gem install cf-uaac
+
+  # Install age file encryption
+  curl -LO https://github.com/FiloSottile/age/releases/download/v${AGE_VERSION}/age-v${AGE_VERSION}-linux-amd64.tar.gz
+  tar -xvf age-v${AGE_VERSION}-linux-amd64.tar.gz
+  rm -Rf age-v${AGE_VERSION}-linux-amd64.tar.gz
+  sudo mv age/age* /usr/local/bin
 
   # Install BOSH CLI
   wget https://github.com/cloudfoundry/bosh-cli/releases/download/v${BOSH_VERSION}/bosh-cli-${BOSH_VERSION}-linux-amd64
