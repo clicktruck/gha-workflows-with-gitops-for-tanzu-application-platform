@@ -8,8 +8,8 @@ LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanz
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
 ENV HELM_VERSION=3.11.3 \
-    IMGPKG_VERSION=0.36.0 \
-    KAPP_VERSION=0.55.0 \
+    IMGPKG_VERSION=0.36.2 \
+    KAPP_VERSION=0.55.1 \
     KBLD_VERSION=0.37.0 \
     KCTRL_VERSION=0.45.0 \
     KUBECTL_VERSION=1.24.9 \
@@ -17,7 +17,7 @@ ENV HELM_VERSION=3.11.3 \
     LEFTOVERS_VERSION=0.62.0 \
     VENDIR_VERSION=0.33.1 \
     YQ_VERSION=4.33.2 \
-    YTT_VERSION=0.45.0
+    YTT_VERSION=0.45.1
 
 RUN apk add --update --no-cache coreutils docker gcompat openrc wget \
     && rc-update add docker boot \
