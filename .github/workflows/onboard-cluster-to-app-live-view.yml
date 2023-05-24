@@ -229,7 +229,7 @@ jobs:
 
     - name: Render observed tap-install-secrets
       if: inputs.cluster-provider != 'gke' && steps.observed-clusters-config.outputs.hasResult == 'true'
-      uses: chuhlomin/render-template@v1.6
+      uses: chuhlomin/render-template@v1.7
       env:
         OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
         OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
@@ -257,7 +257,7 @@ jobs:
 
     - name: Render observed tap-install-secrets on GKE
       if: inputs.cluster-provider == 'gke' && steps.observed-clusters-config.outputs.hasResult == 'true'
-      uses: chuhlomin/render-template@v1.6
+      uses: chuhlomin/render-template@v1.7
       env:
         OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
         OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
@@ -284,7 +284,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.yml
 
     - name: Render git-secrets
-      uses: chuhlomin/render-template@v1.6
+      uses: chuhlomin/render-template@v1.7
       with:
         template:  ${{ env.GITOPS_DIR }}/.init/git-secrets.tpl
         vars: |
@@ -293,7 +293,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/git-secrets.yml
 
     - name: Render tap-install-config
-      uses: chuhlomin/render-template@v1.6
+      uses: chuhlomin/render-template@v1.7
       with:
         template: ${{ env.GITOPS_DIR }}/.init/tap-install-config.tpl
         vars: |
@@ -314,7 +314,7 @@ jobs:
 
     - name: Render tap-install-secrets
       if: inputs.cluster-provider != 'gke' && steps.observed-clusters-config.outputs.hasResult == 'false'
-      uses: chuhlomin/render-template@v1.6
+      uses: chuhlomin/render-template@v1.7
       env:
         OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
         OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
@@ -342,7 +342,7 @@ jobs:
 
     - name: Render tap-install-secrets on GKE
       if: inputs.cluster-provider == 'gke' && steps.observed-clusters-config.outputs.hasResult == 'false'
-      uses: chuhlomin/render-template@v1.6
+      uses: chuhlomin/render-template@v1.7
       env:
         OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
         OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
@@ -369,7 +369,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.yml
 
     - name: Render tap-install
-      uses: chuhlomin/render-template@v1.6
+      uses: chuhlomin/render-template@v1.7
       with:
         template: ${{ env.GITOPS_DIR }}/.install/tap-install.tpl
         vars: |
@@ -379,7 +379,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.install/tap-install.yml
 
     - name: Render tap-post-install
-      uses: chuhlomin/render-template@v1.6
+      uses: chuhlomin/render-template@v1.7
       with:
         template: ${{ env.GITOPS_DIR }}/.post-install/tap-post-install.tpl
         vars: |
