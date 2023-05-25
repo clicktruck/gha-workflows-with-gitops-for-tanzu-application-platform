@@ -142,15 +142,6 @@ tap_gui:
             password: #@ data.values.tap.credentials.backstage.database.password
             ssl: {rejectUnauthorized: true}
       #@ end
-    #! Add proxy for accessing metadata store from the UI for CVE results
-    proxy:
-      /metadata-store:
-        target: https://metadata-store-app.metadata-store:8443/api/v1
-        changeOrigin: true
-        secure: false
-        headers:
-          Authorization: #@ "Bearer {}".format(data.values.tap.gui.proxy.metadata_store.token)
-          X-Custom-Source: project-star
     #@ if data.values.tap.credentials.oidc.provider == "github" and data.values.tap.credentials.oidc.client_id != "" and data.values.tap.credentials.oidc.client_secret != "":
     auth:
       environment: development
@@ -166,6 +157,7 @@ tap_gui:
     supplyChain:
       enablePlugin: true
     #@ end
+  metadataStoreAutoconfiguration: true
 
 scanning:
   metadataStore:
