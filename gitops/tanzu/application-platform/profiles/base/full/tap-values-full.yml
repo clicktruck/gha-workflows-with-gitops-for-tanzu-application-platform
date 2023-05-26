@@ -200,10 +200,20 @@ cnrs:
     external:
       namespace: tanzu-system-ingress
 
+#! Resource utilization optimization
+#! See https://github.com/tfynes-pivotal/TapResourceRequestRemover
+
 package_overlays:
+#@ components = [ "accelerator", "api-auto-registration", "appliveview", "appliveview-apiserver", "appliveview-conventions", "appsso", "bitnami-services", "buildservice", "cartographer", "cnrs", "crossplane", "developer-conventions", "eventing", "fluxcd-source-controller", "grype", "learningcenter-workshops", "metadata-store", "ootb-delivery-basic", "ootb-supply-chain-basic", "ootb-templates", "policy-controller", "scanning", "service-bindings", "services-toolkit", "source-controller", "spring-boot-conventions", "tap-auth", "tap-gui", "tap-telemetry", "tekton-pipelines" ]
+#@ for c in range(len(components)):
+- name: #@ components[c]
+  secrets:
+  - name: reqfix-overlay-secret
+#@ end
 - name:  learningcenter
   secrets:
   - name: learningcenter-config-overlay
+  - name: reqfix-overlay-secret
 
 #@ end
 ---
