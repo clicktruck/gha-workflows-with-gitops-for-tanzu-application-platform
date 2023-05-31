@@ -24,6 +24,14 @@ on:
         description: "A namespace that will accommodate Workloads"
         required: true
         default: "default"
+      container-image-registry-provider:
+        description: "The container image registry provider"
+        required: true
+        type: choice
+        options:
+        - google-artifact-registry
+        - google-container-registry
+        - harbor-on-google
       backstage-catalog:
         description: "A Git repository and path to a Backstage catalog file"
         required: true
@@ -144,8 +152,36 @@ jobs:
           echo "view_domain=${{ steps.split.outputs._1 }}.${{ github.event.inputs.domain }}" >> $GITHUB_OUTPUT
           echo "run_domain=${{ steps.split.outputs._2 }}.${{ github.event.inputs.domain }}" >> $GITHUB_OUTPUT
 
+  determine-target-repo:
+    runs-on: ubuntu-22.04
+
+    env:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      CONTAINER_IMAGE_REGISTRY_PROVIDER: "${{ github.event.inputs.container-image-registry-provider }}"
+
+    outputs:
+      result: ${{ steps.vars.outputs.target_repo }}
+
+    steps:
+      - id: vars
+        run: |
+          case $CONTAINER_IMAGE_REGISTRY_PROVIDER in
+
+            google-artifact-registry)
+              echo "target_repo=${GOOGLE_PROJECT_ID}/tanzu" >> $GITHUB_OUTPUT
+              ;;
+
+            google-container-registry)
+              echo "target_repo=${GOOGLE_PROJECT_ID}" >> $GITHUB_OUTPUT
+              ;;
+
+            harbor-on-google)
+              echo "target_repo=tanzu" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
   install-tap-build-on-google:
-    needs: [obtain-secrets-from-secrets-manager,prepare-metadata-store-secrets]
+    needs: [ obtain-secrets-from-secrets-manager,prepare-metadata-store-secrets,determine-target-repo ]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       domain: ${{ github.event.inputs.domain }}
@@ -160,6 +196,7 @@ jobs:
       cluster-provider: "gke"
       deployment-name: "tap"
       active-profile: "build"
+      target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
@@ -176,7 +213,7 @@ jobs:
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   install-tap-iterate-on-google:
-    needs: [obtain-secrets-from-secrets-manager,assemble-domain-names]
+    needs: [ obtain-secrets-from-secrets-manager,assemble-domain-names,determine-target-repo ]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       domain: ${{ needs.assemble-domain-names.outputs.iterate-domain }}
@@ -191,6 +228,7 @@ jobs:
       cluster-provider: "gke"
       deployment-name: "tap"
       active-profile: "iterate"
+      target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
@@ -207,7 +245,7 @@ jobs:
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
   install-tap-view-on-google:
-    needs: [obtain-secrets-from-secrets-manager,assemble-domain-names]
+    needs: [ obtain-secrets-from-secrets-manager,assemble-domain-names,determine-target-repo ]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       domain: ${{ needs.assemble-domain-names.outputs.view-domain }}
@@ -222,6 +260,7 @@ jobs:
       cluster-provider: "gke"
       deployment-name: "tap"
       active-profile: "view"
+      target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
@@ -250,7 +289,7 @@ jobs:
       TAP_VIEW_KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
 
   install-tap-run-on-google:
-    needs: [obtain-secrets-from-secrets-manager,assemble-domain-names]
+    needs: [ obtain-secrets-from-secrets-manager,assemble-domain-names,determine-target-repo ]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
       domain: ${{ needs.assemble-domain-names.outputs.run-domain }}
@@ -265,6 +304,7 @@ jobs:
       cluster-provider: "gke"
       deployment-name: "tap"
       active-profile: "run"
+      target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}

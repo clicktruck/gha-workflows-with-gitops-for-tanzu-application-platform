@@ -10,6 +10,6 @@ metadata:
 spec:
   fetch:
     imgpkgBundle:
-      image: #@ "{}/tanzu-application-platform/tbs-full-deps:{}".format(data.values.tap.credentials.registry.host, data.values.buildService.version)
+      image: #@ "{}/{}/tbs-full-deps:{}".format(data.values.tap.credentials.registry.host, data.values.tap.registry.repositories.base, data.values.buildService.version)
       secretRef:
         name: container-registry-credentials

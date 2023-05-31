@@ -31,6 +31,10 @@ on:
         description: "Tanzu Build Service container image registry repository name"
         type: string
         required: true
+      target-repo:
+        description: "The source repository within the container image registry where Tanzu Application Platform install packages are found"
+        type: string
+        required: true
       build-service-repo-aws-iam-role-arn:
         description: "IAM role ARN for pull-push access to container image registry"
         type: string
@@ -261,6 +265,7 @@ jobs:
           domain: ${{ inputs.domain }}
           dev_namespace: ${{ inputs.dev-namespace }}
           backstage_catalog: ${{ inputs.backstage-catalog }}
+          target_repo: ${{ inputs.target-repo }}
           ootb_supply_chain_repo: ${{ inputs.ootb-supply-chain-repo }}
           build_service_repo: ${{ inputs.build-service-repo }}
           build_service_repo_aws_iam_role_arn: ${{ inputs.build-service-repo-aws-iam-role-arn }}

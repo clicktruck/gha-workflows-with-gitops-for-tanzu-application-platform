@@ -10,6 +10,7 @@ tap:
     repositories:
       aws:
         iam_role_arn: {{ .build_service_repo_aws_iam_role_arn }}
+      base: {{ .target_repo }}
       buildService: {{ .build_service_repo }}
       ootbSupplyChain: {{ .ootb_supply_chain_repo }}
 
