@@ -86,7 +86,7 @@ jobs:
     ## We'll likely source manufactured sensitive data like domain, private registry credentials from a secrets management store like AWS Secrets Manager or Azure KeyVault
 
     - name: "Relocate images from Tanzu Network for Tanzu Application Platform install to Container Registry repository on Azure"
-      if: contains(fromJson('["acr","harbor-on-azure"]'), inputs.container-image-registry-provider)
+      if: contains(fromJson('["azure-container-registry","harbor-on-azure"]'), inputs.container-image-registry-provider)
       uses: ./docker/actions/azure/tanzu-runsh-setup-action
       with:
         script-contents: ${{ needs.encode-tanzu-application-platform-relocate-images-script.outputs.result }}
@@ -98,7 +98,7 @@ jobs:
         azure-ad-client-secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
 
     - name: "Relocate images from Tanzu Network for Tanzu Application Platform install to Container Registry repository on AWS"
-      if: contains(fromJson('["ecr","harbor-on-aws"]'), inputs.container-image-registry-provider)
+      if: contains(fromJson('["elastic-container-registry","harbor-on-aws"]'), inputs.container-image-registry-provider)
       uses: ./docker/actions/aws/tanzu-runsh-setup-action
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -109,7 +109,7 @@ jobs:
         csp-api-token: ${{ secrets.CSP_API_TOKEN }}
 
     - name: "Relocate images from Tanzu Network for Tanzu Application Platform install to Container Registry repository on Google"
-      if: contains(fromJson('["gar","gcr","harbor-on-google"]'), inputs.container-image-registry-provider)
+      if: contains(fromJson('["google-artifact-registry","google-container-registry","harbor-on-google"]'), inputs.container-image-registry-provider)
       uses: ./docker/actions/google/tanzu-runsh-setup-action
       with:
         google-project-id: ${{ secrets.GOOGLE_PROJECT_ID }}
