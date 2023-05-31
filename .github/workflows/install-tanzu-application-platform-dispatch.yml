@@ -51,6 +51,10 @@ on:
         description: "[Optional: Azure-only] existing resource group name consumed by ClusterIssuer DNS solver configuration"
         type: string
         required: false
+      google-project-id:
+        description: "[Optional: Google-only] Google project that will host this TAP footprint"
+        type: string
+        required: false
       cluster-provider:
         description: "The Kubernetes service provider"
         type: choice
@@ -141,7 +145,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_PROJECT_ID: "${{ github.event.inputs.google-project-id }}"
       CONTAINER_IMAGE_REGISTRY_PROVIDER: "${{ github.event.inputs.container-image-registry-provider }}"
 
     outputs:

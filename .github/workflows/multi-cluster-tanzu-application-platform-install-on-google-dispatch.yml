@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_PROJECT_ID: ${{ github.event.inputs.google-project-id }}
       CONTAINER_IMAGE_REGISTRY_PROVIDER: "${{ github.event.inputs.container-image-registry-provider }}"
 
     outputs:
