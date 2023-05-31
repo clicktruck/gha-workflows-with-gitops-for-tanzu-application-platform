@@ -34,6 +34,12 @@ appliveview:
     namespace: #@ data.values.tap.ingress.contour_tls_namespace
     secretName: #@ data.values.tap.ingress.contour_tls_secret
 
+appliveview_connector:
+  backend:
+    sslDeactivated: false
+    ingressEnabled: true
+    host: #@ "appliveview.{}".format(data.values.tap.domains.main)
+
 buildservice:
   kp_default_repository: #@ "{}/{}".format(data.values.tap.credentials.registry.host, data.values.tap.registry.repositories.buildService)
   #@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
