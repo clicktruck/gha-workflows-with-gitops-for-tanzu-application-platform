@@ -3,19 +3,21 @@ name: "install-tanzu-application-platform-dispatch"
 on:
   workflow_dispatch:
     inputs:
-      domain:
-        description: "A domain that the installation of TAP will be addressable from"
+      tap-install-details:
+        description: "An ordered, semi-colon separated, list of details for a Tanzu Application Platform installation. Sample: {domain}; {email-address}; {dev-namespace}; {backstage-catalog}"
         required: true
-      email-address:
-        description: "An email address to be used as the owner for the public trusted domain certificate vended by Let's Encrypt"
+      container-image-registry-provider:
+        description: "The container image registry provider"
         required: true
-      dev-namespace:
-        description: "A namespace that will accommodate Workloads"
-        required: true
-        default: "default"
-      backstage-catalog:
-        description: "A Git repository and path to a Backstage catalog file"
-        required: true
+        type: choice
+        options:
+        - azure-container-registry
+        - elastic-container-registry
+        - google-artifact-registry
+        - google-container-registry
+        - harbor-on-aws
+        - harbor-on-azure
+        - harbor-on-google
       container-image-registry-connection-details:
         description: "An ordered, semi-colon separated, list of connection details for a container image registry. The registry will host the packages and images for the installation as well as application OCI artifacts. Sample: {url}; {username}; {password}; {build-service-repo}; {ootb-supply-chain-repo}; {build-service-repo-aws-iam-role-arn}; {workload-repo-aws-iam-role-arn}.  Single line passwords only!"
         required: true
@@ -75,6 +77,31 @@ on:
         required: true
 
 jobs:
+  tap-install-details:
+    runs-on: ubuntu-22.04
+
+    outputs:
+      domain: ${{ steps.vars.outputs.domain }}
+      email-address: ${{ steps.vars.outputs.email_address }}
+      dev-namespace: ${{ steps.vars.outputs.dev_namespace }}
+      backstage-catalog: ${{ steps.vars.outputs.backstage_catalog }}
+
+    steps:
+      - uses: jungwinter/split@v2
+        id: split
+        with:
+          msg: '${{ github.event.inputs.tap-install-details }}'
+          separator: ';'
+
+      - name: Unpack TAP install details
+        id: vars
+        run: |
+          array_length=${{ steps.split.outputs.length }}
+          echo "domain=${{ steps.split.outputs._0 }}" >> $GITHUB_OUTPUT
+          echo "email_address=${{ steps.split.outputs._1 }}" >> $GITHUB_OUTPUT
+          echo "dev_namespace=${{ steps.split.outputs._2 }}" >> $GITHUB_OUTPUT
+          echo "backstage_catalog=${{ steps.split.outputs._3 }}" >> $GITHUB_OUTPUT
+
   container-image-registry-connection-details:
     runs-on: ubuntu-22.04
 
@@ -110,15 +137,51 @@ jobs:
             echo "workload_repo_aws_iam_role_arn=${{ steps.split.outputs._6 }}" >> $GITHUB_OUTPUT
           fi
 
+  determine-target-repo:
+    runs-on: ubuntu-22.04
+
+    env:
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      CONTAINER_IMAGE_REGISTRY_PROVIDER: "${{ github.event.inputs.container-image-registry-provider }}"
+
+    outputs:
+      result: ${{ steps.vars.outputs.target_repo }}
+
+    steps:
+      - id: vars
+        run: |
+          case $CONTAINER_IMAGE_REGISTRY_PROVIDER in
+
+            azure-container-registry)
+              echo "target_repo=tanzu-application-platform" >> $GITHUB_OUTPUT
+              ;;
+
+            elastic-container-registry)
+              echo "target_repo=tap-images" >> $GITHUB_OUTPUT
+              ;;
+
+            google-artifact-registry)
+              echo "target_repo=${GOOGLE_PROJECT_ID}/tanzu" >> $GITHUB_OUTPUT
+              ;;
+
+            google-container-registry)
+              echo "target_repo=${GOOGLE_PROJECT_ID}" >> $GITHUB_OUTPUT
+              ;;
+
+            harbor-on-aws | harbor-on-azure | harbor-on-google)
+              echo "target_repo=tanzu" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
   install-tap-on-aws:
     if: contains(fromJson('["eks","tkg»aws"]'), github.event.inputs.cluster-provider)
-    needs: container-image-registry-connection-details
+    needs: [ tap-install-details,container-image-registry-connection-details,determine-target-repo ]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
-      domain: ${{ github.event.inputs.domain }}
-      email-address: ${{ github.event.inputs.email-address }}
-      dev-namespace: ${{ github.event.inputs.dev-namespace }}
-      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      domain: ${{ needs.tap-install-details.outputs.domain }}
+      email-address: ${{ needs.tap-install-details.outputs.email-address }}
+      dev-namespace: ${{ needs.tap-install-details.outputs.dev-namespace }}
+      backstage-catalog: ${{ needs.tap-install-details.outputs.backstage-catalog }}
       container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
       container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
       container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
@@ -127,9 +190,10 @@ jobs:
       build-service-repo-aws-iam-role-arn: ${{ needs.container-image-registry-connection-details.outputs.build-service-repo-aws-iam-role-arn }}
       workload-repo-aws-iam-role-arn: ${{ needs.container-image-registry-connection-details.outputs.workload-repo-aws-iam-role-arn }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
-      deployment-name: "tap"
+      deployment-name: tap
       active-profile: ${{ github.event.inputs.active-profile }}
       aws-region: ${{ github.event.inputs.aws-region }}
+      target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -150,22 +214,23 @@ jobs:
 
   install-tap-on-azure:
     if: contains(fromJson('["aks","tkg»azure"]'), github.event.inputs.cluster-provider)
-    needs: container-image-registry-connection-details
+    needs: [ tap-install-details,container-image-registry-connection-details,determine-target-repo ]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
-      domain: ${{ github.event.inputs.domain }}
-      email-address: ${{ github.event.inputs.email-address }}
-      dev-namespace: ${{ github.event.inputs.dev-namespace }}
-      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      domain: ${{ needs.tap-install-details.outputs.domain }}
+      email-address: ${{ needs.tap-install-details.outputs.email-address }}
+      dev-namespace: ${{ needs.tap-install-details.outputs.dev-namespace }}
+      backstage-catalog: ${{ needs.tap-install-details.outputs.backstage-catalog }}
       container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
       container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
       container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
       ootb-supply-chain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build-service-repo }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
-      deployment-name: "tap"
+      deployment-name: tap
       active-profile: ${{ github.event.inputs.active-profile }}
       azure-resource-group: ${{ github.event.inputs.azure-resource-group }}
+      target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
@@ -185,21 +250,22 @@ jobs:
 
   install-tap-on-google:
     if: github.event.inputs.cluster-provider == 'gke'
-    needs: container-image-registry-connection-details
+    needs: [ tap-install-details,container-image-registry-connection-details,determine-target-repo ]
     uses: ./.github/workflows/install-tanzu-application-platform.yml
     with:
-      domain: ${{ github.event.inputs.domain }}
-      email-address: ${{ github.event.inputs.email-address }}
-      dev-namespace: ${{ github.event.inputs.dev-namespace }}
-      backstage-catalog: ${{ github.event.inputs.backstage-catalog }}
+      domain: ${{ needs.tap-install-details.outputs.domain }}
+      email-address: ${{ needs.tap-install-details.outputs.email-address }}
+      dev-namespace: ${{ needs.tap-install-details.outputs.dev-namespace }}
+      backstage-catalog: ${{ needs.tap-install-details.outputs.backstage-catalog }}
       container-image-registry-url: ${{ needs.container-image-registry-connection-details.outputs.url }}
       container-image-registry-username: ${{ needs.container-image-registry-connection-details.outputs.username }}
       container-image-registry-password: ${{ needs.container-image-registry-connection-details.outputs.password }}
       ootb-supply-chain-repo: ${{ needs.container-image-registry-connection-details.outputs.ootb-supply-chain-repo }}
       build-service-repo: ${{ needs.container-image-registry-connection-details.outputs.build-service-repo }}
       cluster-provider: ${{ github.event.inputs.cluster-provider }}
-      deployment-name: "tap"
+      deployment-name: tap
       active-profile: ${{ github.event.inputs.active-profile }}
+      target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}

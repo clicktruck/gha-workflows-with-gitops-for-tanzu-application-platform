@@ -10,6 +10,6 @@ metadata:
 spec:
   fetch:
     imgpkgBundle:
-      image: #@ "{}/tanzu-application-platform/tap-packages:{}".format(data.values.tap.credentials.registry.host, data.values.tap.version)
+      image: #@ "{}/{}/tap-packages:{}".format(data.values.tap.credentials.registry.host, data.values.tap.registry.repositories.base,  data.values.tap.version)
       secretRef:
         name: container-registry-credentials

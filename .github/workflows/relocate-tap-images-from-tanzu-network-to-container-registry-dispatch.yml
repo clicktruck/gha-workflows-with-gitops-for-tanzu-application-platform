@@ -19,10 +19,10 @@ on:
         required: true
         type: choice
         options:
-        - acr
-        - ecr
-        - gar
-        - gcr
+        - azure-container-registry
+        - elastic-container-registry
+        - google-artifact-registry
+        - google-container-registry
         - harbor-on-aws
         - harbor-on-azure
         - harbor-on-google
@@ -31,8 +31,8 @@ on:
         required: false
 
 jobs:
-  relocate-images-to-ecr:
-    if: github.event.inputs.container-image-registry-provider == 'ecr'
+  relocate-images-to-elastic-container-registry:
+    if: github.event.inputs.container-image-registry-provider == 'elastic-container-registry'
     uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
     with:
       container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
@@ -49,8 +49,8 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
-  relocate-images-to-acr:
-    if: github.event.inputs.container-image-registry-provider == 'acr'
+  relocate-images-to-azure-container-registry:
+    if: github.event.inputs.container-image-registry-provider == 'azure-container-registry'
     uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
     with:
       container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
@@ -68,8 +68,8 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
-  relocate-images-to-gar:
-    if: github.event.inputs.container-image-registry-provider == 'gar'
+  relocate-images-to-google-artifact-registry:
+    if: github.event.inputs.container-image-registry-provider == 'google-artifact-registry'
     uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
     with:
       container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
@@ -85,8 +85,8 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
 
-  relocate-images-to-gcr:
-    if: github.event.inputs.container-image-registry-provider == 'gcr'
+  relocate-images-to-google-container-registry:
+    if: github.event.inputs.container-image-registry-provider == 'google-container-registry'
     uses: ./.github/workflows/relocate-tap-images-from-tanzu-network-to-container-registry.yml
     with:
       container-image-registry-url: ${{ github.event.inputs.container-image-registry-url }}
