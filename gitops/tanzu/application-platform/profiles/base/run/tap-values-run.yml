@@ -13,8 +13,10 @@ excluded_packages:
   - crossplane.tanzu.vmware.com
   #@ end
 
-#! installed_for_vmware_internal_use: "true"
 ceip_policy_disclosed: true
+
+tap_telemetry:
+  installed_for_vmware_internal_use: "true"
 
 shared:
   ingress_domain: #@ data.values.tap.domains.main
