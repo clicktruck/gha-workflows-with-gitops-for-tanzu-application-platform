@@ -34,6 +34,12 @@ appliveview:
     namespace: #@ data.values.tap.ingress.contour_tls_namespace
     secretName: #@ data.values.tap.ingress.contour_tls_secret
 
+appliveview_connector:
+  backend:
+    sslDeactivated: false
+    ingressEnabled: true
+    host: #@ "appliveview.{}".format(data.values.tap.domains.main)
+
 buildservice:
   kp_default_repository: #@ "{}/{}".format(data.values.tap.credentials.registry.host, data.values.tap.registry.repositories.buildService)
   #@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1:
@@ -142,15 +148,6 @@ tap_gui:
             password: #@ data.values.tap.credentials.backstage.database.password
             ssl: {rejectUnauthorized: true}
       #@ end
-    #! Add proxy for accessing metadata store from the UI for CVE results
-    proxy:
-      /metadata-store:
-        target: https://metadata-store-app.metadata-store:8443/api/v1
-        changeOrigin: true
-        secure: false
-        headers:
-          Authorization: #@ "Bearer {}".format(data.values.tap.gui.proxy.metadata_store.token)
-          X-Custom-Source: project-star
     #@ if data.values.tap.credentials.oidc.provider == "github" and data.values.tap.credentials.oidc.client_id != "" and data.values.tap.credentials.oidc.client_secret != "":
     auth:
       environment: development
@@ -166,6 +163,7 @@ tap_gui:
     supplyChain:
       enablePlugin: true
     #@ end
+  metadataStoreAutoconfiguration: true
 
 scanning:
   metadataStore:
@@ -208,10 +206,20 @@ cnrs:
     external:
       namespace: tanzu-system-ingress
 
+#! Resource utilization optimization
+#! See https://github.com/tfynes-pivotal/TapResourceRequestRemover
+
 package_overlays:
+#@ components = [ "accelerator", "api-auto-registration", "appliveview", "appliveview-apiserver", "appliveview-conventions", "appsso", "bitnami-services", "buildservice", "cartographer", "cnrs", "crossplane", "developer-conventions", "eventing", "fluxcd-source-controller", "grype", "learningcenter-workshops", "metadata-store", "ootb-delivery-basic", "ootb-supply-chain-basic", "ootb-templates", "policy-controller", "scanning", "service-bindings", "services-toolkit", "source-controller", "spring-boot-conventions", "tap-auth", "tap-gui", "tap-telemetry", "tekton-pipelines" ]
+#@ for c in range(len(components)):
+- name: #@ components[c]
+  secrets:
+  - name: reqfix-overlay-secret
+#@ end
 - name:  learningcenter
   secrets:
   - name: learningcenter-config-overlay
+  - name: reqfix-overlay-secret
 
 #@ end
 ---

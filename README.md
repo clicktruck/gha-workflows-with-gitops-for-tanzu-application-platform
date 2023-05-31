@@ -76,7 +76,7 @@ If you're looking to contribute, clone your fork to your local workstation or la
 
 | Branch name | TAP release version |
 |-------------|---------------------|
-| [main](https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/tree/main) | 1.5.0 |
+| [main](https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/tree/main) | 1.5.2 |
 | [1.4.2](https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/tree/1.4.2) | 1.4.2 |
 
 To keep your fork up-to-date with upstream changes

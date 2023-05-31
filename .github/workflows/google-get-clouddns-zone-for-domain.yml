@@ -39,7 +39,7 @@ jobs:
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
       with:
-        version: "409.0.0"
+        version: "432.0.0"
 
     - name: Set Outputs
       id: set_outputs
