@@ -3,7 +3,7 @@
 #@overlay/match-child-defaults missing_ok=True
 ---
 buildService:
-  version: "1.10.8"
+  version: "1.10.10"
 
 tap:
   version: "1.5.2-rc.3"
