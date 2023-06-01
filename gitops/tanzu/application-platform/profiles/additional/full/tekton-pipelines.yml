@@ -93,7 +93,7 @@ spec:
       - name: source-revision
         type: string
       steps:
-      - image: mcr.microsoft.com/dotnet/core/sdk:7.0
+      - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy
         name: test
         script: |-
           cd `mktemp -d`
@@ -135,7 +135,7 @@ spec:
       - name: source-revision
         type: string
       steps:
-      - image: mcr.microsoft.com/dotnet/core/sdk:6.0-jammy
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy
         name: test
         script: |-
           cd `mktemp -d`
