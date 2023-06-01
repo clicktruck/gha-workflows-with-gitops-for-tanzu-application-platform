@@ -40,10 +40,10 @@ set_oidc_credentials() {
   if [ x"${OIDC_AUTH_PROVIDER}" == "x" ] || [ x"${OIDC_AUTH_CLIENT_ID}" == "x" ] || [ x"${OIDC_AUTH_CLIENT_SECRET}" == "x" ]; then
     echo "Expected OIDC_AUTH_PROVIDER, OIDC_AUTH_CLIENT_ID, and OIDC_AUTH_CLIENT_SECRET environment variables to be set"
     exit 1
-    gh secret set OIDC_AUTH_PROVIDER --body "$OIDC_AUTH_PROVIDER"
-    gh secret set OIDC_AUTH_CLIENT_ID --body "$OIDC_AUTH_CLIENT_ID"
-    gh secret set OIDC_AUTH_CLIENT_SECRET --body "$OIDC_AUTH_CLIENT_SECRET"
   fi
+  gh secret set OIDC_AUTH_PROVIDER --body "$OIDC_AUTH_PROVIDER"
+  gh secret set OIDC_AUTH_CLIENT_ID --body "$OIDC_AUTH_CLIENT_ID"
+  gh secret set OIDC_AUTH_CLIENT_SECRET --body "$OIDC_AUTH_CLIENT_SECRET"
 }
 
 set_tanzu_secrets() {
