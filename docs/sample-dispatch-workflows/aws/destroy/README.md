@@ -204,7 +204,7 @@ echo '{ "region": "us-west-2", "domain": "zoolabs.me", "control-plane-node-machi
 <p>
 
 ```bash
-echo '{ "cluster-provider": "tkg»aws", "deployment-name": "tap-full", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run uninstall-tanzu-application-platform-dispatch.yml --json
+echo '{ "cluster-provider": "tkg»aws", "deployment-name": "tap-full", "dev-namespaces": "demo", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run uninstall-tanzu-application-platform-dispatch.yml --json
 ```
 > Note, this dispatch workflow supports variant configuration for targeting Amazon EKS, Azure AKS and Google GKE clusters.  To-date only the following `cluster-provider`s are supported: [ "aks", "eks", "gke", "tkg»aws", "tkg»azure" ].  Also supports variant profiles (e.g., tap-build, tap-iterate, tap-view, tap-run).
 

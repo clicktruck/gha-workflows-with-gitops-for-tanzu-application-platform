@@ -213,7 +213,7 @@ Single-cluster
 <p>
 
 ```bash
-echo '{ "domain": "apps.ironleg.me", "email-address": "admin@ironleg.me", "dev-namespace": "default", "backstage-catalog": "https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml", "container-image-registry-connection-details": "harbor.ironleg.me;admin;cEBzc3cwcmQlCg==;tanzu/build-service;tanzu/supply-chain", "cluster-provider": "gke", "active-profile": "full", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run install-tanzu-application-platform-dispatch.yml --json
+echo '{ "tap-install-details": "apps.ironleg.me;admin@ironleg.me;default;https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml", "container-image-registry-provider": "harbor-on-google", "container-image-registry-connection-details": "harbor.ironleg.me;admin;cEBzc3cwcmQlCg==;tanzu/build-service;tanzu/supply-chain", "cluster-provider": "gke", "active-profile": "full", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run install-tanzu-application-platform-dispatch.yml --json
 ```
 > Note, this dispatch workflow supports variant configuration for targeting Amazon GKE, Azure AKS and Google GKE clusters.  To-date only the following `cluster-provider`s are supported: [ "aks", "gke", "gke", "tkg»aws", "tkg»azure" ].  Other optional options may apply depending on choice of provider.  Remember to base64-encode the _password_ if the _host_ in `container-image-registry-connection-details` is Google Container Registry or Google Artifact Registry!
 
@@ -228,9 +228,9 @@ Multi-cluster
 <p>
 
 ```bash
-echo '{ "google-project-id": "xx-xxxxx", "secrets-manager-instance-name": "tap-secret-store", "domain": "apps.ironleg.me", "email-address": "admin@ironleg.me", "dev-namespace": "default", "backstage-catalog": "https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml"}' | gh workflow run multi-cluster-tanzu-application-platform-install-on-google-dispatch.yml --json
+echo '{ "google-project-id": "xx-xxxxx", "secrets-manager-instance-name": "tap-secret-store", "domain": "apps.ironleg.me", "email-address": "admin@ironleg.me", "dev-namespace": "default", "backstage-catalog": "https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml", "container-image-registry-provider": "harbor-on-google"}' | gh workflow run multi-cluster-tanzu-application-platform-install-on-google-dispatch.yml --json
 ```
-> This only works with a provisioned Harbor container image registry.
+> In this context, `container-image-registry-provider` can be: [ "google-artifact-registry", "google-container-registry", "harbor-on-google" ]
 
 </p>
 </details>
