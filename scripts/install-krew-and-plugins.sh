@@ -14,7 +14,7 @@ export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 echo 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' >> $HOME/.bashrc
 
 # Install plugins
-plugins=( ctx datree images kurt neat ns stern tree outdated stern view-allocations view-cert view-secret )
+plugins=( ctx datree images kurt modify-secret neat ns stern tree outdated stern view-allocations view-cert view-secret )
 for i in "${plugins[@]}"
 do
   kubectl krew install "$i"
