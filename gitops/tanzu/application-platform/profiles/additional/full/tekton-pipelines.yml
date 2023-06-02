@@ -96,14 +96,34 @@ spec:
       - image: mcr.microsoft.com/dotnet/sdk:7.0-jammy
         name: test
         script: |-
+          #!/usr/bin/env bash
+          function find_csproj_or_sln_file() {
+            local dir=$1
+            local result=""
+            for file in "$dir"/*; do
+                if [[ -d "$file" ]]; then
+                    result=$(find_csproj_or_sln_file "$file")
+                    if [[ "$result" != "" ]]; then
+                        echo "$result"
+                        return
+                    fi
+                elif [[ "$file" == *.csproj || "$file" == *.sln ]]; then
+                    echo "$dir"
+                    return
+                fi
+            done
+          }
           cd `mktemp -d`
           wget -qO- $(params.source-url) | tar xvz -m
-          if [ -d "test" ]; then
-            dotnet restore ./test
-            dotnet build ./test
-            dotnet test ./test --logger "console;verbosity=detailed"
+          rootDirectory="$(find_csproj_or_sln_file $PWD)"
+          if [[ "$rootDirectory" != "" ]]; then
+            cd $rootDirectory
+            dotnet --version
+            dotnet restore
+            dotnet build --configuration Release --no-restore
+            dotnet test --no-restore --verbosity normal
           else
-            echo "No test directory was found."
+            echo "No source found to build and test."
           fi
 ---
 apiVersion: tekton.dev/v1beta1
@@ -138,56 +158,34 @@ spec:
       - image: mcr.microsoft.com/dotnet/sdk:6.0-jammy
         name: test
         script: |-
+          #!/usr/bin/env bash
+          function find_csproj_or_sln_file() {
+            local dir=$1
+            local result=""
+            for file in "$dir"/*; do
+                if [[ -d "$file" ]]; then
+                    result=$(find_csproj_or_sln_file "$file")
+                    if [[ "$result" != "" ]]; then
+                        echo "$result"
+                        return
+                    fi
+                elif [[ "$file" == *.csproj || "$file" == *.sln ]]; then
+                    echo "$dir"
+                    return
+                fi
+            done
+          }
           cd `mktemp -d`
           wget -qO- $(params.source-url) | tar xvz -m
-          if [ -d "test" ]; then
-            dotnet restore ./test
-            dotnet build ./test
-            dotnet test ./test --logger "console;verbosity=detailed"
+          rootDirectory="$(find_csproj_or_sln_file $PWD)"
+          if [[ "$rootDirectory" != "" ]]; then
+            cd $rootDirectory
+            dotnet --version
+            dotnet restore
+            dotnet build --configuration Release --no-restore
+            dotnet test --no-restore --verbosity normal
           else
-            echo "No test directory was found."
-          fi
----
-apiVersion: tekton.dev/v1beta1
-kind: Pipeline
-metadata:
-  name: dotnet-core-3.1-tekton-pipeline
-  labels:
-    apps.tanzu.vmware.com/pipeline: test
-    apps.tanzu.vmware.com/language: dotnet-core
-    apps.tanzu.vmware.com/build-engine: dotnet-3.1
-  namespace: #@ data.values.tap.devNamespace
-spec:
-  params:
-  - name: source-url
-    type: string
-  - name: source-revision
-    type: string
-  tasks:
-  - name: test
-    params:
-    - name: source-url
-      value: $(params.source-url)
-    - name: source-revision
-      value: $(params.source-revision)
-    taskSpec:
-      params:
-      - name: source-url
-        type: string
-      - name: source-revision
-        type: string
-      steps:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1.426-focal
-        name: test
-        script: |-
-          cd `mktemp -d`
-          wget -qO- $(params.source-url) | tar xvz -m
-          if [ -d "test" ]; then
-            dotnet restore ./test
-            dotnet build ./test
-            dotnet test ./test --logger "console;verbosity=detailed"
-          else
-            echo "No test directory was found."
+            echo "No source found to build and test."
           fi
 ---
 apiVersion: tekton.dev/v1beta1
