@@ -280,7 +280,7 @@ echo '{ "cluster-provider": "eks", "kubeconfig-contents": "KVkfThQJXekP3fIgzasYb
 > Only executed on Non-TKG clusters.  This is actually automatically installed if you executed [ aws-k8s-cluster-dispatch, azure-k8s-cluster-dispatch, google-k8s-cluster-dispatch ] workflows.
 
 ```bash
-echo '{ "tkg-version": "v2.1.1", "cluster-provider": "eks", "kubeconfig-contents": "KVkfThQJXekP3fIgzasYb3lD..." }' | gh workflow run install-tanzu-standard-repo-dispatch.yml --json
+echo '{ "tkg-version": "v2.2.0", "cluster-provider": "eks", "kubeconfig-contents": "KVkfThQJXekP3fIgzasYb3lD..." }' | gh workflow run install-tanzu-standard-repo-dispatch.yml --json
 ```
 > Only executed on Non-TKG clusters.  This is actually automatically installed if you executed [ aws-k8s-cluster-dispatch, azure-k8s-cluster-dispatch, google-k8s-cluster-dispatch ] workflows.
 

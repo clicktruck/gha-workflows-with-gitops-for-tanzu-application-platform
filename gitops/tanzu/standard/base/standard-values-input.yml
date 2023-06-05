@@ -3,4 +3,4 @@
 #@overlay/match-child-defaults missing_ok=True
 ---
 tkg:
-  version: "v2.1.1"
+  version: "v2.2.0"

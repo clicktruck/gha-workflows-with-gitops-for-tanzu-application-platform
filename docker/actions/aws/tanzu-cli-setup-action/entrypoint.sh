@@ -11,10 +11,10 @@
 # * AWS_SECRET_ACCESS_KEY
 #
 # If you intend to run this script as the ENTRYPOINT in a Docker file then pass
-# each of the environment variables above with -e (e.g., -e TANZU_CLI_VERSION=2.1.1).
+# each of the environment variables above with -e (e.g., -e TANZU_CLI_VERSION=2.2.0).
 #
 # If you intend to run this script standalone then you will need to export each of
-# the environment variables above (e.g., export TANZU_CLI_VERSION=2.1.1) beforehand.
+# the environment variables above (e.g., export TANZU_CLI_VERSION=2.2.0) beforehand.
 
 if [ x"${AWS_ACCESS_KEY_ID}" == "x" ] || [ x"${AWS_SECRET_ACCESS_KEY}" == "x" ]; then
   echo "Expected AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY enviroment variables to have been set!"

@@ -42,7 +42,7 @@ TAP_VERSION="1.6.0-build.39"
 
 export TANZU_CLI_NO_INIT=true
 cd $HOME/tanzu
-export CORE_VERSION=v0.28.1
+export CORE_VERSION=v0.29.0
 
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --product-file-id="${TAP_PRODUCT_FILE_ID}"
 tar -xvf tanzu-framework-${OS}-amd64-${CORE_VERSION}*.tar -C $HOME/tanzu

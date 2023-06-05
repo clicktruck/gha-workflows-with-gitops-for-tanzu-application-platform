@@ -39,8 +39,8 @@ runs:
     - "${{ inputs.bootstrap-kubeconfig-contents }}"
     - "${{ inputs.management-kubeconfig-contents }}"
   env:
-    TANZU_CLI_VERSION: 2.1.1
-    TANZU_CLI_CORE_VERSION: 0.28.1
+    TANZU_CLI_VERSION: 2.2.0
+    TANZU_CLI_CORE_VERSION: 0.29.0
     CSP_API_TOKEN: ${{ inputs.csp-api-token }}
     AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
     AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
