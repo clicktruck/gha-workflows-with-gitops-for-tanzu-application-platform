@@ -3,6 +3,17 @@ name: "google-create-workshop-environment"
 on:
   workflow_dispatch:
     inputs:
+      k8s-version:
+        description: "A supported and available Kubernetes (major.minor) version"
+        required: true
+        type: choice
+        options:
+        - "1.22"
+        - "1.23"
+        - "1.24"
+        - "1.25"
+        - "1.26"
+        default: "1.24"
       footprint:
         description: "Footprint for Tanzu Application Platform deployment"
         required: true
@@ -155,7 +166,7 @@ jobs:
       zone: ""
       initial-node-count: 2
       machine-type: ${{ github.event.inputs.machine-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.1.0.0/28"
       action: create
@@ -239,7 +250,7 @@ jobs:
       zone: ""
       initial-node-count: 4
       machine-type: ${{ github.event.inputs.machine-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.2.0.0/28"
       action: create
@@ -266,7 +277,7 @@ jobs:
       zone: ""
       initial-node-count: 2
       machine-type: ${{ github.event.inputs.machine-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.2.0.0/28"
       action: create
@@ -293,7 +304,7 @@ jobs:
       zone: ""
       initial-node-count: 2
       machine-type: ${{ github.event.inputs.machine-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.3.0.0/28"
       action: create
@@ -320,7 +331,7 @@ jobs:
       zone: ""
       initial-node-count: 2
       machine-type: ${{ github.event.inputs.machine-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.4.0.0/28"
       action: create
@@ -347,7 +358,7 @@ jobs:
       zone: ""
       initial-node-count: 2
       machine-type: ${{ github.event.inputs.machine-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.5.0.0/28"
       action: create
