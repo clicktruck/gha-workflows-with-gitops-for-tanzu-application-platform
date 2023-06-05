@@ -17,7 +17,7 @@ ENV HELM_VERSION=3.12.0 \
     LEFTOVERS_VERSION=0.62.0 \
     VENDIR_VERSION=0.33.2 \
     YQ_VERSION=4.34.1 \
-    YTT_VERSION=0.45.1
+    YTT_VERSION=0.45.2
 
 RUN apk add --update --no-cache coreutils docker gcompat openrc wget \
     && rc-update add docker boot \

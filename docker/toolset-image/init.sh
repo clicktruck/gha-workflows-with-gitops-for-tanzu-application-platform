@@ -35,7 +35,7 @@ main() {
   TMC_VERSION=0.5.3-88d04e82
   VELERO_VERSION=1.11.0
   VENDIR_VERSION=0.33.2
-  YTT_VERSION=0.45.1
+  YTT_VERSION=0.45.2
 
   # Place ourselves in a temporary directory; don't clutter user.home directory w/ downloaded artifacts
   cd /tmp
