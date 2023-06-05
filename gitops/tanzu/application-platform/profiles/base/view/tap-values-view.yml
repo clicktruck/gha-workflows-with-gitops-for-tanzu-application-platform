@@ -166,8 +166,7 @@ tap_gui:
             #@ end
 
 scanning:
-  metadataStore:
-    url: ""
+
 
 contour:
   #@ if (data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws"):

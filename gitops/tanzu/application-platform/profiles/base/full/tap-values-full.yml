@@ -157,8 +157,7 @@ tap_gui:
   metadataStoreAutoconfiguration: true
 
 scanning:
-  metadataStore:
-    url: ""
+  certIssuer: selfsigned-cluster-issuer
 
 metadata_store:
   ns_for_export_app_cert: "*"
