@@ -154,10 +154,8 @@ tap_gui:
     supplyChain:
       enablePlugin: true
     #@ end
-  metadataStoreAutoconfiguration: true
 
 scanning:
-  certIssuer: #@ data.values.tap.cluster.issuerRef.name
   metadataStore:
     url: ""
 
