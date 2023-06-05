@@ -154,6 +154,7 @@ tap_gui:
     supplyChain:
       enablePlugin: true
     #@ end
+  metadataStoreAutoconfiguration: true
 
 scanning:
   metadataStore:
