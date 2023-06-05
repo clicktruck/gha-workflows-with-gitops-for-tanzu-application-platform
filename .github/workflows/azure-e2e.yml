@@ -28,16 +28,18 @@ on:
         description: "Minimum number of cluster worker nodes"
         required: true
         default: "5"
-      aksNodeType:
-        description: "VM type to use for the nodes"
+      k8sVersion:
+        description: "A currently supported Kubernetes version in AKS"
         required: true
         type: choice
         options:
-        - "Standard_D4_v4"
-        - "Standard_D8_v4"
-        - "Standard_D4_v5"
-        - "Standard_D8_v5"
-        default: "Standard_D4_v5"
+        - "1.27"
+        - "1.26"
+        - "1.25"
+        - "1.24"
+        - "1.23"
+        - "1.22"
+        default: "1.24"
       sigResourceGroup:
         description: "The name of the resource group the shared image gallery is in"
         required: true
@@ -160,9 +162,9 @@ jobs:
     with:
       clusterName: "harbor"
       aksNodes: ${{ github.event.inputs.aksNodes }}
-      aksNodeType: ${{ github.event.inputs.aksNodeType }}
+      aksNodeType: "Standard_D4_v5"
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24"
+      k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
       ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
@@ -231,9 +233,9 @@ jobs:
     with:
       clusterName: "tap-full"
       aksNodes: ${{ github.event.inputs.aksNodes }}
-      aksNodeType: ${{ github.event.inputs.aksNodeType }}
+      aksNodeType: "Standard_D4_v5"
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24"
+      k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
       ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
@@ -259,9 +261,9 @@ jobs:
     with:
       clusterName: "tap-build"
       aksNodes: ${{ github.event.inputs.aksNodes }}
-      aksNodeType: ${{ github.event.inputs.aksNodeType }}
+      aksNodeType: "Standard_D4_v5"
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24"
+      k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
       ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
@@ -287,9 +289,9 @@ jobs:
     with:
       clusterName: "tap-iterate"
       aksNodes: ${{ github.event.inputs.aksNodes }}
-      aksNodeType: ${{ github.event.inputs.aksNodeType }}
+      aksNodeType: "Standard_D4_v5"
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24"
+      k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
       ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
@@ -315,9 +317,9 @@ jobs:
     with:
       clusterName: "tap-view"
       aksNodes: ${{ github.event.inputs.aksNodes }}
-      aksNodeType: ${{ github.event.inputs.aksNodeType }}
+      aksNodeType: "Standard_D4_v5"
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24"
+      k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
       ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
@@ -343,9 +345,9 @@ jobs:
     with:
       clusterName: "tap-run"
       aksNodes: ${{ github.event.inputs.aksNodes }}
-      aksNodeType: ${{ github.event.inputs.aksNodeType }}
+      aksNodeType: "Standard_D4_v5"
       aksNodeDiskSize: "80"
-      k8sVersion: "1.24"
+      k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
       ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}

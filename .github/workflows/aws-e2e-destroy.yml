@@ -7,6 +7,18 @@ on:
         description: "The VPC CIDR block"
         required: true
         default: "10.60.0.0/18"
+      k8s-version:
+        description: "A supported and available Kubernetes (major.minor) version"
+        required: true
+        type: choice
+        options:
+        - "1.22"
+        - "1.23"
+        - "1.24"
+        - "1.25"
+        - "1.26"
+        - "1.27"
+        default: "1.24"
       footprint:
         description: "Footprint for TAP installation"
         required: true
@@ -209,7 +221,7 @@ jobs:
       cluster-name: "harbor"
       desired-nodes: 3
       node-pool-instance-type: ${{ github.event.inputs.instance-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
       provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
       private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
@@ -237,7 +249,7 @@ jobs:
       cluster-name: "tap"
       desired-nodes: 4
       node-pool-instance-type: ${{ github.event.inputs.instance-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
       provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
       private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
@@ -265,7 +277,7 @@ jobs:
       cluster-name: "tap-build"
       desired-nodes: 3
       node-pool-instance-type: ${{ github.event.inputs.instance-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
       provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
       private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
@@ -293,7 +305,7 @@ jobs:
       cluster-name: "tap-iterate"
       desired-nodes: 3
       node-pool-instance-type: ${{ github.event.inputs.instance-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
       provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
       private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
@@ -321,7 +333,7 @@ jobs:
       cluster-name: "tap-view"
       desired-nodes: 3
       node-pool-instance-type: ${{ github.event.inputs.instance-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
       provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
       private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}
@@ -349,7 +361,7 @@ jobs:
       cluster-name: "tap-run"
       desired-nodes: 3
       node-pool-instance-type: ${{ github.event.inputs.instance-type }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       ssh-key-name: ${{ needs.destroy-keypair.outputs.ssh_key_name }}
       provisioner-security-group-id: ${{ needs.obtain-vnet-info.outputs.provisioner_security_group_id }}
       private-subnet-ids: ${{ needs.obtain-vnet-info.outputs.private_subnet_ids }}

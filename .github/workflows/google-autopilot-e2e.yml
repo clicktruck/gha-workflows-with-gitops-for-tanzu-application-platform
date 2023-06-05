@@ -3,6 +3,17 @@ name: "google-create-autopilot-workshop-environment"
 on:
   workflow_dispatch:
     inputs:
+      k8s-version:
+        description: "A supported and available Kubernetes (major.minor) version"
+        required: true
+        type: choice
+        options:
+        - "1.22"
+        - "1.23"
+        - "1.24"
+        - "1.25"
+        - "1.26"
+        default: "1.24"
       footprint:
         description: "Footprint for Tanzu Application Platform deployment"
         required: true
@@ -139,7 +150,7 @@ jobs:
     with:
       cluster-name: "harbor"
       region: ${{ github.event.inputs.region }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.1.0.0/28"
       action: create
@@ -217,7 +228,7 @@ jobs:
     with:
       cluster-name: "tap"
       region: ${{ github.event.inputs.region }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.2.0.0/28"
       action: create
@@ -239,7 +250,7 @@ jobs:
     with:
       cluster-name: "tap-build"
       region: ${{ github.event.inputs.region }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.2.0.0/28"
       action: create
@@ -261,7 +272,7 @@ jobs:
     with:
       cluster-name: "tap-iterate"
       region: ${{ github.event.inputs.region }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.3.0.0/28"
       action: create
@@ -283,7 +294,7 @@ jobs:
     with:
       cluster-name: "tap-view"
       region: ${{ github.event.inputs.region }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.4.0.0/28"
       action: create
@@ -305,7 +316,7 @@ jobs:
     with:
       cluster-name: "tap-run"
       region: ${{ github.event.inputs.region }}
-      k8s-version: "1.24"
+      k8s-version: ${{ github.event.inputs.k8s-version }}
       vpc-network-name: ${{ github.event.inputs.vpc-network-name }}
       master_ipv4_cidr_block_28: "10.5.0.0/28"
       action: create

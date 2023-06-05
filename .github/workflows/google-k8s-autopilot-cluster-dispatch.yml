@@ -48,13 +48,15 @@ on:
         - us-west4
         default: "us-west2"
       k8s-version:
-        description: "A supported and available Kubernetes (major.minor.patch) version"
+        description: "A supported and available Kubernetes (major.minor) version"
         required: true
         type: choice
         options:
         - "1.22"
         - "1.23"
         - "1.24"
+        - "1.25"
+        - "1.26"
         default: "1.24"
       vpc-network-name:
         description: "Name of an existing Google Cloud VPC network"
