@@ -157,6 +157,7 @@ tap_gui:
   metadataStoreAutoconfiguration: true
 
 scanning:
+  certIssuer: #@ data.values.tap.cluster.issuerRef.name
   metadataStore:
     url: ""
 
