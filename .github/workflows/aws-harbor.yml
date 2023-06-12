@@ -92,7 +92,7 @@ jobs:
 
     - name: Install Carvel tools
       run: |
-        KAPP_VERSION=0.57.0
+        KAPP_VERSION=0.57.1
         wget -O kapp https://github.com/vmware-tanzu/carvel-kapp/releases/download/v${KAPP_VERSION}/kapp-linux-amd64
         chmod +x kapp
         sudo mv kapp /usr/bin

@@ -12,8 +12,8 @@ main() {
   HELM_VERSION=3.12.0
   HELMFILE_VERSION=0.152.0
   AWS_IAM_AUTHENTICATOR_VERSION=0.6.2
-  IMGPKG_VERSION=0.37.1
-  KAPP_VERSION=0.57.0
+  IMGPKG_VERSION=0.37.2
+  KAPP_VERSION=0.57.1
   KBLD_VERSION=0.37.2
   KCTRL_VERSION=0.46.0
   KIND_VERSION=0.18.0
@@ -35,7 +35,7 @@ main() {
   TMC_VERSION=0.5.3-88d04e82
   VELERO_VERSION=1.11.0
   VENDIR_VERSION=0.34.0
-  YTT_VERSION=0.45.2
+  YTT_VERSION=0.45.3
 
   # Place ourselves in a temporary directory; don't clutter user.home directory w/ downloaded artifacts
   cd /tmp
