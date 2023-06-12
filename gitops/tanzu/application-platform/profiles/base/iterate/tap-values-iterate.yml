@@ -43,6 +43,16 @@ ootb_templates:
 #@ end
 
 ootb_supply_chain_basic:
+  supported_workloads:
+  - type: web
+    cluster_config_template_name: config-template
+  - type: server
+    cluster_config_template_name: server-template
+  - type: server-fixed
+    cluster_config_template_name: server-template-fix
+  - type: worker
+    cluster_config_template_name: worker-template
+
   cluster_builder: full
   registry:
     server: #@ data.values.tap.credentials.registry.host
