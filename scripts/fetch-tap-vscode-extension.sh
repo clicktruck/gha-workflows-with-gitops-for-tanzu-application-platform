@@ -19,10 +19,10 @@ TANZU_NETWORK_API_TOKEN="$1"
 pivnet login --api-token=$TANZU_NETWORK_API_TOKEN
 
 cd /tmp
-TAP_VERSION="1.6.0-build.39"
+TAP_VERSION="1.6.0-rc.1"
 
 # Download Tanzu Developer Tools for VS Code
-TAP_PRODUCT_FILE_ID=1511964
+TAP_PRODUCT_FILE_ID=1515766
 pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --product-file-id="${TAP_PRODUCT_FILE_ID}"
 ls -la tanzu-vscode-extension*.vsix
 
