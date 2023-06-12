@@ -14,7 +14,7 @@ spec:
   packageRef:
     refName: contour.tanzu.vmware.com
     versionSelection:
-      constraints: 1.22.3+vmware.1-tkg.1
+      constraints: 1.23.5+vmware.1-tkg.1
   serviceAccountName: ingress-sa
   values:
   - secretRef:
