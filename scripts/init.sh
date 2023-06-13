@@ -37,7 +37,7 @@ main() {
   TERRAFORM_DOCS_VERSION=0.16.0
   TMC_VERSION=0.5.3-88d04e82
   VELERO_VERSION=1.11.0
-  VENDIR_VERSION=0.34.0
+  VENDIR_VERSION=0.34.3
   YTT_VERSION=0.45.3
 
   # Place ourselves in a temporary directory; don't clutter user.home directory w/ downloaded artifacts
