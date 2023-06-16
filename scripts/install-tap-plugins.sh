@@ -37,7 +37,7 @@ pivnet login --api-token=$TANZU_NETWORK_API_TOKEN
 
 mkdir -p $HOME/tanzu
 cd /tmp
-TAP_VERSION="1.6.0-rc.1"
+TAP_VERSION="1.6.0-rc.5"
 
 export TANZU_CLI_NO_INIT=true
 cd $HOME/tanzu
