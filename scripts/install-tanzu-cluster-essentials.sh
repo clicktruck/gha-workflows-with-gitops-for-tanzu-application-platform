@@ -5,8 +5,8 @@ set -eo pipefail
 
 ## Tanzu Network
 ## (package configuration)
-ESS_VERSION="1.5.0"
-export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:79abddbc3b49b44fc368fede0dab93c266ff7c1fe305e2d555ed52d00361b446
+ESS_VERSION="1.5.1"
+export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:c7b0988cf3e982625287b241db5d78c30780886dfe9ada01559bb5cd341e6181
 export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
 
 
@@ -21,12 +21,12 @@ OS="$(uname | tr '[:upper:]' '[:lower:]')"
 case $OS in
   darwin)
     echo "Installing MacOS version of Cluster Essentials for VMware Tanzu"
-	  ESS_PRODUCT_FILE_ID=1460874
+	  ESS_PRODUCT_FILE_ID=1501573
     ;;
 
   linux)
     echo "Installing Linux version of Cluster Essentials for VMware Tanzu"
-	  ESS_PRODUCT_FILE_ID=1460876
+	  ESS_PRODUCT_FILE_ID=1501579
     ;;
 
   *)
