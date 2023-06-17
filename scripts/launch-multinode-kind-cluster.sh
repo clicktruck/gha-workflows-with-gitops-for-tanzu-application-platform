@@ -3,7 +3,7 @@
 # @see https://kind.sigs.k8s.io/docs/user/ingress/#create-cluster
 
 export KIND_CLUSTER_NAME=kind-demo
-export K8S_NODE_VERSION=kindest/node:v1.24.2@sha256:4616d7ad9e7104df2feb21c95ad3853e86da81c41b82187509c5bfb884ade819
+export K8S_NODE_VERSION=kindest/node:v1.26.6@sha256:5e5d789e90c1512c8c480844e0985bc3b4da4ba66179cc5b540fe5b785ca97b5
 
 startup() {
 cat <<EOF | kind create cluster --name=$KIND_CLUSTER_NAME --config=-

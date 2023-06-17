@@ -1,4 +1,4 @@
-FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:432.0.0-alpine
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:435.0.0-alpine
 
 LABEL "com.github.actions.name"="tanzu-runsh-setup-action"
 LABEL "com.github.actions.icon"="server"
@@ -7,7 +7,7 @@ LABEL "com.github.actions.color"="blue"
 LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/aws/tanzu-runsh-setup-action"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
-ENV HELM_VERSION=3.12.0 \
+ENV HELM_VERSION=3.12.1 \
     IMGPKG_VERSION=0.37.2 \
     KAPP_VERSION=0.57.1 \
     KBLD_VERSION=0.37.2 \
@@ -57,8 +57,8 @@ RUN apk add --update --no-cache bash coreutils ca-certificates curl docker gcomp
     && mv mkpcli /usr/local/bin \
     && rm -rf /var/cache/apk/* \
     && gcloud components install gke-gcloud-auth-plugin --quiet \
-    && mkdir -p /opt/hostedtoolcache/gcloud/432.0.0/x64/bin \
-    && ln -s /google-cloud-sdk/bin/gcloud /opt/hostedtoolcache/gcloud/432.0.0/x64/bin/gcloud
+    && mkdir -p /opt/hostedtoolcache/gcloud/435.0.0/x64/bin \
+    && ln -s /google-cloud-sdk/bin/gcloud /opt/hostedtoolcache/gcloud/435.0.0/x64/bin/gcloud
 
 # Copies scripts from action repository to the filesystem path `/` of the container
 COPY entrypoint.sh /entrypoint.sh

@@ -99,8 +99,8 @@ jobs:
         echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
         curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
         sudo apt update -y && sudo apt install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y
-        mkdir -p /opt/hostedtoolcache/gcloud/432.0.0/x64/bin
-        ln -s /usr/bin/gcloud /opt/hostedtoolcache/gcloud/432.0.0/x64/bin/gcloud
+        mkdir -p /opt/hostedtoolcache/gcloud/435.0.0/x64/bin
+        ln -s /usr/bin/gcloud /opt/hostedtoolcache/gcloud/435.0.0/x64/bin/gcloud
 
     - name: Generate .kube/config
       env:
