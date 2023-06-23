@@ -7,7 +7,7 @@ LABEL "com.github.actions.color"="blue"
 LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/tanzu-obtain-workload-cluster-kubeconfig"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
-ENV KUBECTL_VERSION=1.24.9 \
+ENV KUBECTL_VERSION=1.26.6 \
     MKPCLI_VERSION=0.15.0 \
      YQ_VERSION=4.34.1
 
