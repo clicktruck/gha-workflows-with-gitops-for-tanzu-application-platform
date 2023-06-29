@@ -21,7 +21,7 @@ TANZU_NETWORK_API_TOKEN="$1"
 pivnet login --api-token=$TANZU_NETWORK_API_TOKEN
 
 cd /tmp
-TAP_VERSION="1.6.0-rc.13"
+TAP_VERSION="1.6.0-rc.14"
 TAP_GITOPS_RI_VERSION="0.2.0"
 
 # Download Tanzu GitOps Reference Implementation
