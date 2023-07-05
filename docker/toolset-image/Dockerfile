@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.10
 
 LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/toolset-image"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
