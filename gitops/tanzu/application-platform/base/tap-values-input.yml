@@ -6,7 +6,7 @@ buildService:
   version: "1.10.10"
 
 tap:
-  version: "1.6.0-rc.18"
+  version: "1.6.1-rc.2"
   namespace: tap-install
   catalogs: []
 
