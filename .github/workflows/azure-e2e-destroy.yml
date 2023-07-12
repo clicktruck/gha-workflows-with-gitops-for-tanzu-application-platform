@@ -3,16 +3,16 @@ name: "azure-destroy-workshop-environment"
 on:
   workflow_dispatch:
     inputs:
-      azure-dns-zone-created:
+      azure-dns-zone-destroyd:
         description: "Whether or not to destroy Azure DNS zones.  (Default: true)."
         required: true
         type: boolean
         default: true
       baseDomain:
-        description: "New DNS zone name to create (e.g., example.com)"
+        description: "New DNS zone name to destroy (e.g., example.com)"
         required: true
       domainPrefix:
-        description: "The subdomain name to create on the base domain, (e.g., tap-workshop)"
+        description: "The subdomain name to destroy on the base domain, (e.g., tap-workshop)"
         required: true
       participantNumber:
         description: "Participant ID (any positive integer)"
@@ -45,7 +45,7 @@ jobs:
       TF_BACKEND_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}
       TF_BACKEND_STORAGE_CONTAINER_NAME:  ${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}
   destroy-child-dns:
-    if: github.event.inputs.azure-dns-zone-created == 'true'
+    if: github.event.inputs.azure-dns-zone-destroyd == 'true'
     uses: ./.github/workflows/azure-child-dns.yml
     with:
       baseDomain: "${{ github.event.inputs.domainPrefix }}.${{ github.event.inputs.baseDomain }}"
@@ -77,7 +77,7 @@ jobs:
       TF_BACKEND_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}
       TF_BACKEND_STORAGE_CONTAINER_NAME:  ${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}
   destroy-main-dns-rg:
-    if:  github.event.inputs.destroyCoreComponents == 'yes' && github.event.inputs.azure-dns-zone-created == 'true'
+    if:  github.event.inputs.destroyCoreComponents == 'yes' && github.event.inputs.azure-dns-zone-destroyd == 'true'
     uses: ./.github/workflows/azure-resource-group.yml
     with:
       resourceGroupName: main-workshop-dns
