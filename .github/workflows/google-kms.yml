@@ -51,7 +51,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_wrapper: false
-        terraform_version: 1.5.2
+        terraform_version: 1.5.3
 
     - name: Decrypt service account keyfile contents and write to /tmp/gcloud/sa.json
       env:

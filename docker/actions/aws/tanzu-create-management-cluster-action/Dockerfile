@@ -7,7 +7,7 @@ LABEL "com.github.actions.color"="blue"
 LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/aws/tanzu-runsh-setup-action"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
-ENV HELM_VERSION=3.12.1 \
+ENV HELM_VERSION=3.12.2 \
     IMGPKG_VERSION=0.37.2 \
     KAPP_VERSION=0.57.1 \
     KBLD_VERSION=0.37.4 \
@@ -15,7 +15,7 @@ ENV HELM_VERSION=3.12.1 \
     KUBECTL_VERSION=1.26.6 \
     MKPCLI_VERSION=0.15.0 \
     VENDIR_VERSION=0.34.3 \
-    YQ_VERSION=4.34.1 \
+    YQ_VERSION=4.34.2 \
     YTT_VERSION=0.45.3
 
 RUN apk add --update --no-cache bash coreutils ca-certificates curl docker gcompat jq openrc python3 py3-pip wget \
