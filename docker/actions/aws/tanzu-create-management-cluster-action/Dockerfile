@@ -1,4 +1,4 @@
-FROM alpine:3.17
+FROM alpine:3
 
 LABEL "com.github.actions.name"="tanzu-runsh-setup-action"
 LABEL "com.github.actions.icon"="server"
