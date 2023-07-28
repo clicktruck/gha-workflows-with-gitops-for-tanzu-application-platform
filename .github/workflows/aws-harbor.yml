@@ -78,7 +78,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_wrapper: false
-        terraform_version: 1.5.3
+        terraform_version: 1.5.4
 
     - name: Generate backend configuration
       run: |
@@ -92,7 +92,7 @@ jobs:
 
     - name: Install Carvel tools
       run: |
-        KAPP_VERSION=0.57.1
+        KAPP_VERSION=0.58.0
         wget -O kapp https://github.com/vmware-tanzu/carvel-kapp/releases/download/v${KAPP_VERSION}/kapp-linux-amd64
         chmod +x kapp
         sudo mv kapp /usr/bin
