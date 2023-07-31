@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/azure-cli:2.48.1
+FROM mcr.microsoft.com/azure-cli:2.50.0
 
 LABEL "com.github.actions.name"="tanzu-runsh-setup-action"
 LABEL "com.github.actions.icon"="server"
