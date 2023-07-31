@@ -28,7 +28,7 @@ resource "random_string" "prefix" {
 
 
 module "aks" {
-  source = "github.com/Azure/terraform-azurerm-aks?ref=6.8.0"
+  source = "github.com/Azure/terraform-azurerm-aks?ref=7.2.0"
 
   cluster_name                         = var.cluster_name
   cluster_log_analytics_workspace_name = var.cluster_name
@@ -63,7 +63,6 @@ module "aks" {
     environment = var.environment
   }
 
-  azure_policy_enabled                = true
   disk_encryption_set_id              = azurerm_disk_encryption_set.des.id
   enable_auto_scaling                 = true
   enable_host_encryption              = false
