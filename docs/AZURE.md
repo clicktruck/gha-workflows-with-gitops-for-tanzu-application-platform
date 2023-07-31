@@ -52,7 +52,7 @@ There are a few Azure subscription default quotas that will need to be adjusted.
 First, log into Azure.
 
 ```bash
-az login
+az login --service-principal -u {client-id} -p {secret-id} --tenant {tenant-id}
 ```
 
 Then set the needed environment variables.
