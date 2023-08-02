@@ -24,11 +24,6 @@ on:
         required: true
       GOOGLE_KMS_KEYRING:
         required: true
-    outputs:
-      zone_name:
-        value: ${{ jobs.terraform.outputs.zone_name }}
-      zone_subdomain:
-        value: ${{ jobs.terraform.outputs.zone_subdomain }}
 
 jobs:
   terraform:
@@ -39,10 +34,6 @@ jobs:
       TF_VAR_subdomain: "${{ inputs.subdomain }}"
 
     runs-on: ubuntu-22.04
-
-    outputs:
-      zone_name: ${{ steps.set_outputs.outputs.zone_name }}
-      zone_subdomain: ${{ steps.set_outputs.outputs.zone_subdomain }}
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
@@ -94,11 +85,3 @@ jobs:
       if: inputs.action == 'destroy'
       run: terraform destroy -auto-approve
 
-    - name: Set Outputs
-      id: set_outputs
-      if: inputs.action == 'create'
-      run: |
-        zone_name=$(terraform output --raw zone_name)
-        echo "zone_name=${zone_name}" >> $GITHUB_OUTPUT
-        zone_subdomain=$(terraform output --raw zone_subdomain)
-        echo "zone_subdomain=${zone_subdomain}" >> $GITHUB_OUTPUT
