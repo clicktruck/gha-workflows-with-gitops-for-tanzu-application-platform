@@ -38,10 +38,7 @@ on:
         required: true
       TF_BACKEND_STORAGE_CONTAINER_NAME:
         required: true
-    outputs:
-      zone_subdomain:
-        description: "The name of the Azure DNS zone"
-        value: ${{ jobs.terraform.outputs.zone_subdomain }}
+
 jobs:
   terraform:
     env:
@@ -55,9 +52,6 @@ jobs:
       TF_VAR_domain_prefix: "${{ inputs.domainPrefix }}"
 
     runs-on: ubuntu-22.04
-
-    outputs:
-      zone_subdomain: ${{ steps.set_outputs.outputs.zone_subdomain }}
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-22.04, macos-latest, or windows-latest
     defaults:
@@ -105,9 +99,3 @@ jobs:
       if: inputs.action == 'destroy'
       run: terraform destroy -auto-approve
 
-    - name: Set Outputs
-      id: set_outputs
-      if: inputs.action == 'create'
-      run: |
-        zone_subdomain=$(terraform output --raw zone_subdomain)
-        echo "zone_subdomain=${zone_subdomain}" >> $GITHUB_OUTPUT
