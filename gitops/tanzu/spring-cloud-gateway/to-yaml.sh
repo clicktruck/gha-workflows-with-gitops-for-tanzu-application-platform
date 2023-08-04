@@ -12,8 +12,8 @@ fi
 
 # Convert .init/git-secrets.tpl to .init/git-secrets.yml
 sed \
-  -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
-  -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
+  -e "s/{{ .git_username }}/$GIT_USERNAME/g" \
+  -e "s/{{ .git_personal_access_token }}/$GIT_PERSONAL_ACCESS_TOKEN/g" \
   .init/git-secrets.tpl > .init/git-secrets.yml
 
 
