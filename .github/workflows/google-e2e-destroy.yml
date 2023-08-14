@@ -13,7 +13,7 @@ on:
         - "1.24"
         - "1.25"
         - "1.26"
-        default: "1.24"
+        default: "1.26"
       footprint:
         description: "Footprint for TAP installation"
         required: true

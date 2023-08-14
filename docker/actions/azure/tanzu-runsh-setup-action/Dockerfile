@@ -7,8 +7,8 @@ LABEL "com.github.actions.color"="blue"
 LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/azure/tanzu-runsh-setup-action"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
-ENV HELM_VERSION=3.12.2 \
-    IMGPKG_VERSION=0.37.2 \
+ENV HELM_VERSION=3.13.3 \
+    IMGPKG_VERSION=0.37.3 \
     KAPP_VERSION=0.58.0 \
     KBLD_VERSION=0.37.4 \
     KCTRL_VERSION=0.46.1 \
@@ -16,8 +16,8 @@ ENV HELM_VERSION=3.12.2 \
     MKPCLI_VERSION=0.15.0 \
     LEFTOVERS_VERSION=0.62.0 \
     VENDIR_VERSION=0.34.3 \
-    YQ_VERSION=4.34.2 \
-    YTT_VERSION=0.45.3
+    YQ_VERSION=4.35.1 \
+    YTT_VERSION=0.45.4
 
 RUN apk add --update --no-cache coreutils docker gcompat openrc wget \
     && rc-update add docker boot \
