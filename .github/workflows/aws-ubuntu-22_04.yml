@@ -90,7 +90,7 @@ jobs:
       - name: Use latest Packer
         uses: hashicorp-contrib/setup-packer@v2
         with:
-          packer-version: 1.9.2
+          packer-version: 1.9.4
 
       - name: Initialize Packer
         working-directory: ./packer/aws/ubuntu/22_04
