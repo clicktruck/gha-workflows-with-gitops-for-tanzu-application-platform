@@ -61,7 +61,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: "Fetch secrets from secret manager instance"
       id: vars
@@ -109,7 +109,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: "Fetch secrets from secret manager instance"
       id: vars

@@ -32,7 +32,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Fetch action
       uses: vmware-tanzu/carvel-setup-action@v1
@@ -81,7 +81,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Deploy cluster
       uses: engineerd/setup-kind@v0.5.0
