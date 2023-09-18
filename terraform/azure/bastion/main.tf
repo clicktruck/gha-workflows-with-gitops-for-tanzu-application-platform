@@ -67,7 +67,7 @@ resource "local_file" "path_to_private_openssh_keyfile" {
 }
 
 resource "azurerm_public_ip" "operator_ip" {
-  name                = "public-ip-for-nic-${var.suffix}"
+  name                = "public-ip-for-${var.vm_name}"
   location            = data.azurerm_resource_group.vm.location
   resource_group_name = data.azurerm_resource_group.vm.name
   allocation_method   = "Static"
@@ -75,18 +75,17 @@ resource "azurerm_public_ip" "operator_ip" {
 }
 
 resource "azurerm_network_interface" "nic" {
-  name                = "nic-${var.suffix}"
+  name                = "nic-for-${var.var.vm_name}"
   location            = data.azurerm_resource_group.vm.location
   resource_group_name = data.azurerm_resource_group.vm.name
 
   ip_configuration {
-    name                          = "nic-${var.suffix}"
+    name                          = "nic-for-${var.vm_name}"
     subnet_id                     = data.azurerm_subnet.operator_subnet.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.operator_ip.id
   }
 }
-
 
 resource "azurerm_role_assignment" "sp" {
   scope                = data.azurerm_resource_group.vm.id
