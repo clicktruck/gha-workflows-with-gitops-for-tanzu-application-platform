@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
 fi
 
 OS=${1}
-TAP_VERSION=1.6.1
+TAP_VERSION=1.6.2
 
 # Installs TAP plugins for tanzu CLI
 

@@ -13,10 +13,10 @@
 # * AZURE_AD_CLIENT_SECRET
 #
 # If you intend to run this script as the ENTRYPOINT in a Docker file then pass
-# each of the environment variables above with -e (e.g., -e TANZU_CLI_VERSION=2.2.0).
+# each of the environment variables above with -e (e.g., -e TANZU_CLI_VERSION=2.3.0).
 #
 # If you intend to run this script standalone then you will need to export each of
-# the environment variables above (e.g., export TANZU_CLI_VERSION=2.2.0) beforehand.
+# the environment variables above (e.g., export TANZU_CLI_VERSION=2.3.0) beforehand.
 
 if [ x"${AZURE_SUBSCRIPTION_ID}" == "x" ] || [ x"${AZURE_AD_TENANT_ID}" == "x" ] && [ x"${AZURE_AD_CLIENT_ID}" == "x" ] || [ x"${AZURE_AD_CLIENT_SECRET}" == "x" ]; then
   echo "Expected AZURE_SUBSCRIPTION_ID, AZURE_AD_TENANT_ID, AZURE_AD_CLIENT_ID, and AZURE_AD_CLIENT_SECRET enviroment variables to have been set!"

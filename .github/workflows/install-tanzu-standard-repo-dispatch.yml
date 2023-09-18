@@ -7,7 +7,7 @@ on:
         description: "Tanzu Global Package Repository version"
         type: string
         required: true
-        default: "v2.2.0"
+        default: "v2.3.0"
       cluster-provider:
         description: "The Kubernetes service provider"
         required: true
