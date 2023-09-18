@@ -75,7 +75,7 @@ resource "azurerm_public_ip" "operator_ip" {
 }
 
 resource "azurerm_network_interface" "nic" {
-  name                = "nic-for-${var.var.vm_name}"
+  name                = "nic-for-${var.vm_name}"
   location            = data.azurerm_resource_group.vm.location
   resource_group_name = data.azurerm_resource_group.vm.name
 
