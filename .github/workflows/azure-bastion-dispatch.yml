@@ -14,7 +14,7 @@ on:
         required: true
       sharedGalleryName:
         required: true
-        description: "The image from the shared gallery to use"
+        description: "The shared gallery name"
       imageName:
         required: true
         description: "The image from the shared gallery to use"

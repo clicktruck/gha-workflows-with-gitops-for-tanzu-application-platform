@@ -22,7 +22,7 @@ on:
       sharedGalleryName:
         required: true
         type: string
-        description: "The image from the shared gallery to use"
+        description: "The shared gallery name"
       imageVersion:
         required: true
         type: string
