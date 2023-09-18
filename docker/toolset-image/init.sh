@@ -13,6 +13,7 @@ main() {
   HELMFILE_VERSION=0.157.0
   AWS_IAM_AUTHENTICATOR_VERSION=0.6.11
   IMGPKG_VERSION=0.37.3
+  K9S_VERSION=0.27.4
   KAPP_VERSION=0.58.0
   KBLD_VERSION=0.37.5
   KCTRL_VERSION=0.47.0
@@ -58,6 +59,12 @@ main() {
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
   sudo apt update
   sudo apt install gh -y
+
+  # Install K9s
+  curl -LO https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_Linux_amd64.tar.gz
+  tar -xvf k9s_Linux_amd64.tar.gz
+  rm -Rf k9s_Linux_amd64.tar.gz
+  sudo mv k9s /usr/local/bin
 
   # Install yq
   sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
