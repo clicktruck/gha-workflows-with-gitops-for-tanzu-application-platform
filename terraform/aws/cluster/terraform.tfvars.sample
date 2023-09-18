@@ -1,7 +1,7 @@
 eks_cluster_id = "tap-full"
 vpc_id = "vpc-03c838074f2e13ea9"
 desired_nodes = 3
-kubernetes_version = "1.24"
+kubernetes_version = "1.26"
 ssh_key_name = "tanzu-workshop-tap-admin-key"
 node_pool_instance_type = "m5a.xlarge"
 provisioner_security_group_id = "sg-0ae75a42b1ef5fdac"

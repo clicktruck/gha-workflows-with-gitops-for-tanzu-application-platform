@@ -4,7 +4,7 @@ resource "random_string" "suffix" {
 }
 
 module "eks_blueprints" {
-  source = "github.com/aws-ia/terraform-aws-eks-blueprints?ref=v4.26.0"
+  source = "github.com/aws-ia/terraform-aws-eks-blueprints?ref=v4.32.1"
 
   cluster_name    = "${var.eks_cluster_id}-${random_string.suffix.result}"
   cluster_version = var.kubernetes_version

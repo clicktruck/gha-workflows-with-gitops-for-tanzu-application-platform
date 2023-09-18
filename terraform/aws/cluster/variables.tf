@@ -17,7 +17,7 @@ variable "desired_nodes" {
 variable "kubernetes_version" {
   type        = string
   description = "Supported Kubernetes major.minor version"
-  default     = "1.24"
+  default     = "1.26"
 }
 
 variable "ssh_key_name" {}

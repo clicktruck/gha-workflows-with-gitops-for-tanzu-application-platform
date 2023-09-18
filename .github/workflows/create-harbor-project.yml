@@ -29,7 +29,7 @@ jobs:
       HARBOR_CLI_JAR_VERSION: "harbor-cli-0.0.1-SNAPSHOT.jar"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up JDK
       uses: actions/setup-java@v3

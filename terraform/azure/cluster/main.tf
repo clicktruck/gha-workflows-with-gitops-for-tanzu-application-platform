@@ -20,15 +20,12 @@ data "azurerm_application_gateway" "gw" {
   resource_group_name = data.azurerm_resource_group.rg.name
 }
 
-resource "random_string" "prefix" {
-  length  = 4
-  special = false
-  numeric = false
+resource "random_id" "name" {
+  byte_length = 8
 }
 
-
 module "aks" {
-  source = "github.com/Azure/terraform-azurerm-aks?ref=7.2.0"
+  source = "github.com/Azure/terraform-azurerm-aks?ref=7.3.2"
 
   cluster_name                         = var.cluster_name
   cluster_log_analytics_workspace_name = var.cluster_name
@@ -37,7 +34,7 @@ module "aks" {
   client_id     = var.client_id
   client_secret = var.client_secret
 
-  prefix              = random_string.prefix.result
+  prefix              = random_id.name.hex
   resource_group_name = data.azurerm_resource_group.rg.name
   kubernetes_version  = var.k8s_version
 
@@ -65,8 +62,8 @@ module "aks" {
 
   disk_encryption_set_id              = azurerm_disk_encryption_set.des.id
   enable_auto_scaling                 = true
-  enable_host_encryption              = false
-  http_application_routing_enabled    = false
+  enable_host_encryption              = true
+  http_application_routing_enabled    = true
   ingress_application_gateway_enabled = true
   ingress_application_gateway_id      = data.azurerm_application_gateway.gw.id
   local_account_disabled              = false
@@ -85,8 +82,8 @@ module "aks" {
       },
     ]
   }
-  net_profile_dns_service_ip = "10.0.0.10"
-  net_profile_service_cidr   = "10.0.0.0/16"
+  net_profile_dns_service_ip        = "10.0.0.10"
+  net_profile_service_cidr          = "10.0.0.0/16"
   network_plugin             = "kubenet"
   os_disk_size_gb            = var.aks_node_disk_size
   sku_tier                   = "Standard"

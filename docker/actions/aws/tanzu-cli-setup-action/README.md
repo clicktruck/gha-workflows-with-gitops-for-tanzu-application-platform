@@ -95,7 +95,7 @@ jobs:
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # Execute a command with the tanzu CLI
     - name: Execute Tanzu CLI
