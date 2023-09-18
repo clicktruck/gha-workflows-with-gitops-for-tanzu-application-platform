@@ -12,6 +12,18 @@ on:
       suffix:
         description: "A Virtual Network suffix.  Used for looking up the subnet where this bastion will be running and creating a network interface and public IP."
         required: true
+      sharedGalleryName:
+        required: true
+        description: "The image from the shared gallery to use"
+      imageName:
+        required: true
+        description: "The image from the shared gallery to use"
+      imageVersion:
+        required: true
+        description: "The image version from the shared gallery to use"
+      sigRgName:
+        required: true
+        description: "Name of resource group that the gallery is in"
       action:
         required: true
         type: choice
@@ -27,6 +39,10 @@ jobs:
       vmName: ${{ github.event.inputs.vmName }}
       suffix: ${{ github.event.inputs.suffix }}
       resourceGroupName: ${{ github.event.inputs.resourceGroupName }}
+      sharedGalleryName: ${{ github.event.inputs.sharedGalleryName }}
+      imageName: ${{ github.event.inputs.imageName }}
+      imageVersion: ${{ github.event.inputs.imageVersion }}
+      sigRgName: ${{ github.event.inputs.sigRgName }}
       action: ${{ github.event.inputs.action }}
     secrets:
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
