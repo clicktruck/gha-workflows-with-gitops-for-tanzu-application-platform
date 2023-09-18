@@ -28,7 +28,6 @@ module "aks" {
   source = "github.com/Azure/terraform-azurerm-aks?ref=7.3.2"
 
   cluster_name                         = var.cluster_name
-  cluster_log_analytics_workspace_name = var.cluster_name
   private_cluster_enabled              = false
 
   client_id     = var.client_id
