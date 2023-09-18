@@ -101,7 +101,7 @@ jobs:
           echo "resource_group_name = \"${{ secrets.TF_BACKEND_RESOURCE_GROUP_NAME }}\"" > config.azurerm.tfbackend
           echo "storage_account_name = \"${{ secrets.TF_BACKEND_STORAGE_ACCOUNT_NAME }}\"" >> config.azurerm.tfbackend
           echo "container_name = \"${{ secrets.TF_BACKEND_STORAGE_CONTAINER_NAME }}\"" >> config.azurerm.tfbackend
-          echo "key = \"${{ inputs.resourceGroupName }}.bastion.tfstate\"" >> config.azurerm.tfbackend
+          echo "key = \"${{ inputs.resourceGroupName }}.${{ inputs.vmName }}.bastion.tfstate\"" >> config.azurerm.tfbackend
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
