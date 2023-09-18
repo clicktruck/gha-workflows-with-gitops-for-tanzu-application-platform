@@ -53,7 +53,7 @@ jobs:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
       if: inputs.action == 'create'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # Install the latest version of Terraform CLI
     - name: Setup Terraform
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Add KMS key id as secret
       env:
         GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
