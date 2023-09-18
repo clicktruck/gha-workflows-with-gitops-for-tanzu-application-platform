@@ -31,7 +31,7 @@ jobs:
     uses: ./.github/workflows/azure-virtual-network.yml
     with:
       virtualNetworkCidr: ${{ github.event.inputs.virtualNetworkCidr }}
-      resourceGroupName: ${{ github.event.inputs.participantNumber }}
+      resourceGroupName: ${{ github.event.inputs.resourceGroupName }}
       operatorSubnetCidr: ${{ github.event.inputs.operatorSubnetCidr }}
       aksSubnetCidr: ${{ github.event.inputs.aksSubnetCidr }}
       agwSubnetCidr: ${{ github.event.inputs.agwSubnetCidr }}
