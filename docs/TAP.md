@@ -32,7 +32,7 @@ gh repo fork pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
 You will also need to search-and-replace occurrences of:
 
 ```yaml
-url: git@github.com:pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+url: https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
 ```
 
 within `.yml` and `.tpl` files located in sub-directories under the [gitops/tanzu](../gitops/tanzu) directory.

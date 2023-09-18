@@ -163,8 +163,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   obtain-base64-encoded-kubeconfig-for-harbor-cluster:
     uses: ./.github/workflows/google-obtain-base64-encoded-kubeconfig-for-cluster.yml
     needs: create-harbor-cluster
@@ -196,8 +195,7 @@ jobs:
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-base64-encoded-kubeconfig-for-harbor-cluster.outputs.b64kubeconfig }}
   install-harbor:
     uses: ./.github/workflows/google-harbor.yml
@@ -241,8 +239,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   create-tap-build-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
@@ -263,8 +260,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   create-tap-iterate-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
@@ -285,8 +281,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   create-tap-view-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
@@ -307,8 +302,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   create-tap-run-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/google-k8s-autopilot-cluster.yml
@@ -329,8 +323,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   obtain-base64-encoded-kubeconfig-for-tap-cluster:
     if: github.event.inputs.footprint == 'single-cluster'
     uses: ./.github/workflows/google-obtain-base64-encoded-kubeconfig-for-cluster.yml

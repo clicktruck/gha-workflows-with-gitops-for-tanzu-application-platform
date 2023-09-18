@@ -23,8 +23,8 @@ sed \
   -e "s/{{ .oracle_user_id }}/$ORACLE_USER_ID/g" \
   -e "s/{{ .oracle_fingerprint }}/$ORACLE_FINGERPRINT/g" \
   -e "s/{{ .oracle_key_file_contents }}/$ORACLE_KEY_FILE_CONTENTS/g" \
-  -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
-  -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
+  -e "s/{{ .git_username }}/$GIT_USERNAME/g" \
+  -e "s/{{ .git_personal_access_token }}/$GIT_PERSONAL_ACCESS_TOKEN/g" \
   .init/ingress-install-secrets.tpl > .init/ingress-install-secrets.yml
 
 # Convert .install/ingress-install.tpl to .install/ingress-install.yml

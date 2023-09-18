@@ -233,5 +233,4 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}

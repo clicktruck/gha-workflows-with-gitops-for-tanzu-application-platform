@@ -17,8 +17,8 @@ sed \
 
 # Convert .init/data-services-install-secrets.tpl to .init/data-services-install-secrets.yml
 sed \
-  -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
-  -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
+  -e "s/{{ .git_username }}/$GIT_USERNAME/g" \
+  -e "s/{{ .git_personal_access_token }}/$GIT_PERSONAL_ACCESS_TOKEN/g" \
   -e "s/{{ .tanzu_network_username }}/$TANZU_NETWORK_USERNAME/g" \
   -e "s/{{ .tanzu_network_password }}/$TANZU_NETWORK_PASSWORD/g" \
   .init/data-services-install-secrets.tpl > .init/data-services-install-secrets.yml

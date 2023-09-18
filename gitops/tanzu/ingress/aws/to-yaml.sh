@@ -22,8 +22,8 @@ sed \
   -e "s/{{ .aws_secret_access_key }}/$AWS_SECRET_ACCESS_KEY/g" \
   -e "s/{{ .aws_region }}/$AWS_REGION/g" \
   -e "s/{{ .aws_route53_hosted_zone_id }}/$AWS_AWS_ROUTE53_HOSTED_ZONE_ID/g" \
-  -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
-  -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
+  -e "s/{{ .git_username }}/$GIT_USERNAME/g" \
+  -e "s/{{ .git_personal_access_token }}/$GIT_PERSONAL_ACCESS_TOKEN/g" \
   .init/ingress-install-secrets.tpl > .init/ingress-install-secrets.yml
 
 # Convert .install/ingress-install.tpl to .install/ingress-install.yml

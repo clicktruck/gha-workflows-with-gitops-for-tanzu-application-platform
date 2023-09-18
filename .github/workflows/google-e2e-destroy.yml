@@ -161,8 +161,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-vnet-single-cluster-with-google-container-registry:
     if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'google-container-registry'
     uses: ./.github/workflows/google-virtual-network.yml
@@ -265,8 +264,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-tap-build-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/google-k8s-cluster.yml
@@ -291,8 +289,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-tap-iterate-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/google-k8s-cluster.yml
@@ -317,8 +314,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-tap-view-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/google-k8s-cluster.yml
@@ -343,8 +339,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-tap-run-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/google-k8s-cluster.yml
@@ -369,8 +364,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-secrets-manager:
     uses: ./.github/workflows/google-secrets-manager.yml
     with:

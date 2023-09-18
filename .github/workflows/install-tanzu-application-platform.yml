@@ -100,12 +100,6 @@ on:
         required: true
       PA_TOKEN:
         required: true
-      GIT_SSH_PRIVATE_KEY:
-        required: true
-      GIT_SSH_PUBLIC_KEY:
-        required: true
-      GIT_SSH_KNOWN_HOSTS:
-        required: true
       CSP_API_TOKEN:
         required: true
       OIDC_AUTH_PROVIDER:
@@ -157,8 +151,7 @@ jobs:
       ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY: ${{ secrets.ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       KUBECONFIG_CONTENTS: ${{ secrets.KUBECONFIG_CONTENTS }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
 
   install-tanzu-ingress-into-tap-cluster-on-azure:
     if: contains(fromJson('["aks","tkg»azure"]'), inputs.cluster-provider)
@@ -175,8 +168,7 @@ jobs:
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       KUBECONFIG_CONTENTS: ${{ secrets.KUBECONFIG_CONTENTS }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
 
   install-tanzu-ingress-into-tap-cluster-on-google:
     needs: fetch-google-cloud-dns-zone-name
@@ -191,8 +183,7 @@ jobs:
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       KUBECONFIG_CONTENTS: ${{ secrets.KUBECONFIG_CONTENTS }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
 
   encode-tanzu-application-platform-install-script:
     runs-on: ubuntu-22.04
@@ -251,8 +242,8 @@ jobs:
       with:
         template:  ${{ env.GITOPS_DIR }}/.init/git-secrets.tpl
         vars: |
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          git_username: ${{ github.repository_owner }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
         result_path: ${{ env.GITOPS_DIR }}/.init/git-secrets.yml
 
     - name: Render tap-install-config
@@ -296,9 +287,6 @@ jobs:
           git_host: github.com
           git_username: ${{ github.actor }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
           oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""
@@ -324,9 +312,6 @@ jobs:
           git_host: github.com
           git_username: ${{ github.actor }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
           oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""

@@ -11,12 +11,12 @@ tds:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: git-ssh-for-carvel
+  name: git-https-for-carvel
   namespace: tanzu-package-repo-data-services
-type: kubernetes.io/ssh-auth
-data:
-  ssh-privatekey: {{ .git_ssh_private_key }}
-  ssh-knownhosts: {{ .git_ssh_known_hosts }}
+type: kubernetes.io/basic-auth
+stringData:
+  username: {{ .git_username }}
+  password: {{ .git_personal_access_token }}
 ---
 apiVersion: v1
 kind: Secret

@@ -50,8 +50,7 @@ jobs:
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
 
   fetch-route53-hosted-zone-id:
@@ -80,8 +79,7 @@ jobs:
       ROUTE53_ZONE_AWS_ACCESS_KEY_ID: ${{ github.event.inputs.aws-access-key-id }}
       ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY: ${{ github.event.inputs.aws-secret-access-key }}
       KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
 
   fetch-google-cloud-dns-zone-name:
@@ -105,6 +103,5 @@ jobs:
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
