@@ -27,8 +27,8 @@ resource "random_id" "name" {
 module "aks" {
   source = "github.com/Azure/terraform-azurerm-aks?ref=7.3.2"
 
-  cluster_name                         = var.cluster_name
-  private_cluster_enabled              = false
+  cluster_name            = var.cluster_name
+  private_cluster_enabled = false
 
   client_id     = var.client_id
   client_secret = var.client_secret
