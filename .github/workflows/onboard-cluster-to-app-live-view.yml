@@ -92,12 +92,6 @@ on:
         required: true
       PA_TOKEN:
         required: true
-      GIT_SSH_PRIVATE_KEY:
-        required: true
-      GIT_SSH_PUBLIC_KEY:
-        required: true
-      GIT_SSH_KNOWN_HOSTS:
-        required: true
       CSP_API_TOKEN:
         required: true
       OIDC_AUTH_PROVIDER:
@@ -247,9 +241,6 @@ jobs:
           git_host: github.com
           git_username: ${{ github.actor }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
           oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""
@@ -275,9 +266,6 @@ jobs:
           git_host: github.com
           git_username: ${{ github.actor }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
           oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""
@@ -288,8 +276,8 @@ jobs:
       with:
         template:  ${{ env.GITOPS_DIR }}/.init/git-secrets.tpl
         vars: |
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          git_username: ${{ github.repository_owner }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
         result_path: ${{ env.GITOPS_DIR }}/.init/git-secrets.yml
 
     - name: Render tap-install-config
@@ -332,9 +320,6 @@ jobs:
           git_host: github.com
           git_username: ${{ github.actor }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
           oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""
@@ -360,9 +345,6 @@ jobs:
           git_host: github.com
           git_username: ${{ github.actor }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_public_key: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
           oidc_auth_client_secret: "\"${{ env.OIDC_AUTH_CLIENT_SECRET }}\""

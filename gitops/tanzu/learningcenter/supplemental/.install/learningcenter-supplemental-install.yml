@@ -7,10 +7,10 @@ spec:
   serviceAccountName: lcs-sa
   fetch:
     - git:
-        url: git@github.com:pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+        url: https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
         ref: origin/main
         subPath: gitops/tanzu/learningcenter/supplemental/base
         secretRef:
-          name: git-ssh-for-carvel
+          name: git-https-for-carvel
   deploy:
     - kapp: {}

@@ -12,8 +12,8 @@ fi
 
 # Convert .init/git-secrets.tpl to .init/git-secrets.yml
 sed \
-  -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
-  -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
+  -e "s/{{ .git_username }}/$GIT_USERNAME/g" \
+  -e "s/{{ .git_personal_access_token }}/$GIT_PERSONAL_ACCESS_TOKEN/g" \
   .init/git-secrets.tpl > .init/git-secrets.yml
 
 
@@ -46,9 +46,6 @@ sed \
   -e "s/{{ .git_host }}/$GIT_HOST/g" \
   -e "s/{{ .git_username }}/$GIT_USERNAME/g" \
   -e "s/{{ .git_personal_access_token }}/$GIT_PERSONAL_ACCESS_TOKEN/g" \
-  -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
-  -e "s/{{ .git_ssh_public_key }}/$GIT_SSH_PUBLIC_KEY/g" \
-  -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
   -e "s/{{ or .oidc_auth_client_id \"\" }}/$OIDC_AUTH_CLIENT_ID/g" \
   -e "s/{{ or .oidc_auth_client_secret \"\" }}/$OIDC_AUTH_CLIENT_SECRET/g" \
   -e "s/{{ or .oidc_auth_provider \"github\" }}/$OIDC_AUTH_PROVIDER/g" \

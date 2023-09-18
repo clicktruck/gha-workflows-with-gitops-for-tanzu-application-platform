@@ -199,9 +199,7 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-build-cluster-kubeconfig-contents }}
@@ -231,9 +229,6 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-iterate-cluster-kubeconfig-contents }}
@@ -263,9 +258,7 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
@@ -307,9 +300,7 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_PUBLIC_KEY: ${{ secrets.GIT_SSH_PUBLIC_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-run-cluster-kubeconfig-contents }}

@@ -42,7 +42,7 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: git-http
+  name: git-https
   namespace: #@ data.values.tap.devNamespace
   annotations:
     tekton.dev/git-0: #@ "https://{}".format(data.values.tap.credentials.git.host)
@@ -65,7 +65,7 @@ secrets:
   - name: container-registry-credentials
 #@ end
   - name: git-ssh
-  - name: git-http
+  - name: git-https
 imagePullSecrets:
 #@ if ((data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1) == False:
   - name: container-registry-credentials

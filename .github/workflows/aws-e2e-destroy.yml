@@ -238,8 +238,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-tap-cluster:
     if: github.event.inputs.footprint == 'single-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
@@ -266,8 +265,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-tap-build-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
@@ -294,8 +292,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-tap-iterate-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
@@ -322,8 +319,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-tap-view-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
@@ -350,8 +346,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   destroy-tap-run-cluster:
     if: github.event.inputs.footprint == 'multi-cluster'
     uses: ./.github/workflows/aws-k8s-cluster.yml
@@ -378,8 +373,7 @@ jobs:
       TANZU_NETWORK_USERNAME: ${{ secrets.TANZU_NETWORK_USERNAME }}
       TANZU_NETWORK_PASSWORD: ${{ secrets.TANZU_NETWORK_PASSWORD }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-      GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-      GIT_SSH_KNOWN_HOSTS: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+      PA_TOKEN: ${{ secrets.PA_TOKEN }}
   delete-additional-iam-roles-for-tap-cluster:
     if: github.event.inputs.footprint == 'single-cluster' && github.event.inputs.container-image-registry-provider == 'ecr'
     uses: ./.github/workflows/aws-iam-roles.yml

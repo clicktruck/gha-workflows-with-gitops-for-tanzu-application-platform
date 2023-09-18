@@ -33,7 +33,4 @@ tap:
         owner: change_me
         name: tap-gitops-depot
         branch: main
-      #! choices below are: [ "", git-http, git-ssh ]
-      #! if you set git-http or git-ssh then all Git repos will be authenticated using credentials
-      #! in k8s secrets of the same name in a developer namespace
-      ssh_secret: git-http
+      ssh_secret: git-https

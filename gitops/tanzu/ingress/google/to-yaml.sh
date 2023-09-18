@@ -21,8 +21,8 @@ sed \
   -e "s/{{ .google_project_id }}/$GOOGLE_PROJECT_ID/g" \
   -e "s/{{ .google_service_account_key }}/$GOOGLE_SERVICE_ACCOUNT_KEY/g" \
   -e "s/{{ .google_cloud_dns_zone_name }}/$GOOGLE_CLOUD_DNS_ZONE_NAME/g" \
-  -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
-  -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
+  -e "s/{{ .git_username }}/$GIT_USERNAME/g" \
+  -e "s/{{ .git_personal_access_token }}/$GIT_PERSONAL_ACCESS_TOKEN/g" \
   .init/ingress-install-secrets.tpl > .init/ingress-install-secrets.yml
 
 # Convert .install/ingress-install.tpl to .install/ingress-install.yml

@@ -56,9 +56,7 @@ on:
         required: false
       KUBECONFIG_CONTENTS:
         required: true
-      GIT_SSH_PRIVATE_KEY:
-        required: true
-      GIT_SSH_KNOWN_HOSTS:
+      PA_TOKEN:
         required: true
       CSP_API_TOKEN:
         required: true
@@ -120,8 +118,8 @@ jobs:
           aws_region: ${{ inputs.aws-region }}
           aws_route53_hosted_zone_id: ${{ inputs.aws-route53-hosted-zone-id }}
           email_address: ${{ inputs.email-address }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          git_username: ${{ github.repository_owner }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
         result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.yml
 
     - name: Render ingress-install-config on Azure
@@ -145,8 +143,8 @@ jobs:
           azure_ad_client_id: ${{ secrets.AZURE_AD_CLIENT_ID }}
           azure_ad_client_secret: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
           email_address: ${{ inputs.email-address }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          git_username: ${{ github.repository_owner }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
         result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.yml
 
     - name: Render ingress-install-config on Google
@@ -168,8 +166,8 @@ jobs:
           google_service_account_key: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
           google_cloud_dns_zone_name: ${{ inputs.google-cloud-dns-zone-name }}
           email_address: ${{ inputs.email-address }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          git_username: ${{ github.repository_owner }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
         result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.yml
 
     - name: Render ingress-install

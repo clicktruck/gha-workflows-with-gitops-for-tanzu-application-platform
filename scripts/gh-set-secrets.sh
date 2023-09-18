@@ -57,22 +57,6 @@ set_tanzu_secrets() {
   gh secret set TANZU_NETWORK_PASSWORD --body "$TANZU_NETWORK_PASSWORD"
 }
 
-set_git_ssh_private_key() {
-  KEYNAME="gha-workflows-with-gitops-for-tanzu-application-platform"
-  mkdir -p $HOME/.ssh
-  rm -f $HOME/.ssh/github_known_hosts $HOME/.ssh/$KEYNAME $HOME/.ssh/$KEYNAME.pub
-  ssh-keygen -t ecdsa -b 521 -C "" -f $HOME/.ssh/$KEYNAME -N ""
-  ssh-keyscan github.com > $HOME/.ssh/github_known_hosts
-  gh secret set GIT_SSH_PRIVATE_KEY --body "$(cat $HOME/.ssh/$KEYNAME | base64 -w 0)"
-  gh secret set GIT_SSH_PUBLIC_KEY --body "$(cat $HOME/.ssh/$KEYNAME.pub | base64 -w 0)"
-  deploy_keys=($(gh repo deploy-key list))
-  if [[ "${deploy_keys[2]}" == "$KEYNAME" ]]; then
-    gh repo deploy-key delete ${deploy_keys[1]}
-  fi
-  gh repo deploy-key add $HOME/.ssh/$KEYNAME.pub --title $KEYNAME
-  gh secret set GIT_SSH_KNOWN_HOSTS --body "$(cat $HOME/.ssh/github_known_hosts | base64 -w 0)"
-}
-
 if [ -z "$1" ]; then
   echo "Usage: ./gh-set-secrets.sh {target-cloud}"
   exit 1
@@ -118,9 +102,5 @@ if [ ! -z "$OPTIONS" ];then
 
   if [[ "--include-tanzu-secrets" =~ "$OPTIONS" ]]; then
     set_tanzu_secrets
-  fi
-
-  if [[ "--include-git-ssh-private-key" =~ "$OPTIONS" ]]; then
-    set_git_ssh_private_key
   fi
 fi

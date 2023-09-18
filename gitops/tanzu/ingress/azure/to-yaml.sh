@@ -23,8 +23,8 @@ sed \
   -e "s/{{ .azure_ad_client_id }}/$AZURE_AD_CLIENT_ID/g" \
   -e "s/{{ .azure_ad_client_secret }}/$AZURE_AD_CLIENT_SECRET/g" \
   -e "s/{{ .azure_resource_group_name }}/$AZURE_RESOURCE_GROUP_NAME/g" \
-  -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
-  -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
+  -e "s/{{ .git_username }}/$GIT_USERNAME/g" \
+  -e "s/{{ .git_personal_access_token }}/$GIT_PERSONAL_ACCESS_TOKEN/g" \
   .init/ingress-install-secrets.tpl > .init/ingress-install-secrets.yml
 
 # Convert .install/ingress-install.tpl to .install/ingress-install.yml

@@ -15,10 +15,6 @@ tap:
       host: {{ .git_host }}
       username: {{ .git_username }}
       token: {{ .git_personal_access_token }}
-      ssh:
-        privatekey: {{ .git_ssh_private_key }}
-        publickey: {{ .git_ssh_public_key }}
-        knownhosts: {{ .git_ssh_known_hosts }}
     oidc:
       client_id: {{ or .oidc_auth_client_id "" }}
       client_secret: {{ or .oidc_auth_client_secret "" }}

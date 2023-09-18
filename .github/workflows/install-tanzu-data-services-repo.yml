@@ -36,9 +36,7 @@ on:
         required: true
       TANZU_NETWORK_PASSWORD:
         required: true
-      GIT_SSH_PRIVATE_KEY:
-        required: true
-      GIT_SSH_KNOWN_HOSTS:
+      PA_TOKEN:
         required: true
       CSP_API_TOKEN:
         required: true
@@ -89,8 +87,8 @@ jobs:
         vars: |
           tanzu_network_username: ${{ secrets.TANZU_NETWORK_USERNAME }}
           tanzu_network_password: ${{ secrets.TANZU_NETWORK_PASSWORD }}
-          git_ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-          git_ssh_known_hosts: ${{ secrets.GIT_SSH_KNOWN_HOSTS }}
+          git_username: ${{ github.repository_owner }}
+          git_personal_access_token: ${{ secrets.PA_TOKEN }}
         result_path: ${{ env.GITOPS_DIR }}/.init/data-services-install-secrets.yml
 
     - name: Render data-services-install
