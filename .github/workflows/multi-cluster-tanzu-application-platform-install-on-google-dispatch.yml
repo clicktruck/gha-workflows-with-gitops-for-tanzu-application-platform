@@ -199,7 +199,6 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-build-cluster-kubeconfig-contents }}
@@ -258,7 +257,6 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-view-cluster-kubeconfig-contents }}
@@ -300,7 +298,6 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       KUBECONFIG_CONTENTS: ${{ needs.obtain-secrets-from-secrets-manager.outputs.b64-tap-run-cluster-kubeconfig-contents }}

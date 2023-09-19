@@ -195,7 +195,6 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -227,7 +226,6 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -259,7 +257,6 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -305,7 +302,6 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-
       AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

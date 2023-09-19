@@ -239,7 +239,7 @@ jobs:
           container_image_registry_username: ${{ inputs.container-image-registry-username }}
           container_image_registry_password: ${{ inputs.container-image-registry-password }}
           git_host: github.com
-          git_username: ${{ github.actor }}
+          git_username: ${{ github.repository_owner }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
@@ -264,7 +264,7 @@ jobs:
           container_image_registry_username: ${{ inputs.container-image-registry-username }}
           container_image_registry_password: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
           git_host: github.com
-          git_username: ${{ github.actor }}
+          git_username: ${{ github.repository_owner }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
@@ -295,7 +295,7 @@ jobs:
           build_service_repo_aws_iam_role_arn: ${{ inputs.build-service-repo-aws-iam-role-arn }}
           workload_repo_aws_iam_role_arn: ${{ inputs.workload-repo-aws-iam-role-arn }}
           gitops_provider: "github.com"
-          gitops_username: ${{ github.actor }}
+          gitops_username: ${{ github.repository_owner }}
           gitops_repo_name: "tap-gitops-depot"
           gitops_repo_branch: "main"
         result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-config.yml
@@ -318,7 +318,7 @@ jobs:
           container_image_registry_username: ${{ inputs.container-image-registry-username }}
           container_image_registry_password: ${{ inputs.container-image-registry-password }}
           git_host: github.com
-          git_username: ${{ github.actor }}
+          git_username: ${{ github.repository_owner }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""
@@ -343,7 +343,7 @@ jobs:
           container_image_registry_username: ${{ inputs.container-image-registry-username }}
           container_image_registry_password: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
           git_host: github.com
-          git_username: ${{ github.actor }}
+          git_username: ${{ github.repository_owner }}
           git_personal_access_token: ${{ secrets.PA_TOKEN }}
           oidc_auth_provider: "\"${{ env.OIDC_AUTH_PROVIDER }}\""
           oidc_auth_client_id: "\"${{ env.OIDC_AUTH_CLIENT_ID }}\""

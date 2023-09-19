@@ -204,7 +204,6 @@ jobs:
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
-
       OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
       OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
       OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
@@ -240,7 +239,6 @@ jobs:
       AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
       KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
-
       OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
       OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
       OIDC_AUTH_CLIENT_SECRET: ${{ secrets.OIDC_AUTH_CLIENT_SECRET }}
@@ -268,7 +266,6 @@ jobs:
       target-repo: ${{ needs.determine-target-repo.outputs.result }}
     secrets:
       CSP_API_TOKEN: ${{ secrets.CSP_API_TOKEN }}
-
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
       KUBECONFIG_CONTENTS: ${{ github.event.inputs.kubeconfig-contents }}
