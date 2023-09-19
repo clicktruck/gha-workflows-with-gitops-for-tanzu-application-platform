@@ -28,20 +28,6 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: git-ssh
-  namespace: #@ data.values.tap.devNamespace
-  annotations:
-    tekton.dev/git-0: #@ str(data.values.tap.credentials.git.host)
-type: kubernetes.io/ssh-auth
-data:
-  ssh-privatekey: #@ data.values.tap.credentials.git.ssh.privatekey
-  known_hosts: #@ data.values.tap.credentials.git.ssh.knownhosts
-  identity: #@ data.values.tap.credentials.git.ssh.privatekey
-  identity.pub: #@ data.values.tap.credentials.git.ssh.publickey
----
-apiVersion: v1
-kind: Secret
-metadata:
   name: git-https
   namespace: #@ data.values.tap.devNamespace
   annotations:
@@ -64,7 +50,6 @@ secrets:
 #@ if ((data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1) == False:
   - name: container-registry-credentials
 #@ end
-  - name: git-ssh
   - name: git-https
 imagePullSecrets:
 #@ if ((data.values.tap.cluster.provider == "eks" or data.values.tap.cluster.provider == "tkg»aws") and (data.values.tap.credentials.registry.host).find(".dkr.ecr.") > -1) == False:
