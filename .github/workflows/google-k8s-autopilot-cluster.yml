@@ -167,7 +167,7 @@ jobs:
     uses: ./.github/workflows/install-tanzu-standard-repo.yml
     with:
       cluster-provider: "gke"
-      tkg-version: "v2.3.0"
+      tkg-version: "v2023.7.31_update.1"
     secrets:
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}

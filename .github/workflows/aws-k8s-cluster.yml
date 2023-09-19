@@ -351,7 +351,7 @@ jobs:
     uses: ./.github/workflows/install-tanzu-standard-repo.yml
     with:
       cluster-provider: "eks"
-      tkg-version: "v2.3.0"
+      tkg-version: "v2023.7.31_update.1"
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
