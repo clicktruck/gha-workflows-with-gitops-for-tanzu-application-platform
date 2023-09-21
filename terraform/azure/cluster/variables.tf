@@ -63,8 +63,3 @@ variable "k8s_api_server_authorized_ip_ranges" {
   description = "List of IP addresses or CIDR blocks that are allowed to transact the K8s API server"
   default     = ["0.0.0.0/0"]
 }
-
-variable "ingress_application_gateway_name" {
-  type        = string
-  description = "The name of the Application Gateway to integrate with the ingress controller of this Kubernetes Cluster."
-}

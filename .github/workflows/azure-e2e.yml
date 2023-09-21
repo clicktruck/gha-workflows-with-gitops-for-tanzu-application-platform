@@ -166,7 +166,6 @@ jobs:
       aksNodeDiskSize: "80"
       k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
-      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -235,7 +234,6 @@ jobs:
       aksNodeDiskSize: "80"
       k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
-      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -262,7 +260,6 @@ jobs:
       aksNodeDiskSize: "80"
       k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
-      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -289,7 +286,6 @@ jobs:
       aksNodeDiskSize: "80"
       k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
-      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -316,7 +312,6 @@ jobs:
       aksNodeDiskSize: "80"
       k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
-      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:
@@ -343,7 +338,6 @@ jobs:
       aksNodeDiskSize: "80"
       k8sVersion: ${{ github.event.inputs.k8sVersion }}
       suffix: ${{ needs.create-vnet.outputs.vnet_suffix}}
-      ingressApplicationGatewayName: ${{ needs.create-vnet.outputs.ingress_application_gateway_name }}
       resourceGroupName: participant-${{ github.event.inputs.participantNumber }}
       action: create
     secrets:

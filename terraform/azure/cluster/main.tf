@@ -15,17 +15,12 @@ data "azurerm_kubernetes_service_versions" "current" {
   include_preview = false
 }
 
-data "azurerm_application_gateway" "gw" {
-  name                = var.ingress_application_gateway_name
-  resource_group_name = data.azurerm_resource_group.rg.name
-}
-
 resource "random_id" "name" {
   byte_length = 8
 }
 
 module "aks" {
-  source = "github.com/Azure/terraform-azurerm-aks?ref=7.3.2"
+  source = "github.com/Azure/terraform-azurerm-aks?ref=7.4.0"
 
   cluster_name            = var.cluster_name
   private_cluster_enabled = false
@@ -61,10 +56,9 @@ module "aks" {
 
   disk_encryption_set_id              = azurerm_disk_encryption_set.des.id
   enable_auto_scaling                 = true
-  enable_host_encryption              = true
-  http_application_routing_enabled    = true
-  ingress_application_gateway_enabled = true
-  ingress_application_gateway_id      = data.azurerm_application_gateway.gw.id
+  enable_host_encryption              = false
+  http_application_routing_enabled    = false
+  ingress_application_gateway_enabled = false
   local_account_disabled              = false
   log_analytics_workspace_enabled     = true
   maintenance_window = {
@@ -81,11 +75,11 @@ module "aks" {
       },
     ]
   }
-  net_profile_dns_service_ip = "10.0.0.10"
-  net_profile_service_cidr   = "10.0.0.0/16"
-  network_plugin             = "kubenet"
-  os_disk_size_gb            = var.aks_node_disk_size
-  sku_tier                   = "Standard"
+
+  network_plugin  = "azure"
+  network_policy  = "azure"
+  os_disk_size_gb = var.aks_node_disk_size
+  sku_tier        = "Standard"
 
   storage_profile_enabled                     = true
   storage_profile_blob_driver_enabled         = true
