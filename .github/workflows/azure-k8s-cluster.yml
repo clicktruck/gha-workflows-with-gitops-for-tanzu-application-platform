@@ -7,10 +7,6 @@ on:
         description: "The name given to the AKS cluster"
         required: true
         type: string
-      ingressApplicationGatewayName:
-        description: "The name of an Ingress Application Gateway"
-        required: true
-        type: string
       k8sVersion:
         description: "A currently supported Kubernetes version in AKS"
         required: true
@@ -81,7 +77,6 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
       TF_VAR_cluster_name: ${{ inputs.clusterName }}
-      TF_VAR_ingress_application_gateway_name: ${{ inputs.ingressApplicationGatewayName }}
       TF_VAR_resource_group_name: "${{ inputs.resourceGroupName }}"
       TF_VAR_aks_nodes: "${{ inputs.aksNodes }}"
       TF_VAR_aks_node_type: "${{ inputs.aksNodeType }}"

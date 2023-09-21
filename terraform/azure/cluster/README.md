@@ -30,7 +30,6 @@ Amend the values for
 * `aks_node_type`
 * `aks_node_disk_size`
 * `environment`
-* `ingress_application_gateway_name`
 
 
 ### Specify environment variables
