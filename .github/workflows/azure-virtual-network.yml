@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       aksSubnetCidr:
-        description: "The Subnet CIDR block hosting AKS cluster (e.g., 10.1.128.0/22)"
+        description: "The Subnet CIDR block hosting AKS cluster (e.g., 10.1.128.0/18)"
         required: true
         type: string
       agwSubnetCidr:

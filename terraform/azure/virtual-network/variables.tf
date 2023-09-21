@@ -17,6 +17,6 @@ variable "operator_subnet_cidr" {
 
 variable "aks_subnet_cidr" {
   type        = string
-  description = "The Subnet CIDR block hosting AKS cluster (e.g., 10.1.128.0/22)"
-  default     = "10.1.128.0/22"
+  description = "The Subnet CIDR block hosting AKS cluster (e.g., 10.1.128.0/18)"
+  default     = "10.1.128.0/18"
 }
