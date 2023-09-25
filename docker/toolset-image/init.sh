@@ -49,7 +49,7 @@ main() {
   apt upgrade -y
 
   # Install packages from APT
-  apt install build-essential curl default-jre git golang-go gpg graphviz gzip httpie libnss3-tools jq openssl pv python3-pip python3-dev python3-venv ruby-dev snapd sudo tmux tree tzdata unzip wget -y
+  apt install build-essential curl certbot default-jre git golang-go gpg graphviz gzip httpie libnss3-tools jq openssl pv python3-pip python3-dev python3-venv ruby-dev snapd sudo tmux tree tzdata unzip wget -y
   apt install apt-transport-https ca-certificates gnupg lsb-release software-properties-common dirmngr vim -y
   add-apt-repository ppa:cncf-buildpacks/pack-cli
   apt install pack-cli -y
@@ -81,6 +81,13 @@ main() {
   # Install eksctl
   curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
   sudo mv /tmp/eksctl /usr/local/bin
+
+  # Install sdkman
+  curl -s "https://get.sdkman.io" | bash
+
+  # Install tilt
+  curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
+
 
   # Install Docker-CE
   useradd -m docker && echo "docker:docker" | chpasswd
