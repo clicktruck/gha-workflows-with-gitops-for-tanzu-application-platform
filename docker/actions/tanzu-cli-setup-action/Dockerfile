@@ -7,7 +7,7 @@ LABEL "com.github.actions.color"="blue"
 LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/tanzu-cli-setup-action"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
-ENV HELM_VERSION=3.12.3 \
+ENV HELM_VERSION=3.13.0 \
     IMGPKG_VERSION=0.38.0 \
     KAPP_VERSION=0.58.0 \
     KBLD_VERSION=0.38.0 \
