@@ -40,7 +40,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4.0.0
+      uses: aws-actions/configure-aws-credentials@v4.0.1
       with:
         aws-access-key-id: ${{ secrets.ROUTE53_ZONE_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ROUTE53_ZONE_AWS_SECRET_ACCESS_KEY }}
