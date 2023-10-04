@@ -100,7 +100,7 @@ jobs:
 
     - name: Render ingress-install-config on AWS
       if: inputs.target-cloud == 'aws'
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.init/ingress-install-config.tpl
         vars: |
@@ -109,7 +109,7 @@ jobs:
 
     - name: Render ingress-install-secrets on AWS
       if:  inputs.target-cloud == 'aws'
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.tpl
         vars: |
@@ -124,7 +124,7 @@ jobs:
 
     - name: Render ingress-install-config on Azure
       if: inputs.target-cloud == 'azure'
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.init/ingress-install-config.tpl
         vars: |
@@ -133,7 +133,7 @@ jobs:
 
     - name: Render ingress-install-secrets on Azure
       if:  inputs.target-cloud == 'azure'
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.tpl
         vars: |
@@ -149,7 +149,7 @@ jobs:
 
     - name: Render ingress-install-config on Google
       if: inputs.target-cloud == 'google'
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.init/ingress-install-config.tpl
         vars: |
@@ -158,7 +158,7 @@ jobs:
 
     - name: Render ingress-install-secrets on Google
       if:  inputs.target-cloud == 'google'
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.tpl
         vars: |
@@ -171,7 +171,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/ingress-install-secrets.yml
 
     - name: Render ingress-install
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.install/ingress-install.tpl
         vars: |
@@ -179,7 +179,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.install/ingress-install.yml
 
     - name: Render ingress-post-install
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.post-install/ingress-post-install.tpl
         vars: |

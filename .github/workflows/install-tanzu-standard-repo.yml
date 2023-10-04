@@ -73,7 +73,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Render standard-install-config
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.init/standard-install-config.tpl
         vars: |
@@ -81,7 +81,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/standard-install-config.yml
 
     - name: Render standard-install-secrets
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.init/standard-install-secrets.tpl
         vars: |
@@ -92,7 +92,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/standard-install-secrets.yml
 
     - name: Render standard-install
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.install/standard-install.tpl
         vars: |

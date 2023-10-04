@@ -164,7 +164,7 @@ jobs:
         echo "public_cidr_3=${public_cidr_3}" >> $GITHUB_OUTPUT
 
     - name: "Render cluster configuration"
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.install/cluster.tpl
         vars: |
