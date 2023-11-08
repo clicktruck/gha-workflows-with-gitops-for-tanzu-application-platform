@@ -186,7 +186,7 @@ jobs:
     uses: ./.github/workflows/install-tanzu-standard-repo.yml
     with:
       cluster-provider: "aks"
-      tkg-version: "v2023.7.31_update.1"
+      tkg-version: "v2023.9.19"
     secrets:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
@@ -205,7 +205,7 @@ jobs:
     uses: ./.github/workflows/install-tanzu-data-services-repo.yml
     with:
       cluster-provider: "aks"
-      tds-version: "1.11.0"
+      tds-version: "1.12.1"
     secrets:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}

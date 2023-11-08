@@ -125,7 +125,7 @@ Steps below assume you have a _target cluster_, a _container image registry_, an
 
 
 ```bash
-echo '{ "tkg-version": "v2023.7.31_update.1", "cluster-provider": "gke", "kubeconfig-contents": "KVkfThQJXekP3fIgzasYb3lD..." }' | gh workflow run uninstall-tanzu-standard-repo-dispatch.yml --json
+echo '{ "tkg-version": "v2023.9.19", "cluster-provider": "gke", "kubeconfig-contents": "KVkfThQJXekP3fIgzasYb3lD..." }' | gh workflow run uninstall-tanzu-standard-repo-dispatch.yml --json
 ```
 > Only executed on Non-TKG clusters.  This is actually automatically installed if you executed [ google-k8s-cluster-dispatch, azure-k8s-cluster-dispatch, google-k8s-cluster-dispatch ] workflows.
 

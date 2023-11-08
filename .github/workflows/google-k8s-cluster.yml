@@ -199,7 +199,7 @@ jobs:
     uses: ./.github/workflows/install-tanzu-standard-repo.yml
     with:
       cluster-provider: "gke"
-      tkg-version: "v2023.7.31_update.1"
+      tkg-version: "v2023.9.19"
     secrets:
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
@@ -216,7 +216,7 @@ jobs:
     uses: ./.github/workflows/install-tanzu-data-services-repo.yml
     with:
       cluster-provider: "gke"
-      tds-version: "1.11.0"
+      tds-version: "1.12.1"
     secrets:
       GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
       GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
