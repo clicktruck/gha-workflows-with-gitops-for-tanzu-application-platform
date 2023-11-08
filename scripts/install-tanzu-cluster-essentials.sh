@@ -38,9 +38,9 @@ esac
 if ! command -v pivnet &> /dev/null
 then
     echo "Downloading pivnet CLI..."
-	curl -LO https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
-	chmod +x pivnet-linux-amd64-3.0.1
-	mv pivnet-linux-amd64-3.0.1 /usr/bin/pivnet
+	curl -LO https://github.com/pivotal-cf/pivnet-cli/releases/download/v4.1.1/pivnet-linux-amd64-4.1.1
+	chmod +x pivnet-linux-amd64-4.1.1
+	mv pivnet-linux-amd64-4.1.1 /usr/bin/pivnet
 fi
 
 TANZU_NETWORK_API_TOKEN="$1"
