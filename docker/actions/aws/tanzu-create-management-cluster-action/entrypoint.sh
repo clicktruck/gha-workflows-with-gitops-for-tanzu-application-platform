@@ -11,10 +11,10 @@
 # * AWS_SECRET_ACCESS_KEY
 #
 # If you intend to run this script as the ENTRYPOINT in a Docker file then pass
-# each of the environment variables above with -e (e.g., -e TANZU_CLI_VERSION=2.1.1).
+# each of the environment variables above with -e (e.g., -e TANZU_CLI_VERSION=2.3.0).
 #
 # If you intend to run this script standalone then you will need to export each of
-# the environment variables above (e.g., export TANZU_CLI_VERSION=2.1.1) beforehand.
+# the environment variables above (e.g., export TANZU_CLI_VERSION=2.3.0) beforehand.
 
 if [ x"${CSP_API_TOKEN}" == "x" ] || [ x"${TANZU_CLI_VERSION}" == "x" ] || [ x"${TANZU_CLI_CORE_VERSION}" == "x" ]; then
   echo "Expected CSP_API_TOKEN, TANZU_CLI_VERSION, and TANZU_CLI_CORE_VERSION enviroment variables to have been set!"

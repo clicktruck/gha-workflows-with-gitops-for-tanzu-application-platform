@@ -26,7 +26,7 @@ Amend the values for
 * `project`
 * `region`
 * `cluster_version_prefix`
-  * just supply `major.minor` version format (e.g., 1.24)
+  * just supply `major.minor` version format (e.g., 1.26)
 
 
 ### Specify environment variables

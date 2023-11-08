@@ -2,65 +2,45 @@
 set -eo pipefail
 
 if [ -z "$1" ]; then
-	echo "Usage: install-tap-plugins.sh {tanzu-network-api-token}"
+	echo "Usage: install-tap-plugins.sh {os}"
 	exit 1
 fi
 
-OS="$(uname | tr '[:upper:]' '[:lower:]')"
-case $OS in
-  darwin)
-    echo "Installing MacOS version of Tanzu Application Platform plugins for tanzu CLI"
-	TAP_PRODUCT_FILE_ID=1478716
-    ;;
+OS=${1}
+TAP_VERSION=1.6.2
 
+# Installs TAP plugins for tanzu CLI
+
+function install_tanzu_cli() {
+case $1 in
   linux)
-    echo "Installing Linux version of Tanzu Application Platform plugins for tanzu CLI"
-	TAP_PRODUCT_FILE_ID=1478717
+    sudo mkdir -p /etc/apt/keyrings/
+    sudo apt-get update
+    sudo apt-get install -y ca-certificates curl gpg
+    curl -fsSL https://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-RSA-KEY.pub | sudo gpg --dearmor -o /etc/apt/keyrings/tanzu-archive-keyring.gpg
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/tanzu-archive-keyring.gpg] https://storage.googleapis.com/tanzu-cli-os-packages/apt tanzu-cli-jessie main" | sudo tee /etc/apt/sources.list.d/tanzu.list
+    sudo apt-get update
+    sudo apt-get install -y tanzu-cli
     ;;
 
-  *)
-    echo "[ Unsupported OS ] cannot install Tanzu Application Platform plugins for tanzu CLI"
-	exit 1
+  mac)
+    if ! command -v brew &> /dev/null
+    then
+      brew update && brew install vmware-tanzu/tanzu/tanzu-cli
+    fi
     ;;
 esac
+}
 
-if ! command -v pivnet &> /dev/null
-then
-    echo "Downloading pivnet CLI..."
-	curl -LO https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-${OS}-amd64-3.0.1
-	chmod +x pivnet-${OS}-amd64-3.0.1
-	sudo mv pivnet-${OS}-amd64-3.0.1 /usr/local/bin/pivnet
-fi
+function install_tap_plugins() {
+  tanzu plugin install --group vmware-tap/default:v$1
+  tanzu plugin list
+}
 
-
-TANZU_NETWORK_API_TOKEN="$1"
-pivnet login --api-token=$TANZU_NETWORK_API_TOKEN
-
-mkdir -p $HOME/tanzu
-cd /tmp
-TAP_VERSION="1.5.2"
-
-export TANZU_CLI_NO_INIT=true
-cd $HOME/tanzu
-export CORE_VERSION=v0.28.1
-
-pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --product-file-id="${TAP_PRODUCT_FILE_ID}"
-tar -xvf tanzu-framework-${OS}-amd64-${CORE_VERSION}*.tar -C $HOME/tanzu
-
-if [ -f "/usr/local/bin/tanzu" ]; then
-  cd $HOME/tanzu
-  tanzu plugin delete package || true
-  tanzu plugin install apps --local ./cli
-  tanzu plugin install insight --local ./cli
-  tanzu plugin install secret --local ./cli
-  tanzu plugin install services --local ./cli
-  tanzu plugin install accelerator --local ./cli
-  tanzu plugin install package --local ./cli
-  tanzu version
+if command -v tanzu > /dev/null; then
+  echo "tanzu CLI installed." && install_tap_plugins $TAP_VERSION
 else
-  sudo install cli/core/${CORE_VERSION}/tanzu-core-${OS}_amd64 /usr/local/bin/tanzu
-  tanzu version
-  tanzu plugin install --local cli all
+  echo "tanzu CLI is not installed."
+  install_tanzu_cli $OS
+  install_tap_plugins $TAP_VERSION
 fi
-
-tanzu plugin list

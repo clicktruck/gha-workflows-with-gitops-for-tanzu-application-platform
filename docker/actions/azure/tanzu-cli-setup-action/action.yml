@@ -42,8 +42,8 @@ runs:
     - "${{ inputs.kubeconfig-contents }}"
     - "${{ inputs.query-for-output }}"
   env:
-    TANZU_CLI_VERSION: 2.1.1
-    TANZU_CLI_CORE_VERSION: 0.28.1
+    TANZU_CLI_VERSION: 2.3.0
+    TANZU_CLI_CORE_VERSION: 0.90.1
     CSP_API_TOKEN: ${{ inputs.csp-api-token }}
     AZURE_SUBSCRIPTION_ID: ${{ inputs.azure-subscription-id }}
     AZURE_AD_TENANT_ID: ${{ inputs.azure-tenant-id }}

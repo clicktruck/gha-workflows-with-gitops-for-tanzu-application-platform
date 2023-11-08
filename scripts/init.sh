@@ -7,38 +7,39 @@ main() {
   # Manage software versions installed here
   TZ=America/Los_Angeles
   AGE_VERSION=1.1.1
-  ARGO_VERSION=3.4.5
-  ARGOCD_VERSION=2.6.7
-  BOSH_VERSION=7.2.3
-  CF_VERSION=8.6.1
-  CREDHUB_VERSION=2.9.13
-  HELM_VERSION=3.12.0
-  HELMFILE_VERSION=0.152.0
-  AWS_IAM_AUTHENTICATOR_VERSION=0.6.2
-  IMGPKG_VERSION=0.36.2
-  KAPP_VERSION=0.55.1
-  KBLD_VERSION=0.37.1
-  KCTRL_VERSION=0.45.1
-  KIND_VERSION=0.18.0
-  KPACK_CLI_VERSION=0.10.0
-  KWT_VERSION=0.0.6
-  KUBECTL_VERSION=1.24.9
-  KNATIVE_VERSION=1.9.2
+  ARGO_VERSION=3.4.11
+  ARGOCD_VERSION=2.8.4
+  BOSH_VERSION=7.4.0
+  CF_VERSION=8.7.2
+  CREDHUB_VERSION=2.9.20
+  HELM_VERSION=3.13.0
+  HELMFILE_VERSION=0.157.0
+  AWS_IAM_AUTHENTICATOR_VERSION=0.6.11
+  IMGPKG_VERSION=0.38.0
+  K9S_VERSION=0.27.4
+  KAPP_VERSION=0.58.0
+  KBLD_VERSION=0.38.0
+  KCTRL_VERSION=0.48.1
+  KIND_VERSION=0.20.0
+  KPACK_CLI_VERSION=0.12.0
+  KWT_VERSION=0.0.8
+  KUBECTL_VERSION=1.26.6
+  KNATIVE_VERSION=1.11.0
   LEFTOVERS_VERSION=0.62.0
-  OCI_CLI_VERSION=3.28.0
+  OCI_CLI_VERSION=3.33.2
   OM_VERSION=7.9.0
   MKPCLI_VERSION=0.15.1
-  PINNIPED_VERSION=0.22.0
+  PINNIPED_VERSION=0.25.0
   PIVNET_VERSION=3.0.1
-  RELOK8S_VERSION=0.5.2
-  SOPS_VERSION=3.7.3
-  TEKTONCD_VERSION=0.30.0
-  TERRAFORM_VERSION=1.4.6
+  RELOK8S_VERSION=0.5.3
+  SOPS_VERSION=3.8.0
+  TEKTONCD_VERSION=0.32.0
+  TERRAFORM_VERSION=1.5.7
   TERRAFORM_DOCS_VERSION=0.16.0
-  TMC_VERSION=0.5.3-88d04e82
-  VELERO_VERSION=1.11.0
-  VENDIR_VERSION=0.33.2
-  YTT_VERSION=0.45.1
+  TMC_VERSION=0.5.4-a97cb9fb
+  VELERO_VERSION=1.11.1
+  VENDIR_VERSION=0.35.0
+  YTT_VERSION=0.46.0
 
   # Place ourselves in a temporary directory; don't clutter user.home directory w/ downloaded artifacts
   cd /tmp
@@ -58,7 +59,6 @@ main() {
 
   # Install packages from Snap
   sudo snap install snap-store
-  sudo snap install k9s
   sudo snap install cvescan
 
   # Install Github CLI
@@ -66,6 +66,12 @@ main() {
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
   sudo apt update
   sudo apt install gh -y
+
+  # Install K9s
+  curl -LO https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_Linux_amd64.tar.gz
+  tar -xvf k9s_Linux_amd64.tar.gz
+  rm -Rf k9s_Linux_amd64.tar.gz
+  sudo mv k9s /usr/local/bin
 
   # Install NodeJS
   curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash -

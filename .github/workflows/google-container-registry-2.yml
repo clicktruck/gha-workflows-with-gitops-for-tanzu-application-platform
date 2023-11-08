@@ -59,7 +59,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_wrapper: false
-        terraform_version: 1.4.6
+        terraform_version: 1.5.7
 
     - name: Generate backend configuration
       run: |
@@ -122,7 +122,7 @@ jobs:
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
       with:
-        version: "432.0.0"
+        version: "438.0.0"
         install_components: gke-gcloud-auth-plugin
 
     - name: 'Destroy images and bucket'

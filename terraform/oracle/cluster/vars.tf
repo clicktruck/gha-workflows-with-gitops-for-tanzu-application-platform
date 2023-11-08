@@ -78,8 +78,8 @@ variable "compute_instance_disksize" {
 
 variable "k8s_version" {
   type        = string
-  description = "A support Kubernetes cluster version (e.g., v1.24.1).  See https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengaboutk8sversions.htm."
-  default     = "v1.24.1"
+  description = "A support Kubernetes cluster version (e.g., v1.26.2).  See https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengaboutk8sversions.htm."
+  default     = "v1.26.2"
 }
 
 variable "k8s_api_endpoint_subnet_ocid" {

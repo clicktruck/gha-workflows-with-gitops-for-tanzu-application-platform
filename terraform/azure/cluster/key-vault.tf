@@ -14,7 +14,7 @@ resource "azurerm_key_vault" "des_vault" {
   tenant_id                   = data.azurerm_client_config.current.tenant_id
   enabled_for_disk_encryption = true
   purge_protection_enabled    = true
-  soft_delete_retention_days  = 7
+  soft_delete_retention_days  = 90
 }
 
 resource "azurerm_key_vault_access_policy" "current_user" {

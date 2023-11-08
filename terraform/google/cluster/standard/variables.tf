@@ -22,7 +22,7 @@ variable "secondary_range_pods_name" { default = "pods" }
 variable "master_ipv4_cidr_block_28" {}
 
 # terraform says repair+upgrade must be true when REGULAR
-variable "cluster_version_prefix" { default = "1.24" }
+variable "cluster_version_prefix" { default = "1.26" }
 variable "cluster_release_channel" { default = "RAPID" }
 variable "node_auto_repair" { default = true }
 variable "node_auto_upgrade" { default = true }

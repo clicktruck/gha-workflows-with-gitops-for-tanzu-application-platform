@@ -12,8 +12,8 @@ fi
 
 # Convert .init/git-secrets.tpl to .init/git-secrets.yml
 sed \
-  -e "s/{{ .git_ssh_private_key }}/$GIT_SSH_PRIVATE_KEY/g" \
-  -e "s/{{ .git_ssh_known_hosts }}/$GIT_SSH_KNOWN_HOSTS/g" \
+  -e "s/{{ .git_username }}/$GIT_USERNAME/g" \
+  -e "s/{{ .git_personal_access_token }}/$GIT_PERSONAL_ACCESS_TOKEN/g" \
   .init/git-secrets.tpl > .init/git-secrets.yml
 
 
@@ -24,7 +24,7 @@ sed \
   -e "s/{{ .tanzu_network_password }}/$TANZU_NETWORK_PASSWORD/g" \
   .init/scg-install-secrets.tpl > .init/scg-install-secrets.yml
 
-# Convert .install/scg-install-install.tpl to .install/scg-install-install.yml
+# Convert .install/scg-install.tpl to .install/scg-install.yml
 sed \
   -e "s~{{ .git_ref_name }}~$GIT_REF_NAME~g" \
-  .install/scg-install-install.tpl > .install/scg-install-install.yml
+  .install/scg-install.tpl > .install/scg-install.yml

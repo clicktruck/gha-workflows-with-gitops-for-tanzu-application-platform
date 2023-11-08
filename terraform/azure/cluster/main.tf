@@ -19,18 +19,16 @@ resource "random_id" "name" {
   byte_length = 8
 }
 
-
 module "aks" {
   source = "github.com/Azure/terraform-azurerm-aks?ref=7.4.0"
 
-  cluster_name                         = var.cluster_name
-  cluster_log_analytics_workspace_name = var.cluster_name
-  private_cluster_enabled              = false
+  cluster_name            = var.cluster_name
+  private_cluster_enabled = false
 
   client_id     = var.client_id
   client_secret = var.client_secret
 
-  prefix              = random_string.prefix.result
+  prefix              = random_id.name.hex
   resource_group_name = data.azurerm_resource_group.rg.name
   kubernetes_version  = var.k8s_version
 
@@ -56,7 +54,6 @@ module "aks" {
     environment = var.environment
   }
 
-  azure_policy_enabled                = true
   disk_encryption_set_id              = azurerm_disk_encryption_set.des.id
   enable_auto_scaling                 = true
   enable_host_encryption              = false

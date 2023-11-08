@@ -197,7 +197,7 @@ on:
         - "1.24"
         - "1.25"
         - "1.26"
-        default: "1.24"
+        default: "1.26"
       vpc-network-name:
         description: "Name of an existing Google Cloud VPC network"
         required: true

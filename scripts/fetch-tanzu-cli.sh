@@ -20,13 +20,13 @@ then
 	sudo mv mkpcli /usr/local/bin
 fi
 
-FILE=tanzu-cli-bundle-${OS}-amd64.tar.gz
+FILE=tanzu-cli-${OS}-amd64.tar.gz
 CURRENT_VERSION="latest"
 DIST_EXECUTABLE="dist/tanzu"
 TANZU_CLI="tanzu"
 if [ "$OS" == "windows" ]; then
-  TANZU_CLI = "tanzu.exe"
-  DIST_EXECUTABLE = "dist/tanzu.exe"
+  TANZU_CLI="tanzu.exe"
+  DIST_EXECUTABLE="dist/tanzu.exe"
 fi
 if [ -e "$DIST_EXECUTABLE" ]; then
   cd dist

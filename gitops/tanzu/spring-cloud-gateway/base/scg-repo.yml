@@ -11,5 +11,5 @@ spec:
   fetch:
     imgpkgBundle:
       image: #@ "{}/spring-cloud-gateway-for-kubernetes/scg-package-repository:{}".format(data.values.tanzuNet.host, data.values.scg.version)
-      secretRef:
-        name: tanzu-network-credentials
+      #! secretRef:
+        #! name: tanzu-network-credentials

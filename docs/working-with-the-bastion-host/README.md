@@ -34,7 +34,7 @@ To install, execute
 For example
 
 ```
-./fetch-tanzu-cli.sh cphillipson@pivotal.io xxx linux 2.1.1 0.28.1
+./fetch-tanzu-cli.sh cphillipson@pivotal.io xxx linux 2.3.0 0.90.1
 ```
 
 ## Installing the Tanzu Application Platform plugins

@@ -60,9 +60,6 @@ ootb_supply_chain_basic:
   gitops:
     ssh_secret: #@ data.values.tap.supply_chain.gitops.ssh_secret
 
-scanning:
-  metadataStore:
-    url: ""
 
 metadata_store:
   ns_for_export_app_cert: #@ data.values.tap.devNamespace

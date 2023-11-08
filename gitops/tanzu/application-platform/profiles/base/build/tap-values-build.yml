@@ -107,8 +107,8 @@ ootb_supply_chain_testing_scanning:
   git_implementation: #@ data.values.tap.supply_chain.git_implementation
 
 scanning:
-  metadataStore:
-    url: ""
+  certIssuer: selfsigned-cluster-issuer
+
 
 metadata_store:
   ingress_enabled: "true"

@@ -1,6 +1,6 @@
 # Provisioning and Install Automation for Tanzu Application Platform
 
-![Current State](https://img.shields.io/badge/current%20state-stable-brightgreen) ![Supported TAP release versions](https://img.shields.io/badge/versions%20supported-1.4,%201.5-blue)
+![Current State](https://img.shields.io/badge/current%20state-stable-brightgreen) ![Supported TAP release versions](https://img.shields.io/badge/versions%20supported-1.4,%201.5,%201.6-blue)
 
 
 ## Table of Contents
@@ -77,6 +77,7 @@ If you're looking to contribute, clone your fork to your local workstation or la
 | Branch name | TAP release version |
 |-------------|---------------------|
 | [main](https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/tree/main) | 1.5.2 |
+| [1.6.1](https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/tree/1.6.1) | 1.6.1 |
 | [1.4.2](https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/tree/1.4.2) | 1.4.2 |
 
 To keep your fork up-to-date with upstream changes

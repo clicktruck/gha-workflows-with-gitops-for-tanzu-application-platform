@@ -17,4 +17,4 @@ spec:
   serviceAccountName: scg-install-gitops-sa
   values:
   - secretRef:
-      name: spring-cloud-gateway-values
+      name: tanzu-network-credentials
