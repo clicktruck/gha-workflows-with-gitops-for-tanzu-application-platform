@@ -238,7 +238,7 @@ jobs:
     ## We'll likely source manufactured sensitive data like domain, private registry credentials from a secrets management store like AWS Secrets Manager or Azure KeyVault
 
     - name: Render git-secrets
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template:  ${{ env.GITOPS_DIR }}/.init/git-secrets.tpl
         vars: |
@@ -247,7 +247,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/git-secrets.yml
 
     - name: Render tap-install-config
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.init/tap-install-config.tpl
         vars: |
@@ -269,7 +269,7 @@ jobs:
 
     - name: Render tap-install-secrets
       if: inputs.cluster-provider != 'gke'
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       env:
         OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
         OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
@@ -294,7 +294,7 @@ jobs:
 
     - name: Render tap-install-secrets on GKE
       if: inputs.cluster-provider == 'gke'
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       env:
         OIDC_AUTH_PROVIDER: ${{ secrets.OIDC_AUTH_PROVIDER }}
         OIDC_AUTH_CLIENT_ID: ${{ secrets.OIDC_AUTH_CLIENT_ID }}
@@ -318,7 +318,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.init/tap-install-secrets.yml
 
     - name: Render tap-install
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.install/tap-install.tpl
         vars: |
@@ -328,7 +328,7 @@ jobs:
         result_path: ${{ env.GITOPS_DIR }}/.install/tap-install.yml
 
     - name: Render tap-post-install
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.8
       with:
         template: ${{ env.GITOPS_DIR }}/.post-install/tap-post-install.tpl
         vars: |
