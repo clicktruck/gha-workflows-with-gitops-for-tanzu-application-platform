@@ -88,7 +88,7 @@ jobs:
           target: "packer/aws/ubuntu/22_04/install-krew-and-plugins.sh"
 
       - name: Use latest Packer
-        uses: hashicorp-contrib/setup-packer@v2
+        uses: hashicorp-contrib/setup-packer@v3
         with:
           packer-version: 1.9.4
 
