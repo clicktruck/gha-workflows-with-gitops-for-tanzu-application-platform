@@ -1,7 +1,8 @@
 # Provisioning and Install Automation for Tanzu Application Platform
 
-![Current State](https://img.shields.io/badge/current%20state-stable-brightgreen) ![Supported TAP release versions](https://img.shields.io/badge/versions%20supported-1.4,%201.5,%201.6-blue)
+![Current State](https://img.shields.io/badge/current%20state-stable-darkred) ![Supported TAP release versions](https://img.shields.io/badge/versions%20supported-1.4,%201.5,%201.6-blue)
 
+Caution: This content of tgus repository is scheduled for archive in September 2024.  Functionality here-in is being decomposed into individual repositories.  Stay tuned!
 
 ## Table of Contents
 
