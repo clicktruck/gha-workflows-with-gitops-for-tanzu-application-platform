@@ -47,7 +47,7 @@ kapp deploy --app $APP_NAME --file .install --diff-changes --yes
 
 ## Post-installation
 
-Follow the steps as described in [pacphi/cert-manager-webhook-oci](https://github.com/pacphi/cert-manager-webhook-oci) to install both `cert-manager` and the `webhook`.  You will also install the `ClusterIssuer`.  Do not install the `Certificate`.  And do not re-install Contour (see [install-cert-manager-webhook-oci.sh](https://github.com/pacphi/cert-manager-webhook-oci/blob/main/scripts/install-cert-manager-webhook-oci.sh#L28))
+Follow the steps as described in [clicktruck/cert-manager-webhook-oci](https://github.com/clicktruck/cert-manager-webhook-oci) to install both `cert-manager` and the `webhook`.  You will also install the `ClusterIssuer`.  Do not install the `Certificate`.  And do not re-install Contour (see [install-cert-manager-webhook-oci.sh](https://github.com/clicktruck/cert-manager-webhook-oci/blob/main/scripts/install-cert-manager-webhook-oci.sh#L28))
 
 ## Verification
 

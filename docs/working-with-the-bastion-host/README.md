@@ -56,7 +56,7 @@ No worries.  You can [scp](https://linuxconfig.org/scp) a set of scripts to help
 Note: we'll assume your bastion host operating system is Ubuntu Linux 22.04 or better.
 
 ```
-git clone https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+git clone https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform
 cd gha-workflows-with-gitops-for-tanzu-application-platform
 scp -i {path-to-private-key-file} -r scripts ubuntu@{bastion-host-ip-address}:/home/ubuntu/
 ```

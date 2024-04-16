@@ -16,7 +16,7 @@ locals {
   tags = {
     ManagedBy              = "Terraform"
     GithubRepo             = "https://github.com/aws-ia/terraform-aws-eks-blueprints/tree/main/examples/eks-cluster-with-new-vpc"
-    ContributingGithubRepo = "https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform"
+    ContributingGithubRepo = "https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform"
   }
 }
 

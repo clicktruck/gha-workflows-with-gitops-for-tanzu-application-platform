@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/toolset-image"
+LABEL "repository"="https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform/docker/toolset-image"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
 COPY scripts scripts

@@ -50,7 +50,7 @@ AWS_SECRET_KEY="REPLACE_ME"
 
 ## GKE specific
 
-GCP_PROJECT="REPLACE_ME"
+GCP_PROJECT="prow-openbtr-dev"
 GCP_SERVICE_ACCOUNT="$SERVICE_ACCOUNT_NAME"
 GCP_REGION="us-west1"
 EOF
@@ -113,6 +113,7 @@ case "$IAAS" in
   gcp)
       mkdir -p $HOME/.google
       gcloud auth login
+      gcloud config set project $GCP_PROJECT
       gcloud iam service-accounts create $GCP_SERVICE_ACCOUNT
       gcloud projects add-iam-policy-binding $GCP_PROJECT --member="serviceAccount:$GCP_SERVICE_ACCOUNT@$GCP_PROJECT.iam.gserviceaccount.com" --role="roles/owner"
       gcloud iam service-accounts keys create $HOME/.google/$GCP_SERVICE_ACCOUNT.$GCP_PROJECT.json --iam-account=$GCP_SERVICE_ACCOUNT@$GCP_PROJECT.iam.gserviceaccount.com

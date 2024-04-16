@@ -26,18 +26,18 @@ If you haven't already, fork this GitHub repository and enable the GitHub Action
 
 ```bash
 #! with gh CLI
-gh repo fork pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+gh repo fork clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform
 ```
 
 You will also need to search-and-replace occurrences of:
 
 ```yaml
-url: https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+url: https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform
 ```
 
 within `.yml` and `.tpl` files located in sub-directories under the [gitops/tanzu](../gitops/tanzu) directory.
 
-Note that the URL above references this Github repository.  You'll want to update it to point to your fork.  Simply replace `pacphi` above with your Github id.
+Note that the URL above references this Github repository.  You'll want to update it to point to your fork.  Simply replace `clicktruck` above with your Github id.
 
 Then commit:
 
@@ -50,7 +50,7 @@ git push
 To keep your fork up-to-date with upstream changes
 
 ```bash
-git remote add upstream https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+git remote add upstream https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform
 ```
 > Execute once
 
@@ -62,7 +62,7 @@ git merge upstream/main
 git push
 
 #! alternatively with gh CLI
-gh repo sync --source pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+gh repo sync --source clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform
 ```
 > Execute periodically
 

@@ -6,6 +6,6 @@ locals {
 
   tags = {
     GithubRepo             = "https://github.com/aws-ia/terraform-aws-eks-blueprints"
-    ContributingGithubRepo = "github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform"
+    ContributingGithubRepo = "github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform"
   }
 }

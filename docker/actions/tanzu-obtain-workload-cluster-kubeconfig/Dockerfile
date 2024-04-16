@@ -4,7 +4,7 @@ LABEL "com.github.actions.name"="tanzu-runsh-setup-action"
 LABEL "com.github.actions.icon"="server"
 LABEL "com.github.actions.color"="blue"
 
-LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/tanzu-obtain-workload-cluster-kubeconfig"
+LABEL "repository"="https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/tanzu-obtain-workload-cluster-kubeconfig"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
 ENV KUBECTL_VERSION=1.26.10 \

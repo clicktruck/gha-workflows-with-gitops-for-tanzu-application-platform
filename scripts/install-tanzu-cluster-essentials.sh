@@ -5,8 +5,8 @@ set -eo pipefail
 
 ## Tanzu Network
 ## (package configuration)
-ESS_VERSION="1.6.2"
-export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:2f538b69c866023b7d408cce6f0624c5662ee0703d8492e623b7fce10b6f840b
+ESS_VERSION="1.6.3"
+export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:2f74d3cce88146a4eecf3a72757f6bab0a193a79029043a115a54eee9ae3ce36
 export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
 
 

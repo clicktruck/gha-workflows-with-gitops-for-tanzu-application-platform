@@ -35,7 +35,7 @@ See [gh workflow run](https://cli.github.com/manual/gh_workflow_run) for additio
 <p>
 
 ```bash
-gh repo fork pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+gh repo fork clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform
 ```
 
 </p>
@@ -309,7 +309,7 @@ Single-cluster
 <p>
 
 ```bash
-echo '{ "tap-install-details": "apps.zoolabs.me;admin@zoolabs.me";default";https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml", "container-image-registry-provider": "harbor-on-aws", container-image-registry-connection-details": "harbor.zoolabs.me;admin;cEBzc3cwcmQlCg==;tap-build-service;tanzu-application-platform;arn-replace-me;arn-replace-me", "cluster-provider": "tkg»aws", "active-profile": "full", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run install-tanzu-application-platform-dispatch.yml --json
+echo '{ "tap-install-details": "apps.zoolabs.me;admin@zoolabs.me";default";https://github.com/clicktruck/tap-gui-catalog/blob/main/catalog-info.yaml", "container-image-registry-provider": "harbor-on-aws", container-image-registry-connection-details": "harbor.zoolabs.me;admin;cEBzc3cwcmQlCg==;tap-build-service;tanzu-application-platform;arn-replace-me;arn-replace-me", "cluster-provider": "tkg»aws", "active-profile": "full", "kubeconfig-contents": "dGhpcyBrdWJlY29uZmlnIGlzIGVudGlyZWx5IGZha2UK..." }' | gh workflow run install-tanzu-application-platform-dispatch.yml --json
 ```
 > Note, this dispatch workflow supports variant configuration for targeting Amazon EKS, Azure AKS and Google GKE clusters.  To-date only the following `cluster-provider`s are supported: [ "aks", "eks", "gke", "tkg»aws", "tkg»azure" ].  Other optional options may apply depending on choice of provider.
 
@@ -324,7 +324,7 @@ Multi-cluster
 <p>
 
 ```bash
-echo '{ "secrets-manager-arn": "arn:aws:xx-xxxxx", "secrets-manager-instance-name": "tap-secret-store", "domain": "apps.ironleg.me", "email-address": "admin@zoolabs.me", "aws-access-key-id": "ASIA5K3T6JXVBF2LFS5B", "aws-secret-access-key": "Zqyo0LM4i9NCzrD6VgoHrAS7B6u6N4HuRRY/nswy", "backstage-catalog": "https://github.com/pacphi/tap-gui-catalog/blob/main/catalog-info.yaml", "cluster-provider": "tkg»aws", "container-image-registry-provider": "harbor-on-aws", "aws-region": "us-west-2" }' | gh workflow run multi-cluster-tanzu-application-platform-install-on-aws-dispatch.yml --json
+echo '{ "secrets-manager-arn": "arn:aws:xx-xxxxx", "secrets-manager-instance-name": "tap-secret-store", "domain": "apps.ironleg.me", "email-address": "admin@zoolabs.me", "aws-access-key-id": "ASIA5K3T6JXVBF2LFS5B", "aws-secret-access-key": "Zqyo0LM4i9NCzrD6VgoHrAS7B6u6N4HuRRY/nswy", "backstage-catalog": "https://github.com/clicktruck/tap-gui-catalog/blob/main/catalog-info.yaml", "cluster-provider": "tkg»aws", "container-image-registry-provider": "harbor-on-aws", "aws-region": "us-west-2" }' | gh workflow run multi-cluster-tanzu-application-platform-install-on-aws-dispatch.yml --json
 ```
 > In this context, `cluster-provider` can be: [ "eks", "tkg»aws" ], `container-image-registry-provider` can be: [ "elastic-container-registry", "harbor-on-aws" ]
 

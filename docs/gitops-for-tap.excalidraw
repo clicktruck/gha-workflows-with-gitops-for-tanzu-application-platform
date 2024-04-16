@@ -2257,12 +2257,12 @@
       "locked": false,
       "fontSize": 28,
       "fontFamily": 1,
-      "text": "https://github.com/pacphi/github-actions-workflows-with-gitops-for-tanzu-application-platform",
+      "text": "https://github.com/clicktruck/github-actions-workflows-with-gitops-for-tanzu-application-platform",
       "baseline": 25,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "https://github.com/pacphi/github-actions-workflows-with-gitops-for-tanzu-application-platform"
+      "originalText": "https://github.com/clicktruck/github-actions-workflows-with-gitops-for-tanzu-application-platform"
     },
     {
       "type": "line",

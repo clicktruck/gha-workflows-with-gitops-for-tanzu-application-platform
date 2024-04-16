@@ -10,7 +10,7 @@ spec:
   serviceAccountName: tanzu-data-services-sa
   fetch:
   - git:
-      url: https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+      url: https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform
       ref: origin/{{ .git_ref_name }}
       secretRef:
         name: git-https-for-carvel

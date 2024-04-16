@@ -76,14 +76,14 @@ If you're looking to contribute, clone your fork to your local workstation or la
 
 | Branch name | TAP release version |
 |-------------|---------------------|
-| [main](https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/tree/main) | 1.5.2 |
-| [1.6.1](https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/tree/1.6.1) | 1.6.1 |
-| [1.4.2](https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/tree/1.4.2) | 1.4.2 |
+| [main](https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform/tree/main) | 1.5.2 |
+| [1.6.1](https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform/tree/1.6.1) | 1.6.1 |
+| [1.4.2](https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform/tree/1.4.2) | 1.4.2 |
 
 To keep your fork up-to-date with upstream changes
 
 ```bash
-git remote add upstream https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+git remote add upstream https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform
 ```
 > Execute once
 
@@ -95,7 +95,7 @@ git merge upstream/main
 git push
 
 #! alternatively with gh CLI
-gh repo sync --source pacphi/gha-workflows-with-gitops-for-tanzu-application-platform
+gh repo sync --source clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform
 ```
 > Execute periodically
 
@@ -160,4 +160,4 @@ Also be sure to checkout these guides:
 Companion repositories:
 
 * [Accelerator samples](https://github.com/vmware-tanzu/application-accelerator-samples) use to bootstrap greenfield projects
-* [Curated sample applications](https://github.com/pacphi/tap-sample-apps) use to demonstrate deploying workloads with [kapp](https://carvel.dev/kapp/) and [ytt](https://carvel.dev/ytt/)
+* [Curated sample applications](https://github.com/clicktruck/tap-sample-apps) use to demonstrate deploying workloads with [kapp](https://carvel.dev/kapp/) and [ytt](https://carvel.dev/ytt/)

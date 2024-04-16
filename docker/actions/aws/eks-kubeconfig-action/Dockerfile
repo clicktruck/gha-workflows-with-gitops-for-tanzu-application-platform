@@ -5,7 +5,7 @@ LABEL "com.github.actions.description"="Use eksctl CLI to obtain .kube/config th
 LABEL "com.github.actions.icon"="server"
 LABEL "com.github.actions.color"="blue"
 
-LABEL "repository"="https://github.com/pacphi/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/aws/eks-kubeconfig-action"
+LABEL "repository"="https://github.com/clicktruck/gha-workflows-with-gitops-for-tanzu-application-platform/docker/actions/aws/eks-kubeconfig-action"
 LABEL "maintainer"="Chris Phillipson <cphillipson@vmware.com>"
 
 RUN apk add --update --no-cache bash coreutils ca-certificates curl gcompat \
